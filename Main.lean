@@ -414,8 +414,12 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
       try
         let newConcepts ← heuristic kb.config kb.concepts
 
+        IO.println s!"[DEBUG] Heuristic {name} generated {newConcepts.length} concepts"
+
         -- Clean up new concepts against ALL existing concepts
         let cleanedConcepts ← cleanupConcepts kb.config kb.concepts newConcepts
+
+        IO.println s!"[DEBUG] After cleanup: {cleanedConcepts.length} concepts"
 
         -- Verify all new concepts
         let mut verifiedConcepts := []
@@ -433,12 +437,15 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
             verifiedConcepts := verifiedConcepts ++ [concept]
           | _ => verifiedConcepts := verifiedConcepts ++ [concept]
 
+        IO.println s!"[DEBUG] After verification: {verifiedConcepts.length} concepts"
+
         -- Limit number of concepts per heuristic
         let limitedConcepts := verifiedConcepts.take kb.config.maxConceptsPerIteration
 
         if limitedConcepts.length > 0 then
           discoveries := discoveries ++ [Discovery.mk limitedConcepts [] s!"Applied heuristic {meta.name}"]
       catch _ =>
+        IO.println s!"[DEBUG] Error in heuristic {name}"
         pure ()
 
   return discoveries
@@ -632,40 +639,56 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
   for (n1, v1, _) in numbers do
     for (n2, v2, _) in numbers do
       -- Generate commutativity conjecture for different numbers
-      if n1 != n2 && !conjectures.any (fun c => getConceptName c == s!"add_comm_{n1}_{n2}" || getConceptName c == s!"add_comm_{n2}_{n1}") then
-        -- Find add function
-        let addOpt := concepts.find? fun c => match c with
-          | ConceptData.definition n _ _ _ _ _ => n == "add"
-          | _ => false
+      if n1 != n2 then
+        let conjectureName := s!"add_comm_{n1}_{n2}"
+        let reverseConjectureName := s!"add_comm_{n2}_{n1}"
 
-        match addOpt with
-        | some (ConceptData.definition _ _ addFn _ _ _) =>
-          let lhs := mkApp2 addFn v1 v2
-          let rhs := mkApp2 addFn v2 v1
-          let natType := mkConst ``Nat
-          let stmt ← mkAppM ``Eq #[natType, lhs, rhs]
+        -- Check if this conjecture already exists in our concepts
+        let alreadyExists := concepts.any fun c =>
+          let cname := getConceptName c
+          cname == conjectureName || cname == reverseConjectureName
 
-          let conjectureMeta := {
-            name := s!"add_comm_{n1}_{n2}"
-            created := 0
-            parent := none
-            interestingness := 0.0
-            useCount := 0
-            successCount := 0
-            specializationDepth := 1
-            generationMethod := "conjecture"
-          }
+        if !alreadyExists then
+          IO.println s!"[DEBUG] Generating conjecture: {conjectureName}"
+          -- Find add function
+          let addOpt := concepts.find? fun c => match c with
+            | ConceptData.definition n _ _ _ _ _ => n == "add"
+            | _ => false
 
-          IO.println s!"[DEBUG] Generated conjecture: {n1} + {n2} = {n2} + {n1}"
+          match addOpt with
+          | some (ConceptData.definition _ _ addFn _ _ _) =>
+            try
+              let lhs := mkApp2 addFn v1 v2
+              let rhs := mkApp2 addFn v2 v1
+              let natType := mkConst ``Nat
+              -- Use mkApp3 for Eq which takes (type, lhs, rhs)
+              let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
 
-          conjectures := conjectures ++ [
-            ConceptData.conjecture
-              s!"add_comm_{n1}_{n2}"
-              stmt
-              0.8  -- High confidence in commutativity
-              conjectureMeta
-          ]
-        | _ => IO.println "[DEBUG] Could not find add function"
+              let conjectureMeta := {
+                name := conjectureName
+                created := 0
+                parent := none
+                interestingness := 0.0
+                useCount := 0
+                successCount := 0
+                specializationDepth := 1
+                generationMethod := "conjecture"
+              }
+
+              IO.println s!"[DEBUG] Created conjecture: {n1} + {n2} = {n2} + {n1}"
+
+              conjectures := conjectures ++ [
+                ConceptData.conjecture
+                  conjectureName
+                  stmt
+                  0.8  -- High confidence in commutativity
+                  conjectureMeta
+              ]
+            catch _ =>
+              IO.println s!"[DEBUG] Error creating conjecture statement"
+          | _ => IO.println "[DEBUG] Could not find add function"
+        else
+          IO.println s!"[DEBUG] Conjecture {conjectureName} already exists"
 
   -- Look for patterns and generate conjectures
   let patterns := concepts.filter fun c => match c with
@@ -732,7 +755,7 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
         let lhs := mkApp2 addFn (mkApp2 addFn v1 v2) v3
         let rhs := mkApp2 addFn v1 (mkApp2 addFn v2 v3)
         let natType := mkConst ``Nat
-        let stmt ← mkAppM ``Eq #[natType, lhs, rhs]
+        let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
 
         let conjectureMeta := {
           name := s!"add_assoc_{n1}_{n2}_{n3}"
