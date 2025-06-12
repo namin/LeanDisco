@@ -562,7 +562,7 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
     match c with
     | ConceptData.theorem thName stmt proof deps meta => do
       -- Debug: log each Eq-theorem considered
-      IO.println s!"[DEBUG][lemma_application] considering theorem {thName}"
+      -- IO.println s!"[DEBUG][lemma_application] considering theorem {thName}"
       let fn := stmt.getAppFn
       if fn.isConstOf ``Eq then
         let argsList := stmt.getAppArgs.toList
@@ -682,163 +682,142 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
 
   let mut conjectures := []
 
-  -- Debug: Check what numbers we have
+  -- Find interesting theorems to generalize/combine
+  let theorems := concepts.filterMap fun c => match c with
+    | ConceptData.theorem n s p d m =>
+      if !((n.splitOn "_spec_").length > 1) then some (n, s, p, d, m)
+      else none
+    | _ => none
+
+  -- PATTERN 1: Look for function composition patterns
+  let functions := concepts.filterMap fun c => match c with
+    | ConceptData.definition n t v _ d m =>
+      if t.isForall && !((n.splitOn "_applied_").length > 1) then some (n, v, t)
+      else none
+    | _ => none
+
+  -- For each pair of functions, try to create composition conjectures
+  for (f1_name, f1_val, f1_type) in functions do
+    for (f2_name, f2_val, f2_type) in functions do
+      if f1_name != f2_name && f1_name.length < 10 && f2_name.length < 10 then
+        -- Check if we can compose them by looking at types
+        match f1_type with
+        | .forallE _ argType1 _ _ =>
+          match f2_type with
+          | .forallE _ argType2 resultType2 _ =>
+            -- If f2's result type matches f1's argument type, we can compose
+            if ← isDefEq resultType2 argType1 then
+              -- Create a conjecture about the composition
+              let natType := mkConst ``Nat
+              let zero := mkConst ``Nat.zero
+              let one := mkApp (mkConst ``Nat.succ) zero
+
+              -- f1(f2(0)) = ?
+              let comp_zero := mkApp f1_val (mkApp f2_val zero)
+              -- Maybe it equals f1(0) or f2(0) or 0?
+              let candidates : List Expr := [mkApp f1_val zero, mkApp f2_val zero, zero, one]
+
+              let mut idx := 0
+              for candidate in candidates do
+                let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType comp_zero candidate
+                let confidence := if idx == 2 then 0.3 else 0.2
+
+                conjectures := conjectures ++ [
+                  ConceptData.conjecture
+                    s!"{f1_name}_comp_{f2_name}_eq_{idx}"
+                    stmt
+                    confidence
+                    { name := s!"{f1_name}_comp_{f2_name}_eq_{idx}",
+                      created := 0, parent := none, interestingness := 0.7,
+                      useCount := 0, successCount := 0, specializationDepth := 1,
+                      generationMethod := "composition_pattern" }
+                ]
+                idx := idx + 1
+          | _ => pure ()
+        | _ => pure ()
+
+  -- PATTERN 2: Look for preservation properties
+  for (thm_name, stmt, _, _, _) in theorems do
+    -- Look for theorems that might be properties
+    if (thm_name.splitOn "eq").length > 1 || (thm_name.splitOn "comm").length > 1 || (thm_name.splitOn "assoc").length > 1 then
+      for (fn_name, fn_val, fn_type) in functions do
+        if fn_name != "zero" && fn_name != "one" && fn_name != "two" then
+          let natType := mkConst ``Nat
+          let x := mkConst ``Nat.zero
+          let y := mkApp (mkConst ``Nat.succ) x
+
+          -- Create a simple preservation conjecture
+          let fx := mkApp fn_val x
+          let fy := mkApp fn_val y
+          let preservationStmt := mkApp3 (mkConst ``Eq [levelOne]) natType fx fy
+
+          conjectures := conjectures ++ [
+            ConceptData.conjecture
+              s!"{fn_name}_preserves_{thm_name}_maybe"
+              preservationStmt
+              0.15
+              { name := s!"{fn_name}_preserves_{thm_name}_maybe",
+                created := 0, parent := some thm_name, interestingness := 0.5,
+                useCount := 0, successCount := 0, specializationDepth := 1,
+                generationMethod := "preservation_pattern" }
+          ]
+
+  -- PATTERN 3: Identity and fixed point conjectures
+  for (fn_name, fn_val, _) in functions do
+    if fn_name != "succ" then
+      let natType := mkConst ``Nat
+      let zero := mkConst ``Nat.zero
+
+      -- Conjecture: f(0) = 0 (zero is a fixed point)
+      let f_zero := mkApp fn_val zero
+      let fixedPointStmt := mkApp3 (mkConst ``Eq [levelOne]) natType f_zero zero
+
+      conjectures := conjectures ++ [
+        ConceptData.conjecture
+          s!"{fn_name}_fixed_point_zero"
+          fixedPointStmt
+          0.4
+          { name := s!"{fn_name}_fixed_point_zero",
+            created := 0, parent := none, interestingness := 0.6,
+            useCount := 0, successCount := 0, specializationDepth := 1,
+            generationMethod := "fixed_point_search" }
+      ]
+
+  -- Still keep some original commutativity conjectures
   let numbers := concepts.filterMap fun c => match c with
     | ConceptData.definition n _ v _ _ m =>
-      if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
+      if n == "zero" || n == "one" || n == "two" then
         some (n, v, m)
       else none
     | _ => none
 
-  IO.println s!"[DEBUG] Found {numbers.length} numbers for conjecture generation"
-
-  -- Generate arithmetic conjectures
-  for (n1, v1, _) in numbers do
-    for (n2, v2, _) in numbers do
-      -- Generate commutativity conjecture for different numbers
-      if n1 != n2 then
-        let conjectureName := s!"add_comm_{n1}_{n2}"
-        let reverseConjectureName := s!"add_comm_{n2}_{n1}"
-
-        -- Check if this conjecture already exists in our concepts
-        let alreadyExists := concepts.any fun c =>
-          let cname := getConceptName c
-          cname == conjectureName || cname == reverseConjectureName
-
-        if !alreadyExists then
-          IO.println s!"[DEBUG] Generating conjecture: {conjectureName}"
-          -- Find add function
-          let addOpt := concepts.find? fun c => match c with
-            | ConceptData.definition n _ _ _ _ _ => n == "add"
-            | _ => false
-
-          match addOpt with
-          | some (ConceptData.definition _ _ addFn _ _ _) =>
-            try
-              let lhs := mkApp2 addFn v1 v2
-              let rhs := mkApp2 addFn v2 v1
-              let natType := mkConst ``Nat
-              -- Use mkApp3 for Eq which takes (type, lhs, rhs)
-              let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
-
-              let conjectureMeta := {
-                name := conjectureName
-                created := 0
-                parent := none
-                interestingness := 0.0
-                useCount := 0
-                successCount := 0
-                specializationDepth := 1
-                generationMethod := "conjecture"
-              }
-
-              IO.println s!"[DEBUG] Created conjecture: {n1} + {n2} = {n2} + {n1}"
-
-              conjectures := conjectures ++ [
-                ConceptData.conjecture
-                  conjectureName
-                  stmt
-                  0.8  -- High confidence in commutativity
-                  conjectureMeta
-              ]
-            catch _ =>
-              IO.println s!"[DEBUG] Error creating conjecture statement"
-          | _ => IO.println "[DEBUG] Could not find add function"
-        else
-          IO.println s!"[DEBUG] Conjecture {conjectureName} already exists"
-
-  -- Look for patterns and generate conjectures
-  let patterns := concepts.filter fun c => match c with
-    | ConceptData.pattern _ _ _ _ => true
-    | _ => false
-
-  for pattern in patterns do
-    match pattern with
-    | ConceptData.pattern "natural_number_sequence" _ instances _ =>
-      -- Conjecture: succ n ≠ 0 for all instances
-      if instances.length >= 2 then
-        if let some succ := concepts.find? fun c => getConceptName c == "succ" then
-          match succ with
-          | ConceptData.definition _ _ succFn _ _ _ =>
-            for inst in instances do
-              if let some defn := concepts.find? fun c => getConceptName c == inst then
-                match defn with
-                | ConceptData.definition _ _ value _ _ _ =>
-                  let succValue := mkApp succFn value
-                  let zero := mkConst ``Nat.zero
-                  let natType := mkConst ``Nat
-                  let eq ← mkAppM ``Eq #[natType, succValue, zero]
-                  let stmt ← mkAppM ``Not #[eq]
-
-                  let conjectureMeta := {
-                    name := s!"succ_ne_zero_{inst}"
-                    created := 0
-                    parent := some "natural_number_sequence"
-                    interestingness := 0.0
-                    useCount := 0
-                    successCount := 0
-                    specializationDepth := 1
-                    generationMethod := "pattern_conjecture"
-                  }
-
-                  conjectures := conjectures ++ [
-                    ConceptData.conjecture
-                      s!"succ_ne_zero_{inst}"
-                      stmt
-                      0.9  -- Very high confidence
-                      conjectureMeta
-                  ]
-                | _ => pure ()
-          | _ => pure ()
-    | _ => pure ()
-
-  -- Also generate associativity conjectures for discovered additions
-  let additions := concepts.filterMap fun c => match c with
-    | ConceptData.definition n _ v _ _ _ =>
-      if n.startsWith "add_applied_to_" then
-        some (n, v)
-      else none
-    | _ => none
-
-  -- For any partially applied addition, propose associativity
-  if additions.length > 0 then
+  if numbers.length >= 2 then
     match numbers with
-    | (n1, v1, _) :: (n2, v2, _) :: (n3, v3, _) :: _ =>
-      match concepts.find? fun c => match c with
-        | ConceptData.definition n _ _ _ _ _ => n == "add"
-        | _ => false with
-      | some (ConceptData.definition _ _ addFn _ _ _) =>
-        -- (a + b) + c = a + (b + c)
-        let lhs := mkApp2 addFn (mkApp2 addFn v1 v2) v3
-        let rhs := mkApp2 addFn v1 (mkApp2 addFn v2 v3)
+    | (n1, v1, _) :: (n2, v2, _) :: _ =>
+      if let some (ConceptData.definition _ _ addFn _ _ _) :=
+        concepts.find? fun c => match c with
+          | ConceptData.definition n _ _ _ _ _ => n == "add"
+          | _ => false then
+
         let natType := mkConst ``Nat
+        let lhs := mkApp2 addFn v1 v2
+        let rhs := mkApp2 addFn v2 v1
         let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
-
-        let conjectureMeta := {
-          name := s!"add_assoc_{n1}_{n2}_{n3}"
-          created := 0
-          parent := none
-          interestingness := 0.0
-          useCount := 0
-          successCount := 0
-          specializationDepth := 2
-          generationMethod := "conjecture"
-        }
-
-        IO.println s!"[DEBUG] Generated associativity conjecture: ({n1} + {n2}) + {n3} = {n1} + ({n2} + {n3})"
 
         conjectures := conjectures ++ [
           ConceptData.conjecture
-            s!"add_assoc_{n1}_{n2}_{n3}"
+            s!"add_comm_{n1}_{n2}"
             stmt
-            0.9  -- High confidence in associativity
-            conjectureMeta
+            0.8
+            { name := s!"add_comm_{n1}_{n2}",
+              created := 0, parent := none, interestingness := 0.3,
+              useCount := 0, successCount := 0, specializationDepth := 1,
+              generationMethod := "commutativity" }
         ]
-      | _ => pure ()
-    | _ => pure ()  -- Not enough numbers for associativity
+    | _ => pure ()
 
   IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
-  return conjectures.take 10  -- Limit conjectures per iteration
+  return conjectures.take 20
 
 /-- Specialization heuristic: create specific instances -/
 def specializationHeuristic : HeuristicFn := fun config concepts => do
