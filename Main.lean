@@ -23,7 +23,7 @@ namespace LeanDisco
 /-- Configuration for controlling discovery -/
 structure DiscoveryConfig where
   maxSpecializationDepth : Nat := 4
-  maxConceptsPerIteration : Nat := 200
+  maxConceptsPerIteration : Nat := 1000
   pruneThreshold : Float := 0.1
   deduplicateConcepts : Bool := true
   canonicalizeConcepts : Bool := true
@@ -817,7 +817,7 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
     | _ => pure ()
 
   IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
-  return conjectures.take 20
+  return conjectures --.take 20
 
 /-- Specialization heuristic: create specific instances -/
 def specializationHeuristic : HeuristicFn := fun config concepts => do
@@ -829,6 +829,10 @@ def specializationHeuristic : HeuristicFn := fun config concepts => do
     | ConceptData.theorem name stmt proof deps meta =>
       -- Skip if already deeply specialized
       if meta.specializationDepth >= config.maxSpecializationDepth then
+        continue
+
+      -- Skip theorems that are already specializations
+      if (name.splitOn "_spec_").length > 1 then
         continue
 
       -- Check if it's a forall statement
