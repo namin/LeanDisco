@@ -618,13 +618,15 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
 
   let mut conjectures := []
 
-  -- Look for number definitions
+  -- Debug: Check what numbers we have
   let numbers := concepts.filterMap fun c => match c with
     | ConceptData.definition n _ v _ _ m =>
       if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
         some (n, v, m)
       else none
     | _ => none
+
+  IO.println s!"[DEBUG] Found {numbers.length} numbers for conjecture generation"
 
   -- Generate arithmetic conjectures
   for (n1, v1, _) in numbers do
@@ -654,6 +656,8 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
             generationMethod := "conjecture"
           }
 
+          IO.println s!"[DEBUG] Generated conjecture: {n1} + {n2} = {n2} + {n1}"
+
           conjectures := conjectures ++ [
             ConceptData.conjecture
               s!"add_comm_{n1}_{n2}"
@@ -661,7 +665,7 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
               0.8  -- High confidence in commutativity
               conjectureMeta
           ]
-        | _ => pure ()
+        | _ => IO.println "[DEBUG] Could not find add function"
 
   -- Look for patterns and generate conjectures
   let patterns := concepts.filter fun c => match c with
@@ -708,6 +712,52 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
           | _ => pure ()
     | _ => pure ()
 
+  -- Also generate associativity conjectures for discovered additions
+  let additions := concepts.filterMap fun c => match c with
+    | ConceptData.definition n _ v _ _ _ =>
+      if n.startsWith "add_applied_to_" then
+        some (n, v)
+      else none
+    | _ => none
+
+  -- For any partially applied addition, propose associativity
+  if additions.length > 0 then
+    match numbers with
+    | (n1, v1, _) :: (n2, v2, _) :: (n3, v3, _) :: _ =>
+      match concepts.find? fun c => match c with
+        | ConceptData.definition n _ _ _ _ _ => n == "add"
+        | _ => false with
+      | some (ConceptData.definition _ _ addFn _ _ _) =>
+        -- (a + b) + c = a + (b + c)
+        let lhs := mkApp2 addFn (mkApp2 addFn v1 v2) v3
+        let rhs := mkApp2 addFn v1 (mkApp2 addFn v2 v3)
+        let natType := mkConst ``Nat
+        let stmt ← mkAppM ``Eq #[natType, lhs, rhs]
+
+        let conjectureMeta := {
+          name := s!"add_assoc_{n1}_{n2}_{n3}"
+          created := 0
+          parent := none
+          interestingness := 0.0
+          useCount := 0
+          successCount := 0
+          specializationDepth := 2
+          generationMethod := "conjecture"
+        }
+
+        IO.println s!"[DEBUG] Generated associativity conjecture: ({n1} + {n2}) + {n3} = {n1} + ({n2} + {n3})"
+
+        conjectures := conjectures ++ [
+          ConceptData.conjecture
+            s!"add_assoc_{n1}_{n2}_{n3}"
+            stmt
+            0.9  -- High confidence in associativity
+            conjectureMeta
+        ]
+      | _ => pure ()
+    | _ => pure ()  -- Not enough numbers for associativity
+
+  IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
   return conjectures.take 10  -- Limit conjectures per iteration
 
 /-- Specialization heuristic: create specific instances -/
@@ -1083,5 +1133,5 @@ def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config
 
 end Eurisko
 
--- Test the system (using #eval! to ignore sorry warnings)
-#eval! Eurisko.runDiscovery 5
+-- Test the system with mining enabled for richer discovery
+#eval Eurisko.runDiscovery 5 true
