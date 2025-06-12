@@ -6,6 +6,7 @@ import Mathlib.Algebra.Group.Basic -- for mining!
 
 set_option maxHeartbeats 1000000
 set_option autoImplicit false
+set_option linter.unusedVariables false
 
 open Lean Meta Elab
 
@@ -21,9 +22,9 @@ namespace LeanDisco
 
 /-- Configuration for controlling discovery -/
 structure DiscoveryConfig where
-  maxSpecializationDepth : Nat := 2
-  maxConceptsPerIteration : Nat := 50
-  pruneThreshold : Float := 0.3
+  maxSpecializationDepth : Nat := 4
+  maxConceptsPerIteration : Nat := 200
+  pruneThreshold : Float := 0.1
   deduplicateConcepts : Bool := true
   canonicalizeConcepts : Bool := true
   filterInternalProofs : Bool := true
@@ -409,6 +410,15 @@ def seedConcepts : MetaM (List ConceptData) := do
   let zeroEqZeroProof := mkApp2 (mkConst ``Eq.refl [levelOne]) natType zero
   concepts := concepts ++ [ConceptData.theorem "zero_eq_zero" zeroEqZero zeroEqZeroProof ["zero"] (mkMeta "zero_eq_zero")]
 
+  -- to test lemma application heuristic
+  let addComm := mkConst ``Nat.add_comm
+  concepts := concepts ++ [ConceptData.theorem
+  "add_comm"  -- name
+  (← inferType addComm)
+  addComm      -- proof-term
+  []
+  (mkMeta "add_comm")]
+
   return concepts
 
 /-- Apply evolution heuristics to generate new concepts -/
@@ -419,6 +429,7 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
 
   let mut discoveries := []
 
+  IO.println s!"[DEBUG] Invoking heuristics: {kb.heuristics.entries.map Prod.fst}"
   for (name, meta) in heuristicRefs do
     if let some heuristic := kb.heuristics.find? name then
       try
@@ -540,6 +551,42 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   }
 
   discoveryLoop newKb maxIterations
+
+/--
+Heuristic: apply any mined Eq-theorem whose left-hand side matches another concept’s expression,
+producing new theorems `thName_on_targetName` via lemma application.
+-/
+def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
+  let mut out : List ConceptData := []
+  for c in concepts do
+    match c with
+    | ConceptData.theorem thName stmt proof deps meta => do
+      -- Debug: log each Eq-theorem considered
+      IO.println s!"[DEBUG][lemma_application] considering theorem {thName}"
+      let fn := stmt.getAppFn
+      if fn.isConstOf ``Eq then
+        let argsList := stmt.getAppArgs.toList
+        match argsList with
+        | α :: lhs :: rhs :: [] =>
+          let lemmaName := Name.mkStr Name.anonymous thName
+          for tgt in concepts do
+            if let some tgtExpr := getConceptExpr tgt then
+              if ← isDefEq lhs tgtExpr then
+                -- Debug: matched lhs on target
+                IO.println s!"[DEBUG][lemma_application] applying {thName} to {getConceptName tgt}"
+                let eqConst := mkConst ``Eq [levelOne]
+                let newStmt := mkApp3 eqConst α tgtExpr rhs
+                let newProof := proof
+                let newName := thName ++ "_on_" ++ getConceptName tgt
+                let newMeta := { meta with
+                  name := newName,
+                  parent := some thName,
+                  generationMethod := "lemma_application"
+                }
+                out := out ++ [ConceptData.theorem newName newStmt newProof deps newMeta]
+        | _ => pure ()
+    | _ => pure ()
+  return out
 
 /-- Pattern recognition heuristic: identify mathematical patterns -/
 def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
@@ -1026,6 +1073,11 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Apply functions to suitable arguments"
     { basicMeta with name := "application" }
 
+  let lemmaAppHeuristicRef := ConceptData.heuristicRef
+    "lemma_application"
+    "Apply any mined Eq-theorem whose LHS matches another concept"
+    { basicMeta with name := "lemma_application" }
+
   let patternHeuristicRef := ConceptData.heuristicRef
     "pattern_recognition"
     "Identify mathematical patterns in discovered concepts"
@@ -1056,6 +1108,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   let mut heuristics : HeuristicRegistry := HeuristicRegistry.empty
   heuristics := heuristics.insert "specialization" specializationHeuristic
   heuristics := heuristics.insert "application" applicationHeuristic
+  heuristics := heuristics.insert "lemma_application" lemmaApplicationHeuristic
   heuristics := heuristics.insert "pattern_recognition" patternRecognitionHeuristic
   heuristics := heuristics.insert "conjecture_generation" conjectureGenerationHeuristic
 
@@ -1066,7 +1119,8 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
 
   return {
     concepts := initialConcepts ++ [
-      specHeuristicRef, appHeuristicRef, patternHeuristicRef, conjectureHeuristicRef,
+      specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
+      patternHeuristicRef, conjectureHeuristicRef,
       complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
     heuristics := heuristics
