@@ -4,7 +4,7 @@
 
 Eurisko-Inspired Discovery System for Lean in Lean
 
-[Main](Main.lean) is the entry point.
+See [LeanDisco.lean](LeanDisco.lean) for the code.
 See sample outputs in [log](log) directory.
 
 ## References
