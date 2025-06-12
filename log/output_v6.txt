@@ -1,0 +1,193 @@
+=== Starting Eurisko Discovery System ===
+Config: maxDepth=2, maxPerIter=50
+Features: conjectures=true, patterns=true
+Mining mode: ON
+Initializing with mathematical seed concepts...
+
+Initial concepts (23):
+
+Definitions: 6
+Theorems: 10
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 23 concepts
+
+--- Iteration 1 ---
+[DEBUG] Heuristic specialization generated 27 concepts
+[DEBUG] After cleanup: 24 concepts
+[DEBUG] After verification: 24 concepts
+[DEBUG] Heuristic application generated 9 concepts
+[DEBUG] After cleanup: 7 concepts
+[DEBUG] After verification: 7 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Found 3 numbers for conjecture generation
+[DEBUG] Generating conjecture: add_comm_zero_one
+[DEBUG] Created conjecture: zero + one = one + zero
+[DEBUG] Generating conjecture: add_comm_zero_two
+[DEBUG] Created conjecture: zero + two = two + zero
+[DEBUG] Generating conjecture: add_comm_one_zero
+[DEBUG] Created conjecture: one + zero = zero + one
+[DEBUG] Generating conjecture: add_comm_one_two
+[DEBUG] Created conjecture: one + two = two + one
+[DEBUG] Generating conjecture: add_comm_two_zero
+[DEBUG] Created conjecture: two + zero = zero + two
+[DEBUG] Generating conjecture: add_comm_two_one
+[DEBUG] Created conjecture: two + one = one + two
+[DEBUG] Total conjectures generated: 6
+[DEBUG] Heuristic conjecture_generation generated 6 concepts
+[DEBUG] After cleanup: 3 concepts
+[DEBUG] After verification: 3 concepts
+Discovered 8 new concepts:
+  - succ_applied_to_two (depth: 1, method: application)
+  - add_applied_to_zero (depth: 1, method: application)
+  - add_applied_to_one (depth: 1, method: application)
+  - add_applied_to_two (depth: 1, method: application)
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+  - add_comm_zero_one (CONJECTURE, evidence: 0.800000, depth: 1)
+  - add_comm_zero_two (CONJECTURE, evidence: 0.800000, depth: 1)
+  - add_comm_one_two (CONJECTURE, evidence: 0.800000, depth: 1)
+  ✓ Proved conjecture: add_comm_zero_one
+  ✓ Proved conjecture: add_comm_zero_two
+  ✓ Proved conjecture: add_comm_one_two
+
+--- Iteration 2 ---
+[DEBUG] Heuristic specialization generated 36 concepts
+[DEBUG] After cleanup: 32 concepts
+[DEBUG] After verification: 32 concepts
+[DEBUG] Heuristic application generated 18 concepts
+[DEBUG] After cleanup: 4 concepts
+[DEBUG] After verification: 4 concepts
+[DEBUG] Heuristic pattern_recognition generated 2 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Found 3 numbers for conjecture generation
+[DEBUG] Conjecture add_comm_zero_one already exists
+[DEBUG] Conjecture add_comm_zero_two already exists
+[DEBUG] Conjecture add_comm_one_zero already exists
+[DEBUG] Conjecture add_comm_one_two already exists
+[DEBUG] Conjecture add_comm_two_zero already exists
+[DEBUG] Conjecture add_comm_two_one already exists
+[DEBUG] Error in heuristic conjecture_generation
+Discovered 2 new concepts:
+  - add_applied_to_two_applied_to_two (depth: 2, method: application)
+  - add_iteration_pattern: Repeated application of add
+  ✓ Proved conjecture: add_comm_zero_one
+  ✓ Proved conjecture: add_comm_zero_two
+  ✓ Proved conjecture: add_comm_one_two
+
+--- Iteration 3 ---
+[DEBUG] Heuristic specialization generated 36 concepts
+[DEBUG] After cleanup: 32 concepts
+[DEBUG] After verification: 32 concepts
+[DEBUG] Heuristic application generated 18 concepts
+[DEBUG] After cleanup: 3 concepts
+[DEBUG] After verification: 3 concepts
+[DEBUG] Heuristic pattern_recognition generated 2 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Found 3 numbers for conjecture generation
+[DEBUG] Conjecture add_comm_zero_one already exists
+[DEBUG] Conjecture add_comm_zero_two already exists
+[DEBUG] Conjecture add_comm_one_zero already exists
+[DEBUG] Conjecture add_comm_one_two already exists
+[DEBUG] Conjecture add_comm_two_zero already exists
+[DEBUG] Conjecture add_comm_two_one already exists
+[DEBUG] Error in heuristic conjecture_generation
+Discovered 1 new concepts:
+  - add_iteration_pattern: Repeated application of add
+  ✓ Proved conjecture: add_comm_zero_one
+  ✓ Proved conjecture: add_comm_zero_two
+  ✓ Proved conjecture: add_comm_one_two
+
+--- Iteration 4 ---
+[DEBUG] Heuristic specialization generated 36 concepts
+[DEBUG] After cleanup: 32 concepts
+[DEBUG] After verification: 32 concepts
+[DEBUG] Heuristic application generated 18 concepts
+[DEBUG] After cleanup: 3 concepts
+[DEBUG] After verification: 3 concepts
+[DEBUG] Heuristic pattern_recognition generated 2 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Found 3 numbers for conjecture generation
+[DEBUG] Conjecture add_comm_zero_one already exists
+[DEBUG] Conjecture add_comm_zero_two already exists
+[DEBUG] Conjecture add_comm_one_zero already exists
+[DEBUG] Conjecture add_comm_one_two already exists
+[DEBUG] Conjecture add_comm_two_zero already exists
+[DEBUG] Conjecture add_comm_two_one already exists
+[DEBUG] Error in heuristic conjecture_generation
+No new concepts discovered this iteration
+  ✓ Proved conjecture: add_comm_zero_one
+  ✓ Proved conjecture: add_comm_zero_two
+  ✓ Proved conjecture: add_comm_one_two
+
+--- Iteration 5 ---
+[DEBUG] Heuristic specialization generated 36 concepts
+[DEBUG] After cleanup: 32 concepts
+[DEBUG] After verification: 32 concepts
+[DEBUG] Heuristic application generated 18 concepts
+[DEBUG] After cleanup: 3 concepts
+[DEBUG] After verification: 3 concepts
+[DEBUG] Heuristic pattern_recognition generated 2 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Found 3 numbers for conjecture generation
+[DEBUG] Conjecture add_comm_zero_one already exists
+[DEBUG] Conjecture add_comm_zero_two already exists
+[DEBUG] Conjecture add_comm_one_zero already exists
+[DEBUG] Conjecture add_comm_one_two already exists
+[DEBUG] Conjecture add_comm_two_zero already exists
+[DEBUG] Conjecture add_comm_two_one already exists
+[DEBUG] Error in heuristic conjecture_generation
+No new concepts discovered this iteration
+  ✓ Proved conjecture: add_comm_zero_one
+  ✓ Proved conjecture: add_comm_zero_two
+  ✓ Proved conjecture: add_comm_one_two
+
+=== Discovery Complete ===
+Total concepts: 49
+
+Definitions: 11
+Theorems: 25
+Conjectures: 3
+Patterns: 3
+
+Depth distribution:
+  Depth 0: 26 concepts
+  Depth 1: 22 concepts
+  Depth 2: 1 concepts
+
+Discovered Patterns:
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two]
+  - add_iteration_pattern: Repeated application of add
+    Instances: [add_applied_to_zero, add_applied_to_one, add_applied_to_two]
+  - add_iteration_pattern: Repeated application of add
+    Instances: [add_applied_to_zero, add_applied_to_one, add_applied_to_two, add_applied_to_two_applied_to_two]
+
+Top discovered concepts:
+  pattern_recognition (score: 1.000000, depth: 0)
+  zero (score: 1.000000, depth: 0)
+  succ (score: 1.000000, depth: 0)
+  one (score: 1.000000, depth: 0)
+  two (score: 1.000000, depth: 0)
+  add (score: 1.000000, depth: 0)
+  zero_eq_zero (score: 1.000000, depth: 0)
+  specialization (score: 1.000000, depth: 0)
+  application (score: 1.000000, depth: 0)
+  pattern_importance (score: 1.000000, depth: 0)
+  conjecture_generation (score: 1.000000, depth: 0)
+  complexity (score: 1.000000, depth: 0)
+  novelty (score: 1.000000, depth: 0)
+  add_iteration_pattern (PATTERN, score: 0.833333)
+  natural_number_sequence (PATTERN, score: 0.769565)
+  add_iteration_pattern (PATTERN, score: 0.749206)
+  add_comm_one_two (score: 0.746296, depth: 1)
+  add_comm_one_two (score: 0.746296, depth: 1)
+  add_comm_one_two (score: 0.746296, depth: 1)
+  add_comm_one_two (CONJECTURE, evidence: 0.800000, score: 0.746296)
