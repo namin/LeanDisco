@@ -2,6 +2,8 @@ import Lean
 import Lean.Meta.Basic
 import Lean.Elab.Command
 
+set_option autoImplicit false
+
 open Lean Meta Elab
 
 /-
@@ -22,6 +24,8 @@ structure DiscoveryConfig where
   deduplicateConcepts : Bool := true
   canonicalizeConcepts : Bool := true
   filterInternalProofs : Bool := true
+  enableConjectures : Bool := true
+  enablePatternRecognition : Bool := true
 
 /-- Metadata for tracking concept performance and history -/
 structure ConceptMetadata where
@@ -41,7 +45,7 @@ inductive ConceptData where
     (name : String) →
     (type : Expr) →
     (value : Expr) →
-    (canonicalValue : Option Expr) →  -- Cached canonical form
+    (canonicalValue : Option Expr) →
     (dependencies : List String) →
     (metadata : ConceptMetadata) →
     ConceptData
@@ -56,6 +60,12 @@ inductive ConceptData where
     (name : String) →
     (statement : Expr) →
     (evidence : Float) →
+    (metadata : ConceptMetadata) →
+    ConceptData
+  | pattern :
+    (name : String) →
+    (description : String) →
+    (instances : List String) →
     (metadata : ConceptMetadata) →
     ConceptData
   | heuristicRef :
@@ -122,6 +132,7 @@ def getConceptName : ConceptData → String
   | ConceptData.definition n _ _ _ _ _ => n
   | ConceptData.theorem n _ _ _ _ => n
   | ConceptData.conjecture n _ _ _ => n
+  | ConceptData.pattern n _ _ _ => n
   | ConceptData.heuristicRef n _ _ => n
   | ConceptData.taskRef n _ _ => n
 
@@ -130,6 +141,7 @@ def getConceptMetadata : ConceptData → ConceptMetadata
   | ConceptData.definition _ _ _ _ _ m => m
   | ConceptData.theorem _ _ _ _ m => m
   | ConceptData.conjecture _ _ _ m => m
+  | ConceptData.pattern _ _ _ m => m
   | ConceptData.heuristicRef _ _ m => m
   | ConceptData.taskRef _ _ m => m
 
@@ -247,7 +259,18 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
   if config.deduplicateConcepts then
     cleaned ← deduplicateAgainstExisting existing cleaned
 
-  return cleaned
+  -- Special deduplication for patterns - check by name and instances
+  let cleanedPatterns := cleaned.filter fun c => match c with
+    | ConceptData.pattern name _ instances _ =>
+      -- Check if a pattern with same name and instances already exists
+      !existing.any fun e => match e with
+        | ConceptData.pattern ename _ einstances _ =>
+          name == ename && instances.length == einstances.length &&
+          instances.all (einstances.contains ·)
+        | _ => false
+    | _ => true
+
+  return cleanedPatterns
 
 /-- Update concept's interestingness score -/
 def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
@@ -258,6 +281,8 @@ def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
       ConceptData.theorem n s p d { m with interestingness := score }
   | ConceptData.conjecture n s e m =>
       ConceptData.conjecture n s e { m with interestingness := score }
+  | ConceptData.pattern n d i m =>
+      ConceptData.pattern n d i { m with interestingness := score }
   | ConceptData.heuristicRef n d m =>
       ConceptData.heuristicRef n d { m with interestingness := score }
   | ConceptData.taskRef n g m =>
@@ -276,6 +301,20 @@ def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
     let proofType ← inferType proof
     isDefEq proofType statement
   catch _ => return false
+
+/-- Try to prove a conjecture using basic tactics -/
+def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
+  try
+    -- Very basic: try reflexivity for equality statements
+    match stmt with
+    | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
+      if ← isDefEq lhs rhs then
+        let proof ← mkAppM ``Eq.refl #[lhs]
+        return some proof
+      else
+        return none
+    | _ => return none
+  catch _ => return none
 
 /-- Check if a constant should be included based on filters -/
 def shouldIncludeConstant (name : Name) (allowedPrefixes : List String) : Bool :=
@@ -344,10 +383,21 @@ def seedConcepts : MetaM (List ConceptData) := do
   let one := mkApp succ zero
   concepts := concepts ++ [ConceptData.definition "one" natType one none ["zero", "succ"] (mkMeta "one")]
 
+  -- Two (to help pattern recognition)
+  let two := mkApp succ one
+  concepts := concepts ++ [ConceptData.definition "two" natType two none ["one", "succ"] (mkMeta "two")]
+
   -- Addition
   let addType ← mkArrow natType (← mkArrow natType natType)
   let add := mkConst ``Nat.add
   concepts := concepts ++ [ConceptData.definition "add" addType add none [] (mkMeta "add")]
+
+  -- Basic theorem: 0 + 0 = 0
+  -- Note: This is actually false (0 + 0 = 0, not a proof of equality)
+  -- Let's create a simpler theorem: 0 = 0
+  let zeroEqZero := mkApp3 (mkConst ``Eq [levelOne]) natType zero zero
+  let zeroEqZeroProof := mkApp2 (mkConst ``Eq.refl [levelOne]) natType zero
+  concepts := concepts ++ [ConceptData.theorem "zero_eq_zero" zeroEqZero zeroEqZeroProof ["zero"] (mkMeta "zero_eq_zero")]
 
   return concepts
 
@@ -377,6 +427,10 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
           | ConceptData.theorem _ s p _ _ =>
             if ← verifyTheorem s p then
               verifiedConcepts := verifiedConcepts ++ [concept]
+          | ConceptData.conjecture _ _ _ _ =>
+            verifiedConcepts := verifiedConcepts ++ [concept]
+          | ConceptData.pattern _ _ _ _ =>
+            verifiedConcepts := verifiedConcepts ++ [concept]
           | _ => verifiedConcepts := verifiedConcepts ++ [concept]
 
         -- Limit number of concepts per heuristic
@@ -436,20 +490,225 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   if evaluatedConcepts.length > 0 then
     IO.println s!"Discovered {evaluatedConcepts.length} new concepts:"
     for c in evaluatedConcepts.take 10 do  -- Show first 10
-      IO.println s!"  - {getConceptName c} (depth: {(getConceptMetadata c).specializationDepth})"
+      let meta := getConceptMetadata c
+      match c with
+      | ConceptData.conjecture _ _ evidence _ =>
+        IO.println s!"  - {getConceptName c} (CONJECTURE, evidence: {evidence}, depth: {meta.specializationDepth})"
+      | ConceptData.pattern _ desc _ _ =>
+        IO.println s!"  - {getConceptName c}: {desc}"
+      | _ =>
+        IO.println s!"  - {getConceptName c} (depth: {meta.specializationDepth}, method: {meta.generationMethod})"
   else
     IO.println "No new concepts discovered this iteration"
 
+  -- Try to prove conjectures
+  let mut provenConjectures := []
+  for c in kb.concepts ++ evaluatedConcepts do
+    match c with
+    | ConceptData.conjecture name stmt _ meta =>
+      if let some proof ← tryProveConjecture stmt then
+        IO.println s!"  ✓ Proved conjecture: {name}"
+        let thm := ConceptData.theorem name stmt proof []
+          { meta with generationMethod := "conjecture_proved" }
+        provenConjectures := provenConjectures ++ [thm]
+    | _ => pure ()
+
   let newKb : KnowledgeBase := {
-    concepts := kb.concepts ++ evaluatedConcepts
+    concepts := kb.concepts ++ evaluatedConcepts ++ provenConjectures
     heuristics := kb.heuristics
     evaluators := kb.evaluators
     config := kb.config
     iteration := kb.iteration + 1
-    history := kb.history ++ [(kb.iteration, evaluatedConcepts.map getConceptName)]
+    history := kb.history ++ [(kb.iteration, (evaluatedConcepts ++ provenConjectures).map getConceptName)]
   }
 
   discoveryLoop newKb maxIterations
+
+/-- Pattern recognition heuristic: identify mathematical patterns -/
+def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
+  if !config.enablePatternRecognition then
+    return []
+
+  let mut patterns := []
+
+  -- Look for arithmetic sequences
+  let numbers := concepts.filterMap fun c => match c with
+    | ConceptData.definition n _ v _ _ m =>
+      if n.startsWith "num_" || n == "zero" || n == "one" || n == "two" then
+        some (n, v, m)
+      else none
+    | _ => none
+
+  if numbers.length >= 3 then
+    -- Check if we have 0, 1, 2...
+    let mut hasSequence := false
+    let mut sequenceNames := []
+
+    for (n, _, _) in numbers do
+      if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
+        sequenceNames := sequenceNames ++ [n]
+        hasSequence := true
+
+    if hasSequence && sequenceNames.length >= 3 then
+      let patternMeta := {
+        name := "natural_number_sequence"
+        created := 0
+        parent := none
+        interestingness := 0.8
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "pattern_recognition"
+      }
+      patterns := patterns ++ [
+        ConceptData.pattern
+          "natural_number_sequence"
+          "Sequence: 0, 1, 2, ... (natural numbers via successor)"
+          sequenceNames
+          patternMeta
+      ]
+
+  -- Look for function iteration patterns
+  let applications := concepts.filter fun c => match c with
+    | ConceptData.definition n _ _ _ _ m =>
+      m.generationMethod == "application" && ((n.splitOn "_applied_to_").length > 1)
+    | _ => false
+
+  if applications.length >= 3 then
+    -- Check for repeated application of same function
+    let mut functionApplications : List (String × List String) := []
+
+    for c in applications do
+      let name := getConceptName c
+      let parts := name.splitOn "_applied_to_"
+      if parts.length > 0 then
+        let func := parts.head!
+        match functionApplications.find? (·.1 == func) with
+        | some (_, apps) =>
+          functionApplications := functionApplications.filter (·.1 != func) ++ [(func, apps ++ [name])]
+        | none =>
+          functionApplications := functionApplications ++ [(func, [name])]
+
+    for (func, apps) in functionApplications do
+      if apps.length >= 2 then
+        let patternMeta := {
+          name := s!"{func}_iteration_pattern"
+          created := 0
+          parent := none
+          interestingness := 0.7
+          useCount := 0
+          successCount := 0
+          specializationDepth := 0
+          generationMethod := "pattern_recognition"
+        }
+        patterns := patterns ++ [
+          ConceptData.pattern
+            s!"{func}_iteration_pattern"
+            s!"Repeated application of {func}"
+            apps
+            patternMeta
+        ]
+
+  return patterns
+
+/-- Conjecture generation heuristic -/
+def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
+  if !config.enableConjectures then
+    return []
+
+  let mut conjectures := []
+
+  -- Look for number definitions
+  let numbers := concepts.filterMap fun c => match c with
+    | ConceptData.definition n _ v _ _ m =>
+      if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
+        some (n, v, m)
+      else none
+    | _ => none
+
+  -- Generate arithmetic conjectures
+  for (n1, v1, _) in numbers do
+    for (n2, v2, _) in numbers do
+      -- Generate commutativity conjecture for different numbers
+      if n1 != n2 && !conjectures.any (fun c => getConceptName c == s!"add_comm_{n1}_{n2}" || getConceptName c == s!"add_comm_{n2}_{n1}") then
+        -- Find add function
+        let addOpt := concepts.find? fun c => match c with
+          | ConceptData.definition n _ _ _ _ _ => n == "add"
+          | _ => false
+
+        match addOpt with
+        | some (ConceptData.definition _ _ addFn _ _ _) =>
+          let lhs := mkApp2 addFn v1 v2
+          let rhs := mkApp2 addFn v2 v1
+          let natType := mkConst ``Nat
+          let stmt ← mkAppM ``Eq #[natType, lhs, rhs]
+
+          let conjectureMeta := {
+            name := s!"add_comm_{n1}_{n2}"
+            created := 0
+            parent := none
+            interestingness := 0.0
+            useCount := 0
+            successCount := 0
+            specializationDepth := 1
+            generationMethod := "conjecture"
+          }
+
+          conjectures := conjectures ++ [
+            ConceptData.conjecture
+              s!"add_comm_{n1}_{n2}"
+              stmt
+              0.8  -- High confidence in commutativity
+              conjectureMeta
+          ]
+        | _ => pure ()
+
+  -- Look for patterns and generate conjectures
+  let patterns := concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true
+    | _ => false
+
+  for pattern in patterns do
+    match pattern with
+    | ConceptData.pattern "natural_number_sequence" _ instances _ =>
+      -- Conjecture: succ n ≠ 0 for all instances
+      if instances.length >= 2 then
+        if let some succ := concepts.find? fun c => getConceptName c == "succ" then
+          match succ with
+          | ConceptData.definition _ _ succFn _ _ _ =>
+            for inst in instances do
+              if let some defn := concepts.find? fun c => getConceptName c == inst then
+                match defn with
+                | ConceptData.definition _ _ value _ _ _ =>
+                  let succValue := mkApp succFn value
+                  let zero := mkConst ``Nat.zero
+                  let natType := mkConst ``Nat
+                  let eq ← mkAppM ``Eq #[natType, succValue, zero]
+                  let stmt ← mkAppM ``Not #[eq]
+
+                  let conjectureMeta := {
+                    name := s!"succ_ne_zero_{inst}"
+                    created := 0
+                    parent := some "natural_number_sequence"
+                    interestingness := 0.0
+                    useCount := 0
+                    successCount := 0
+                    specializationDepth := 1
+                    generationMethod := "pattern_conjecture"
+                  }
+
+                  conjectures := conjectures ++ [
+                    ConceptData.conjecture
+                      s!"succ_ne_zero_{inst}"
+                      stmt
+                      0.9  -- Very high confidence
+                      conjectureMeta
+                  ]
+                | _ => pure ()
+          | _ => pure ()
+    | _ => pure ()
+
+  return conjectures.take 10  -- Limit conjectures per iteration
 
 /-- Specialization heuristic: create specific instances -/
 def specializationHeuristic : HeuristicFn := fun config concepts => do
@@ -585,6 +844,12 @@ def complexityTask : EvaluationFn := fun concepts => do
       let depthPenalty := meta.specializationDepth.toFloat * 0.1
       let complexity := stmtSize + proofSize / 2.0 + depthPenalty * 10.0
       return 1.0 / (1.0 + complexity / 20.0)
+    | ConceptData.conjecture _ _ evidence _ =>
+      -- Conjectures are interesting based on evidence
+      return evidence
+    | ConceptData.pattern _ _ instances _ =>
+      -- Patterns are interesting based on number of instances
+      return min 1.0 (instances.length.toFloat / 5.0)
     | _ => return 0.5
   else
     return 0.5
@@ -594,6 +859,12 @@ def noveltyTask : EvaluationFn := fun concepts => do
   if let some newConcept := concepts.getLast? then
     let name := getConceptName newConcept
     let meta := getConceptMetadata newConcept
+
+    -- Bonus for conjectures and patterns
+    let typeBonus := match newConcept with
+      | ConceptData.conjecture _ _ _ _ => 0.2
+      | ConceptData.pattern _ _ _ _ => 0.3
+      | _ => 0.0
 
     -- Penalize deep specializations
     let depthPenalty := meta.specializationDepth.toFloat * 0.2
@@ -607,8 +878,34 @@ def noveltyTask : EvaluationFn := fun concepts => do
       let similarity := commonChars.toFloat / (max name.length existingName.length).toFloat
       maxSimilarity := max maxSimilarity similarity
 
-    -- Return novelty score (inverse of similarity minus depth penalty)
-    return max 0.1 (1.0 - maxSimilarity * 0.5 - depthPenalty)
+    -- Return novelty score
+    return max 0.1 (1.0 - maxSimilarity * 0.5 - depthPenalty + typeBonus)
+  else
+    return 0.5
+
+/-- Pattern importance evaluation task -/
+def patternImportanceTask : EvaluationFn := fun concepts => do
+  if let some concept := concepts.getLast? then
+    match concept with
+    | ConceptData.pattern _ _ instances _ =>
+      -- Patterns with more instances are more important
+      let instanceBonus := instances.length.toFloat / 10.0
+      -- Patterns that connect different concept types are valuable
+      let mut diversityScore := 0.0
+      let mut hasNumbers := false
+      let mut hasApplications := false
+      for inst in instances do
+        if inst.startsWith "num_" || inst == "zero" || inst == "one" then
+          hasNumbers := true
+        if (inst.splitOn "_applied_to_").length > 1 then
+          hasApplications := true
+      if hasNumbers && hasApplications then
+        diversityScore := 0.3
+
+      return min 1.0 (0.5 + instanceBonus + diversityScore)
+    | _ =>
+      -- Use default complexity evaluation for non-patterns
+      complexityTask concepts
   else
     return 0.5
 
@@ -630,7 +927,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
 
   -- Optionally add some mined concepts
   if useMining then
-    let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add"]
+    let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add", "Nat.sub", "Nat.mul"]
     -- Clean up mined concepts against existing
     let cleanedMined ← cleanupConcepts config initialConcepts minedConcepts
     initialConcepts := initialConcepts ++ cleanedMined.take 10
@@ -646,6 +943,16 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Apply functions to suitable arguments"
     { basicMeta with name := "application" }
 
+  let patternHeuristicRef := ConceptData.heuristicRef
+    "pattern_recognition"
+    "Identify mathematical patterns in discovered concepts"
+    { basicMeta with name := "pattern_recognition" }
+
+  let conjectureHeuristicRef := ConceptData.heuristicRef
+    "conjecture_generation"
+    "Generate plausible mathematical conjectures"
+    { basicMeta with name := "conjecture_generation" }
+
   -- Create task references
   let complexityTaskRef := ConceptData.taskRef
     "complexity"
@@ -657,17 +964,28 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Prefer novel concepts"
     { basicMeta with name := "novelty" }
 
+  let patternTaskRef := ConceptData.taskRef
+    "pattern_importance"
+    "Evaluate importance of discovered patterns"
+    { basicMeta with name := "pattern_importance" }
+
   -- Build registries
   let mut heuristics : HeuristicRegistry := HeuristicRegistry.empty
   heuristics := heuristics.insert "specialization" specializationHeuristic
   heuristics := heuristics.insert "application" applicationHeuristic
+  heuristics := heuristics.insert "pattern_recognition" patternRecognitionHeuristic
+  heuristics := heuristics.insert "conjecture_generation" conjectureGenerationHeuristic
 
   let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
   evaluators := evaluators.insert "complexity" complexityTask
   evaluators := evaluators.insert "novelty" noveltyTask
+  evaluators := evaluators.insert "pattern_importance" patternImportanceTask
 
   return {
-    concepts := initialConcepts ++ [specHeuristicRef, appHeuristicRef, complexityTaskRef, noveltyTaskRef]
+    concepts := initialConcepts ++ [
+      specHeuristicRef, appHeuristicRef, patternHeuristicRef, conjectureHeuristicRef,
+      complexityTaskRef, noveltyTaskRef, patternTaskRef
+    ]
     heuristics := heuristics
     evaluators := evaluators
     config := config
@@ -687,6 +1005,12 @@ def showConceptStats (concepts : List ConceptData) : IO Unit := do
   let thms := concepts.filter fun c => match c with
     | ConceptData.theorem _ _ _ _ _ => true
     | _ => false
+  let conjs := concepts.filter fun c => match c with
+    | ConceptData.conjecture _ _ _ _ => true
+    | _ => false
+  let patterns := concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true
+    | _ => false
 
   -- Build depth histogram manually
   let mut depthCounts : List (Nat × Nat) := []
@@ -700,15 +1024,18 @@ def showConceptStats (concepts : List ConceptData) : IO Unit := do
 
   IO.println s!"\nDefinitions: {defs.length}"
   IO.println s!"Theorems: {thms.length}"
+  IO.println s!"Conjectures: {conjs.length}"
+  IO.println s!"Patterns: {patterns.length}"
   IO.println s!"\nDepth distribution:"
   let sorted := depthCounts.toArray.qsort (·.1 < ·.1)
   for (depth, count) in sorted do
     IO.println s!"  Depth {depth}: {count} concepts"
 
 /-- Run the discovery system -/
-def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := true) (config : DiscoveryConfig := {}) : MetaM Unit := do
+def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
   IO.println "=== Starting Eurisko Discovery System ==="
   IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
+  IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
   IO.println s!"Mining mode: {if useMining then "ON" else "OFF"}"
   IO.println "Initializing with mathematical seed concepts..."
 
@@ -723,35 +1050,38 @@ def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := true) (config 
   IO.println s!"Total concepts: {finalKb.concepts.length}"
   showConceptStats finalKb.concepts
 
+  -- Show discovered patterns
+  let patterns := finalKb.concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true
+    | _ => false
+
+  if patterns.length > 0 then
+    IO.println s!"\nDiscovered Patterns:"
+    for p in patterns do
+      match p with
+      | ConceptData.pattern name desc instances _ =>
+        IO.println s!"  - {name}: {desc}"
+        IO.println s!"    Instances: {instances}"
+      | _ => pure ()
+
   -- Show top concepts
   let sorted := finalKb.concepts.toArray.qsort fun c1 c2 =>
     getInterestingness c1 > getInterestingness c2
 
   IO.println s!"\nTop discovered concepts:"
-  for i in [:min 15 sorted.size] do
+  for i in [:min 20 sorted.size] do
     if h : i < sorted.size then
       let c := sorted[i]
       let meta := getConceptMetadata c
-      IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {meta.specializationDepth}, method: {meta.generationMethod})"
+      match c with
+      | ConceptData.conjecture name _ evidence _ =>
+        IO.println s!"  {name} (CONJECTURE, evidence: {evidence}, score: {(getInterestingness c).toString})"
+      | ConceptData.pattern name _ _ _ =>
+        IO.println s!"  {name} (PATTERN, score: {(getInterestingness c).toString})"
+      | _ =>
+        IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {meta.specializationDepth})"
 
 end Eurisko
 
--- Test command
-open Lean Elab Command
-
--- Run with default config
-elab "#run_eurisko " n:num : command => do
-  let n := n.getNat
-  liftTermElabM do
-    let _ ← Eurisko.runDiscovery n false
-    pure ()
-
--- Run with mining
-elab "#run_eurisko " n:num " with " "mining" : command => do
-  let n := n.getNat
-  liftTermElabM do
-    let _ ← Eurisko.runDiscovery n true
-    pure ()
-
--- Run the discovery system
-#run_eurisko 5
+-- Test the system (using #eval! to ignore sorry warnings)
+#eval! Eurisko.runDiscovery 5
