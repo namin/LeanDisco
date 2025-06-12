@@ -125,6 +125,7 @@ structure Discovery where
 /-- Knowledge base containing all discovered concepts -/
 structure KnowledgeBase where
   concepts : List ConceptData
+  recentConcepts : List ConceptData
   heuristics : HeuristicRegistry
   evaluators : EvaluationRegistry
   config : DiscoveryConfig
@@ -429,11 +430,22 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
 
   let mut discoveries := []
 
+  let focusedConcepts := kb.recentConcepts ++
+    (kb.concepts.filter fun c =>
+      (getConceptMetadata c).interestingness > 0.7 ||
+      (getConceptName c) ∈ ["zero", "one", "add", "succ", "mul"]
+    ).take 50 ++
+    (kb.concepts.drop (kb.iteration * 10)).take 20 -- pseudo-random
+
+
+  IO.println s!"[DEBUG] Focusing on {kb.recentConcepts.length} recent + {focusedConcepts.length - kb.recentConcepts.length} context concepts"
+
+
   IO.println s!"[DEBUG] Invoking heuristics: {kb.heuristics.entries.map Prod.fst}"
   for (name, meta) in heuristicRefs do
     if let some heuristic := kb.heuristics.find? name then
       try
-        let newConcepts ← heuristic kb.config kb.concepts
+        let newConcepts ← heuristic kb.config focusedConcepts
 
         IO.println s!"[DEBUG] Heuristic {name} generated {newConcepts.length} concepts"
 
@@ -556,6 +568,12 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 
   IO.println s!"\n--- Iteration {kb.iteration + 1} ---"
 
+  -- Show what we're focusing on
+  if kb.recentConcepts.length > 0 then
+    IO.println s!"Building on {kb.recentConcepts.length} recent discoveries:"
+    for c in kb.recentConcepts.take 5 do
+      IO.println s!"  - {getConceptName c}"
+
   let discoveries ← evolve kb
   let mut allNewConcepts := []
   for discovery in discoveries do
@@ -590,6 +608,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 
   let newKb : KnowledgeBase := {
     concepts := kb.concepts ++ evaluatedConcepts ++ provenConjectures
+    recentConcepts := evaluatedConcepts ++ provenConjectures
     heuristics := kb.heuristics
     evaluators := kb.evaluators
     config := kb.config
@@ -1147,12 +1166,14 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   evaluators := evaluators.insert "novelty" noveltyTask
   evaluators := evaluators.insert "pattern_importance" patternImportanceTask
 
-  return {
-    concepts := initialConcepts ++ [
+  let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
       patternHeuristicRef, conjectureHeuristicRef,
       complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
+  return {
+    concepts := allConcepts
+    recentConcepts := allConcepts
     heuristics := heuristics
     evaluators := evaluators
     config := config
