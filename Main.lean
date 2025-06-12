@@ -2,6 +2,9 @@ import Lean
 import Lean.Meta.Basic
 import Lean.Elab.Command
 
+import Mathlib.Algebra.Group.Basic -- for mining!
+
+set_option maxHeartbeats 1000000
 set_option autoImplicit false
 
 open Lean Meta Elab
@@ -320,8 +323,15 @@ def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
 def shouldIncludeConstant (name : Name) (allowedPrefixes : List String) : Bool :=
   allowedPrefixes.any (·.isPrefixOf name.toString)
 
+def shouldIncludeLib (env : Environment) (name : Name) (allowedLibs : List String) : Bool :=
+  match env.getModuleIdxFor? name with
+  | some idx =>
+      let modName := env.header.moduleNames[idx]!
+      allowedLibs.any (·.isPrefixOf modName.toString)
+  | none => false
+
 /-- Mine concepts from the Lean environment -/
-def mineEnvironment (allowedPrefixes : List String := ["Nat", "Int", "List"]) : MetaM (List ConceptData) := do
+def mineEnvironment (allowedPrefixes : List String) (allowedLibs : List String) : MetaM (List ConceptData) := do
   let env ← getEnv
   let mut concepts := []
 
@@ -337,7 +347,7 @@ def mineEnvironment (allowedPrefixes : List String := ["Nat", "Int", "List"]) : 
   }
 
   for (name, info) in env.constants do
-    if shouldIncludeConstant name allowedPrefixes && !isInternalProofTerm name.toString then
+    if (shouldIncludeConstant name allowedPrefixes || shouldIncludeLib env name allowedLibs) && !isInternalProofTerm name.toString then
       match info with
       | .defnInfo val =>
         match val.safety with
@@ -1000,10 +1010,10 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
 
   -- Optionally add some mined concepts
   if useMining then
-    let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add", "Nat.sub", "Nat.mul"]
+    let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add", "Nat.sub", "Nat.mul"] ["Mathlib.Algebra.Group"]
     -- Clean up mined concepts against existing
     let cleanedMined ← cleanupConcepts config initialConcepts minedConcepts
-    initialConcepts := initialConcepts ++ cleanedMined.take 10
+    initialConcepts := initialConcepts ++ cleanedMined.take 100
 
   -- Create heuristic references
   let specHeuristicRef := ConceptData.heuristicRef
