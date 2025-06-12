@@ -1,0 +1,249 @@
+=== Starting Eurisko Discovery System ===
+Config: maxDepth=4, maxPerIter=1000
+Features: conjectures=true, patterns=true
+Mining mode: ON
+Initializing with mathematical seed concepts...
+
+Initial concepts (115):
+
+Definitions: 37
+Theorems: 70
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 115 concepts
+
+--- Iteration 1 ---
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 36 concepts
+[DEBUG] After cleanup: 33 concepts
+[DEBUG] After verification: 33 concepts
+[DEBUG] Heuristic application generated 9 concepts
+[DEBUG] After cleanup: 7 concepts
+[DEBUG] After verification: 7 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG] Heuristic lemma_application generated 1 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 994
+[DEBUG] Heuristic conjecture_generation generated 994 concepts
+[DEBUG] After cleanup: 74 concepts
+[DEBUG] After verification: 74 concepts
+
+🔮 Conjectures (74):
+  - add_comp_succ_eq_0
+    Evidence: 0.200000
+  - add_comp_succ_eq_1
+    Evidence: 0.200000
+  - add_comp_succ_eq_2
+    Evidence: 0.300000
+  - Nat.sub_comp_succ_eq_0
+    Evidence: 0.200000
+  - Nat.sub_comp_succ_eq_1
+    Evidence: 0.200000
+  ... and 69 more
+
+✓ Proven Theorems (33):
+  - add_comm_spec_zero
+    Method: specialization
+  - add_comm_spec_one
+    Method: specialization
+  - add_comm_spec_two
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_one
+    Method: specialization
+
+🔍 Patterns (1):
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Examples: [zero, one, two]
+
+🔧 Function Applications (7):
+  - succ_applied_to_two
+  - add_applied_to_zero
+  - add_applied_to_one
+
+📊 Discovery Summary:
+  specialization: 33 concepts
+  application: 7 concepts
+  pattern_recognition: 1 concepts
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 2 ---
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 48 concepts
+[DEBUG] After cleanup: 11 concepts
+[DEBUG] After verification: 11 concepts
+[DEBUG] Heuristic application generated 27 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 2 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] After cleanup: 2 concepts
+[DEBUG] After verification: 2 concepts
+[DEBUG] Total conjectures generated: 1028
+[DEBUG] Heuristic conjecture_generation generated 1028 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+✓ Proven Theorems (11):
+  - add_comm_spec_succ_applied_to_two
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_succ_applied_to_two
+    Method: specialization
+  - Nat.mul_dvd_of_dvd_div_spec_succ_applied_to_two
+    Method: specialization
+  - Nat.mul_div_mul_left_spec_succ_applied_to_two
+    Method: specialization
+  - Nat.succ_max_succ_spec_succ_applied_to_two
+    Method: specialization
+
+🔍 Patterns (2):
+  - add_iteration_pattern: Repeated application of add
+    Examples: [add_applied_to_zero, add_applied_to_one, add_applied_to_two]
+  - Nat.sub_iteration_pattern: Repeated application of Nat.sub
+    Examples: [Nat.sub_applied_to_zero, Nat.sub_applied_to_one, Nat.sub_applied_to_two]
+
+🔧 Function Applications (1):
+  - add_applied_to_two_applied_to_two
+
+📊 Discovery Summary:
+  specialization: 11 concepts
+  application: 1 concepts
+  pattern_recognition: 2 concepts
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 3 ---
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 48 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic application generated 27 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 3 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 1062
+[DEBUG] Heuristic conjecture_generation generated 1062 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+🔍 Patterns (1):
+  - add_iteration_pattern: Repeated application of add
+    Examples: [add_applied_to_zero, add_applied_to_one, add_applied_to_two]
+
+📊 Discovery Summary:
+  pattern_recognition: 1 concepts
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 4 ---
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 48 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic application generated 27 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 4 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 1096
+[DEBUG] Heuristic conjecture_generation generated 1096 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+No new concepts discovered this iteration
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 5 ---
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 48 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic application generated 27 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 5 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 1130
+[DEBUG] Heuristic conjecture_generation generated 1130 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+No new concepts discovered this iteration
+  ✓ Proved conjecture: add_comm_zero_one
+
+=== Discovery Complete ===
+Total concepts: 250
+
+Definitions: 45
+Theorems: 119
+Conjectures: 74
+Patterns: 4
+
+Depth distribution:
+  Depth 0: 119 concepts
+  Depth 1: 130 concepts
+  Depth 2: 1 concepts
+
+Discovered Patterns:
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two]
+  - add_iteration_pattern: Repeated application of add
+    Instances: [add_applied_to_zero, add_applied_to_one, add_applied_to_two]
+  - Nat.sub_iteration_pattern: Repeated application of Nat.sub
+    Instances: [Nat.sub_applied_to_zero, Nat.sub_applied_to_one, Nat.sub_applied_to_two]
+  - add_iteration_pattern: Repeated application of add
+    Instances: [add_applied_to_zero, add_applied_to_one, add_applied_to_two, add_applied_to_two_applied_to_two]
+
+Top discovered concepts:
+  lemma_application (score: 1.000000, depth: 0)
+  zero (score: 1.000000, depth: 0)
+  succ (score: 1.000000, depth: 0)
+  one (score: 1.000000, depth: 0)
+  two (score: 1.000000, depth: 0)
+  add (score: 1.000000, depth: 0)
+  zero_eq_zero (score: 1.000000, depth: 0)
+  add_comm (score: 1.000000, depth: 0)
+  specialization (score: 1.000000, depth: 0)
+  application (score: 1.000000, depth: 0)
+  pattern_importance (score: 1.000000, depth: 0)
+  pattern_recognition (score: 1.000000, depth: 0)
+  conjecture_generation (score: 1.000000, depth: 0)
+  complexity (score: 1.000000, depth: 0)
+  novelty (score: 1.000000, depth: 0)
+  add_iteration_pattern (PATTERN, score: 0.833333)
+  natural_number_sequence (PATTERN, score: 0.762319)
+  add_iteration_pattern (PATTERN, score: 0.733333)
+  Nat.sub_iteration_pattern (PATTERN, score: 0.733333)
+  add_comm_zero_one (score: 0.719608, depth: 1)

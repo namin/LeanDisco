@@ -501,6 +501,54 @@ def evaluate (kb : KnowledgeBase) (discoveries : List Discovery) : MetaM (List C
 
   return evaluatedConcepts
 
+/-- Show discovered concepts more clearly -/
+def showDiscoveredConcepts (concepts : List ConceptData) (showDetails : Bool := true) : MetaM Unit := do
+  -- Group by type
+  let conjectures := concepts.filter fun c => match c with
+    | ConceptData.conjecture _ _ _ _ => true | _ => false
+  let newTheorems := concepts.filter fun c => match c with
+    | ConceptData.theorem _ _ _ _ m => m.generationMethod != "mined" | _ => false
+  let patterns := concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true | _ => false
+  let applications := concepts.filter fun c => match c with
+    | ConceptData.definition _ _ _ _ _ m => m.generationMethod == "application" | _ => false
+
+  if conjectures.length > 0 then
+    IO.println s!"\n🔮 Conjectures ({conjectures.length}):"
+    for c in conjectures.take 5 do
+      match c with
+      | ConceptData.conjecture name stmt evidence _ =>
+        IO.println s!"  - {name}"
+        IO.println s!"    Evidence: {evidence}"
+      | _ => pure ()
+    if conjectures.length > 5 then
+      IO.println s!"  ... and {conjectures.length - 5} more"
+
+  if newTheorems.length > 0 then
+    IO.println s!"\n✓ Proven Theorems ({newTheorems.length}):"
+    for t in newTheorems.take 5 do
+      match t with
+      | ConceptData.theorem name _ _ _ meta =>
+        IO.println s!"  - {name}"
+        IO.println s!"    Method: {meta.generationMethod}"
+      | _ => pure ()
+
+  if patterns.length > 0 then
+    IO.println s!"\n🔍 Patterns ({patterns.length}):"
+    for p in patterns do
+      match p with
+      | ConceptData.pattern name desc instances _ =>
+        IO.println s!"  - {name}: {desc}"
+        if showDetails && instances.length > 0 then
+          IO.println s!"    Examples: {instances.take 3}"
+      | _ => pure ()
+
+  if applications.length > 0 then
+    IO.println s!"\n🔧 Function Applications ({applications.length}):"
+    for a in applications.take 3 do
+      let name := getConceptName a
+      IO.println s!"  - {name}"
+
 /-- Main discovery loop -/
 partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM KnowledgeBase := do
   if kb.iteration >= maxIterations then
@@ -516,16 +564,15 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   let evaluatedConcepts ← evaluate kb discoveries
 
   if evaluatedConcepts.length > 0 then
-    IO.println s!"Discovered {evaluatedConcepts.length} new concepts:"
-    for c in evaluatedConcepts.take 10 do  -- Show first 10
-      let meta := getConceptMetadata c
-      match c with
-      | ConceptData.conjecture _ _ evidence _ =>
-        IO.println s!"  - {getConceptName c} (CONJECTURE, evidence: {evidence}, depth: {meta.specializationDepth})"
-      | ConceptData.pattern _ desc _ _ =>
-        IO.println s!"  - {getConceptName c}: {desc}"
-      | _ =>
-        IO.println s!"  - {getConceptName c} (depth: {meta.specializationDepth}, method: {meta.generationMethod})"
+    showDiscoveredConcepts evaluatedConcepts
+
+    -- Count by method manually
+    IO.println s!"\n📊 Discovery Summary:"
+    let methods := ["specialization", "application", "conjecture", "pattern_recognition", "lemma_application"]
+    for method in methods do
+      let count := evaluatedConcepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
+      if count > 0 then
+        IO.println s!"  {method}: {count} concepts"
   else
     IO.println "No new concepts discovered this iteration"
 
