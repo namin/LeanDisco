@@ -14,7 +14,7 @@ as first-class objects in Lean, enabling automated mathematical discovery
 with formal verification.
 -/
 
-namespace Eurisko
+namespace LeanDisco
 
 /-- Configuration for controlling discovery -/
 structure DiscoveryConfig where
@@ -1154,7 +1154,10 @@ def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config
       | _ =>
         IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {meta.specializationDepth})"
 
-end Eurisko
+end LeanDisco
 
 -- Test the system with mining enabled for richer discovery
-#eval Eurisko.runDiscovery 5 true
+#eval LeanDisco.runDiscovery 5 true
+
+def main : IO Unit := do
+  IO.println "Hello from LeanDisco!"
