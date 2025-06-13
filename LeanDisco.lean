@@ -199,6 +199,11 @@ partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
       return none
   | _ => return none
 
+def contains (s sub : String) : Bool :=
+  (List.range (s.length - sub.length + 1)).any fun i =>
+    (s.drop i |>.take sub.length) == sub
+
+
 /-- Generate the next natural number -/
 def generateNextNumber (kb : KnowledgeBase) : MetaM (Option ConceptData) := do
   let existingNumbers := kb.concepts.filterMap fun c => match c with
@@ -256,6 +261,18 @@ def exprsEqual (e1 e2 : Expr) : MetaM Bool := do
   try
     isDefEq e1 e2
   catch _ => return false
+
+/-- Safely build `fun x : α => body x` where `body` may mention `x`. -/
+def mkSafeLambda (n : Name) (type : Expr) (mkBody : Expr → MetaM Expr)
+    : MetaM Expr := withLocalDecl n BinderInfo.default type fun x => do
+  let body ← mkBody x          -- body *after* `x` is in scope
+  mkLambdaFVars #[x] body
+
+/-- Safely build `∀ x : α, body x` -/
+def mkSafeForall (n : Name) (type : Expr) (mkBody : Expr → MetaM Expr)
+    : MetaM Expr := withLocalDecl n BinderInfo.default type fun x => do
+  let body ← mkBody x
+  mkForallFVars #[x] body
 
 /-- Enhanced deduplication that checks semantic equivalence more thoroughly -/
 def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
@@ -366,26 +383,28 @@ def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
     isDefEq proofType statement
   catch _ => return false
 
-/-- Calculate structural similarity between expressions -/
+def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
+  try
+    isDefEq e₁ e₂
+  catch _ =>
+    pure false
+
+/-- Calculate a very rough structural similarity score. -/
 partial def structuralSimilarity (e1 e2 : Expr) : MetaM Float := do
   match (e1, e2) with
   | (.app f1 a1, .app f2 a2) =>
-    let fSim ← structuralSimilarity f1 f2
-    let aSim ← structuralSimilarity a1 a2
-    return (fSim + aSim) / 2.0
+      return ((← structuralSimilarity f1 f2) +
+              (← structuralSimilarity a1 a2)) / 2.0
   | (.const n1 _, .const n2 _) =>
-    return if n1 == n2 then 1.0 else 0.0
+      return if n1 == n2 then 1.0 else 0.0
   | (.forallE _ t1 b1 _, .forallE _ t2 b2 _) =>
-    let tSim ← structuralSimilarity t1 t2
-    let bSim ← structuralSimilarity b1 b2
-    return (tSim + bSim) / 2.0
+      return ((← structuralSimilarity t1 t2) +
+              (← structuralSimilarity b1 b2)) / 2.0
   | (.lam _ t1 b1 _, .lam _ t2 b2 _) =>
-    let tSim ← structuralSimilarity t1 t2
-    let bSim ← structuralSimilarity b1 b2
-    return (tSim + bSim) / 2.0
+      return ((← structuralSimilarity t1 t2) +
+              (← structuralSimilarity b1 b2)) / 2.0
   | _ =>
-    if ← isDefEq e1 e2 then return 0.5
-    else return 0.0
+      return if ← safeIsDefEq e1 e2 then 0.5 else 0.0
 
 /-- Expression size helper -/
 partial def exprSize : Expr → Nat
@@ -641,8 +660,8 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
         if limitedConcepts.length > 0 then
           discoveries := discoveries ++ [Discovery.mk limitedConcepts [] s!"Applied heuristic {meta.name}"]
       catch err =>
-        let msg := err.toMessageData
-        logInfo m!"[DEBUG] Error in heuristic {name}: {msg}"
+        --let msg := err.toMessageData
+        logInfo m!"[DEBUG] Error in heuristic {name}" --": {msg}"
         pure ()
 
   return discoveries
@@ -1059,197 +1078,157 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
 
   return patterns
 
-/-- Conjecture generation heuristic with evidence calculation -/
-def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
-  if !config.enableConjectures then
-    return []
+/-- Conjecture generation heuristic (re‑organised so that each pattern is executed **once** instead of once per function‑pair). -/
+def conjectureGenerationHeuristic : HeuristicFn :=
+  fun cfg concepts => do
+    if !cfg.enableConjectures then
+      return []
 
-  let mut conjectures := []
-  let kb : KnowledgeBase := {
-    concepts := concepts
-    recentConcepts := []
-    heuristics := HeuristicRegistry.empty
-    evaluators := EvaluationRegistry.empty
-    config := config
-    iteration := 0
-    history := []
-    cache := {}
-    failedProofs := []
-  }
+    -- Build helper collections ONCE
+    let theorems  := concepts.filterMap fun c => match c with
+      | ConceptData.theorem n s p d m =>
+          if !((n.splitOn "_spec_").length ≤ 1) then
+            some (n, s, p, d, m) else none
+      | _ => none
 
-  -- Find interesting theorems to generalize/combine
-  let theorems := concepts.filterMap fun c => match c with
-    | ConceptData.theorem n s p d m =>
-      if !((n.splitOn "_spec_").length > 1) then some (n, s, p, d, m)
-      else none
-    | _ => none
+    let functions : List (String × Expr × Expr) := concepts.filterMap fun c => match c with
+      | ConceptData.definition n t v _ _ _ =>
+          if t.isForall && !((n.splitOn "_applied_").length > 1) then
+            some (n, v, t) else none
+      | _ => none
 
-  -- PATTERN 1: Look for function composition patterns
-  let functions := concepts.filterMap fun c => match c with
-    | ConceptData.definition n t v _ d m =>
-      if t.isForall && !((n.splitOn "_applied_").length > 1) then some (n, v, t)
-      else none
-    | _ => none
+    let kb : KnowledgeBase := {
+      concepts := concepts
+      recentConcepts := []
+      heuristics := HeuristicRegistry.empty
+      evaluators := EvaluationRegistry.empty
+      config     := cfg
+      iteration  := 0
+      history    := []
+      cache      := {}
+      failedProofs := []
+    }
 
-  -- For each pair of functions, try to create composition conjectures
-  for (f1_name, f1_val, f1_type) in functions do
-    for (f2_name, f2_val, f2_type) in functions do
-      if f1_name != f2_name && f1_name.length < 10 && f2_name.length < 10 then
-        -- Check if we can compose them by looking at types
-        match f1_type with
-        | .forallE _ argType1 _ _ =>
-          match f2_type with
-          | .forallE _ argType2 resultType2 _ =>
-            -- If f2's result type matches f1's argument type, we can compose
-            if ← isDefEq resultType2 argType1 then
-              -- Create a conjecture about the composition
-              let natType := mkConst ``Nat
-              let zero := mkConst ``Nat.zero
-              let one := mkApp (mkConst ``Nat.succ) zero
-
-              -- f1(f2(0)) = ?
-              let comp_zero := mkApp f1_val (mkApp f2_val zero)
-              -- Maybe it equals f1(0) or f2(0) or 0?
-              let candidates : List Expr := [mkApp f1_val zero, mkApp f2_val zero, zero, one]
-
-              let mut idx := 0
-              for candidate in candidates do
-                let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType comp_zero candidate
-                let evidence ← calculateConjectureEvidence stmt kb
-
-                conjectures := conjectures ++ [
-                  ConceptData.conjecture
-                    s!"{f1_name}_comp_{f2_name}_eq_{idx}"
-                    stmt
-                    evidence
-                    { name := s!"{f1_name}_comp_{f2_name}_eq_{idx}",
-                      created := 0, parent := none, interestingness := 0.7,
-                      useCount := 0, successCount := 0, specializationDepth := 1,
-                      generationMethod := "composition_pattern" }
-                ]
-                idx := idx + 1
+    -- PATTERN 1: Composition: functions × functions
+    let mut conjectures := []
+    for (f₁, v₁, t₁) in functions do
+      for (f₂, v₂, t₂) in functions do
+        if f₁ ≠ f₂ ∧ f₁.length < 10 ∧ f₂.length < 10 then
+          match (t₁, t₂) with
+          | ((.forallE _ A₁ _ _), (.forallE _ _  B₂ _)) =>
+              if ← isDefEq B₂ A₁ then
+                let natTy := mkConst ``Nat
+                let z     := mkConst ``Nat.zero
+                let one   := mkApp (mkConst ``Nat.succ) z
+                let comp0 := mkApp v₁ (mkApp v₂ z)
+                let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
+                for (idx, cand) in candidates do
+                  let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
+                  let ev   ← calculateConjectureEvidence stmt kb
+                  conjectures := conjectures ++
+                    [ ConceptData.conjecture
+                        s!"{f₁}_comp_{f₂}_eq_{idx}"
+                        stmt ev
+                        { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
+                          created            := 0
+                          parent             := none
+                          interestingness    := 0.7
+                          useCount           := 0
+                          successCount       := 0
+                          specializationDepth:= 1
+                          generationMethod   := "composition_pattern" } ]
           | _ => pure ()
-        | _ => pure ()
-  /-
-  -- TODO: commented out because causing errors
-  -- PATTERN 2: Look for preservation properties
-  for (thm_name, stmt, _, _, _) in theorems do
-    -- Look for theorems that might be properties
-    if (thm_name.splitOn "eq").length > 1 || (thm_name.splitOn "comm").length > 1 || (thm_name.splitOn "assoc").length > 1 then
-      for (fn_name, fn_val, fn_type) in functions do
-        if fn_name != "zero" && fn_name != "one" && fn_name != "two" then
-          let natType := mkConst ``Nat
-          let x := mkConst ``Nat.zero
-          let y := mkApp (mkConst ``Nat.succ) x
 
-          -- Create a simple preservation conjecture
-          let fx := mkApp fn_val x
-          let fy := mkApp fn_val y
-          let preservationStmt := mkApp3 (mkConst ``Eq [levelOne]) natType fx fy
-          let evidence ← calculateConjectureEvidence preservationStmt kb
+    -- PATTERN 2: Preservation: theorems × functions (once)
+    for (thm, _, _, _, _) in theorems do
+      if contains thm "eq" ∨ contains thm "comm" ∨ contains thm "assoc" then
+        for (fn, fv, ft) in functions do
+          match ft with
+          | Expr.forallE _ (.const ``Nat _) (.const ``Nat _) _ => do
+              let natTy := mkConst ``Nat
+              let z     := mkConst ``Nat.zero
+              let one   := mkApp (mkConst ``Nat.succ) z
+              let stmt  := mkApp3 (mkConst ``Eq [levelOne])
+                                  natTy (mkApp fv z) (mkApp fv one)
+              let ev ← calculateConjectureEvidence stmt kb
+              conjectures := conjectures ++
+                [ ConceptData.conjecture
+                    s!"{fn}_preserves_{thm}_maybe"
+                    stmt ev
+                    { name := s!"{fn}_preserves_{thm}_maybe",
+                      created := 0, parent := some thm,
+                      interestingness := 0.5, useCount := 0, successCount := 0,
+                      specializationDepth := 1,
+                      generationMethod := "preservation_pattern" } ]
+          | _ => pure ()
 
-          conjectures := conjectures ++ [
-            ConceptData.conjecture
-              s!"{fn_name}_preserves_{thm_name}_maybe"
-              preservationStmt
-              evidence
-              { name := s!"{fn_name}_preserves_{thm_name}_maybe",
-                created := 0, parent := some thm_name, interestingness := 0.5,
-                useCount := 0, successCount := 0, specializationDepth := 1,
-                generationMethod := "preservation_pattern" }
-          ]
+    -- PATTERN 3: Fixed‑point & Homomorphism: functions (once)
+    for (fn, fv, ft) in functions do
+      match ft with
+      | Expr.forallE _ (.const ``Nat _) (.const ``Nat _) _ => do
+          -- 3a. fixed point f 0 = 0
+          let natTy := mkConst ``Nat
+          let z     := mkConst ``Nat.zero
+          let stmt1 := mkApp3 (mkConst ``Eq [levelOne])
+                              natTy (mkApp fv z) z
+          let ev1 ← calculateConjectureEvidence stmt1 kb
+          conjectures := conjectures ++
+            [ ConceptData.conjecture
+                s!"{fn}_fixed_point_zero"
+                stmt1 ev1
+                { name := s!"{fn}_fixed_point_zero",
+                  created := 0, parent := none,
+                  interestingness := 0.6, useCount := 0, successCount := 0,
+                  specializationDepth := 1,
+                  generationMethod := "fixed_point_search" } ]
 
-  -- PATTERN 3: Identity and fixed point conjectures
-  for (fn_name, fn_val, _) in functions do
-    if fn_name != "succ" then
-      let natType := mkConst ``Nat
-      let zero := mkConst ``Nat.zero
+          -- 3b. homomorphism  ∀ x y, f(x+y)=f x + f y
+          let stmt2 ← Lean.Meta.withLocalDecl `x .default natTy fun xVar => do
+            Lean.Meta.withLocalDecl `y .default natTy fun yVar => do
+              let add := mkConst ``Nat.add
+              let eq  := mkConst ``Eq  [levelOne]
+              let fxy := mkApp fv (mkApp2 add xVar yVar)
+              let rhs := mkApp2 add (mkApp fv xVar) (mkApp fv yVar)
+              let body := mkApp3 eq natTy fxy rhs
+              Lean.Meta.mkForallFVars #[xVar,yVar] body
+          let ev2 ← calculateConjectureEvidence stmt2 kb
+          conjectures := conjectures ++
+            [ ConceptData.conjecture
+                s!"{fn}_homomorphism"
+                stmt2 ev2
+                { name := s!"{fn}_homomorphism",
+                  created := 0, parent := some fn,
+                  interestingness := 0.7, useCount := 0, successCount := 0,
+                  specializationDepth := 1,
+                  generationMethod := "homomorphism_pattern" } ]
+      | _ => pure ()
 
-      -- Conjecture: f(0) = 0 (zero is a fixed point)
-      let f_zero := mkApp fn_val zero
-      let fixedPointStmt := mkApp3 (mkConst ``Eq [levelOne]) natType f_zero zero
-      let evidence ← calculateConjectureEvidence fixedPointStmt kb
-
-      conjectures := conjectures ++ [
-        ConceptData.conjecture
-          s!"{fn_name}_fixed_point_zero"
-          fixedPointStmt
-          evidence
-          { name := s!"{fn_name}_fixed_point_zero",
-            created := 0, parent := none, interestingness := 0.6,
-            useCount := 0, successCount := 0, specializationDepth := 1,
-            generationMethod := "fixed_point_search" }
-      ]
-
-  -- Add homomorphism pattern
-  -- Pattern: f(x + y) = f(x) + f(y)
-  for (fn_name, fn_val, fn_type) in functions do
-    match fn_type with
-    | .forallE _ (.const ``Nat _) (.const ``Nat _) _ =>
-      let natType := mkConst ``Nat
-      let x := mkBVar 1
-      let y := mkBVar 0
-      let add := mkConst ``Nat.add
-      let xy := mkApp2 add x y
-      let fxy := mkApp fn_val xy
-      let fx := mkApp fn_val x
-      let fy := mkApp fn_val y
-      let fx_plus_fy := mkApp2 add fx fy
-
-      let homoStmt := mkForall `x .default natType $
-        mkForall `y .default natType $
-          mkApp3 (mkConst ``Eq [levelOne]) natType fxy fx_plus_fy
-
-      let evidence ← calculateConjectureEvidence homoStmt kb
-
-      conjectures := conjectures ++ [
-        ConceptData.conjecture
-          s!"{fn_name}_homomorphism"
-          homoStmt
-          evidence
-          { name := s!"{fn_name}_homomorphism",
-            created := 0, parent := some fn_name, interestingness := 0.7,
-            useCount := 0, successCount := 0, specializationDepth := 1,
-            generationMethod := "homomorphism_pattern" }
-      ]
-    | _ => pure ()
-  -/
-  -- Still keep some original commutativity conjectures
-  let numbers := concepts.filterMap fun c => match c with
-    | ConceptData.definition n _ v _ _ m =>
-      if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
-        some (n, v, m)
-      else none
-    | _ => none
-
-  if numbers.length >= 2 then
-    match numbers with
-    | (n1, v1, _) :: (n2, v2, _) :: _ =>
-      if let some (ConceptData.definition _ _ addFn _ _ _) :=
-        concepts.find? fun c => match c with
-          | ConceptData.definition n _ _ _ _ _ => n == "add"
-          | _ => false then
-
-        let natType := mkConst ``Nat
-        let lhs := mkApp2 addFn v1 v2
-        let rhs := mkApp2 addFn v2 v1
-        let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
-        let evidence ← calculateConjectureEvidence stmt kb
-
-        conjectures := conjectures ++ [
-          ConceptData.conjecture
-            s!"add_comm_{n1}_{n2}"
-            stmt
-            evidence
-            { name := s!"add_comm_{n1}_{n2}",
-              created := 0, parent := none, interestingness := 0.3,
-              useCount := 0, successCount := 0, specializationDepth := 1,
-              generationMethod := "commutativity" }
-        ]
+    -- PATTERN 4: Concrete add_comm conjecture
+    let nums := concepts.filterMap fun c => match c with
+      | ConceptData.definition n _ v _ _ _ =>
+          if n == "zero" ∨ n == "one" ∨ n == "two" ∨ n.startsWith "num_" then
+            some (n,v) else none
+      | _ => none
+    match nums with
+    | (n₁,v₁) :: (n₂,v₂) :: _ =>
+        if let some (ConceptData.definition _ _ addFn _ _ _) :=
+            concepts.find? (fun c => getConceptName c = "add") then
+          let natTy := mkConst ``Nat
+          let stmt  := mkApp3 (mkConst ``Eq [levelOne]) natTy
+                              (mkApp2 addFn v₁ v₂) (mkApp2 addFn v₂ v₁)
+          let ev ← calculateConjectureEvidence stmt kb
+          conjectures := conjectures ++
+            [ ConceptData.conjecture
+                s!"add_comm_{n₁}_{n₂}"
+                stmt ev
+                { name := s!"add_comm_{n₁}_{n₂}", created := 0,
+                  parent := none, interestingness := 0.3,
+                  useCount := 0, successCount := 0, specializationDepth := 1,
+                  generationMethod := "commutativity"} ]
     | _ => pure ()
 
-  IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
-  return conjectures
+    IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
+    return conjectures
 
 /-- Specialization heuristic: create specific instances -/
 def specializationHeuristic : HeuristicFn := fun config concepts => do
@@ -1363,46 +1342,57 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
 
   return newConcepts
 
-/-- Compose existing concepts to create new ones -/
+/-- Compose existing concepts to create new ones. -/
 def compositionHeuristic : HeuristicFn := fun config concepts => do
-  let mut newConcepts := []
+  let mut newConcepts : List ConceptData := []
 
-  -- Find composable functions
+  -- 1. collect candidate functions
   let functions := concepts.filterMap fun c => match c with
     | ConceptData.definition n t v _ d m =>
-      if t.isForall && m.useCount > 0 && m.specializationDepth < 2 then
-        some (n, t, v, d, m)
-      else none
+        if t.isForall && m.useCount > 0 && m.specializationDepth < 2 then
+          some (n, t, v, d, m) else none
     | _ => none
 
-  -- Try function composition where types align
-  for (f1, t1, v1, d1, m1) in functions do
-    for (f2, t2, v2, d2, m2) in functions do
-      if f1 != f2 then
-        -- Check if we can compose f1 ∘ f2
-        match (t1, t2) with
-        | (.forallE _ a1 b1 _, .forallE _ a2 b2 _) =>
-          if ← isDefEq b2 a1 then  -- f2's output matches f1's input
-            -- Check if this composition already exists
-            let compName := s!"{f1}_compose_{f2}"
-            let alreadyExists := concepts.any (fun c => getConceptName c == compName)
+  -- 2. try every ordered pair
+  for (f₁, t₁, v₁, d₁, m₁) in functions do
+    for (f₂, t₂, v₂, d₂, m₂) in functions do
+      if f₁ ≠ f₂ then
+        match (t₁, t₂) with
+        | ((.forallE _ A₁ B₁ _), (.forallE _ A₂ B₂ _)) =>
+            if ← isDefEq B₂ A₁ then
+              let compName := s!"{f₁}_compose_{f₂}"
+              unless concepts.any (fun c => getConceptName c = compName) do
 
-            if !alreadyExists then
-              -- Create composition
-              let compType ← mkArrow a2 b1
-              let compValue := mkLambda `x .default a2 $
-                mkApp v1 (mkApp v2 (mkBVar 0))
+                -- Build the composed value
+                let compVal ← mkSafeLambda `x A₂ fun x => do
+                  let f₂x := mkApp v₂ x
+                  pure <| mkApp v₁ f₂x
 
-              newConcepts := newConcepts ++ [
-                ConceptData.definition compName compType compValue none (d1 ++ d2)
-                  { name := compName, created := 0, parent := some f1,
-                    interestingness := 0.7, useCount := 0, successCount := 0,
-                    specializationDepth := max m1.specializationDepth m2.specializationDepth + 1,
+                -- Build the composed type
+                let compType ← mkSafeForall `x A₂ fun x => do
+                  let f₂x := mkApp v₂ x
+                  let body := mkApp v₁ f₂x
+                  inferType body
+
+                -- Create the concept data (this happens after the do blocks complete)
+                let compDef := ConceptData.definition compName compType compVal none (d₁ ++ d₂)
+                  { name := compName
+                    created := 0
+                    parent  := some f₁
+                    interestingness := 0.7
+                    useCount := 0
+                    successCount := 0
+                    specializationDepth :=
+                      max m₁.specializationDepth m₂.specializationDepth + 1
                     generationMethod := "composition" }
-              ]
+
+                -- Append to newConcepts (this is outside any closure)
+                newConcepts := compDef :: newConcepts
         | _ => pure ()
 
-  return newConcepts
+  return newConcepts.reverse
+
+
 
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
