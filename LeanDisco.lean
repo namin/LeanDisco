@@ -121,6 +121,19 @@ def EvaluationRegistry.insert (reg : EvaluationRegistry) (id : ConceptId) (fn : 
 def EvaluationRegistry.find? (reg : EvaluationRegistry) (id : ConceptId) : Option EvaluationFn :=
   reg.entries.lookup id
 
+/-- Cache for previously attempted concept combinations -/
+structure ConceptCache where
+  attemptedApplications : List (String × String) := []  -- (function, argument) pairs
+  attemptedSpecializations : List (String × String) := []  -- (theorem, value) pairs
+  attemptedConjectures : List String := []  -- conjecture statements as strings
+  normalizedExpressions : List (Expr × String) := []  -- (normalized expr, concept name) pairs
+
+/-- Track failed proof attempts -/
+structure FailedAttempt where
+  statementStr : String
+  attemptCount : Nat
+  lastAttempt : Nat  -- iteration number
+
 /-- Result of applying a heuristic or evolution step -/
 structure Discovery where
   newConcepts : List ConceptData
@@ -136,6 +149,8 @@ structure KnowledgeBase where
   config : DiscoveryConfig
   iteration : Nat
   history : List (Nat × List String)
+  cache : ConceptCache := {}
+  failedProofs : List FailedAttempt := []
 
 /-- Extract concept name -/
 def getConceptName : ConceptData → String
@@ -222,7 +237,7 @@ def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
     if cached.isSome then
       return c  -- Already canonicalized
     else
-      let v' ← whnf v
+      let v' ← reduce v  -- Use reduce instead of just whnf
       -- Check if it's a natural number
       if let some num ← extractNatLiteral v' then
         let newName := s!"num_{num}"
@@ -242,27 +257,27 @@ def exprsEqual (e1 e2 : Expr) : MetaM Bool := do
     isDefEq e1 e2
   catch _ => return false
 
-/-- Deduplicate concepts by canonical form, checking against existing concepts -/
+/-- Enhanced deduplication that checks semantic equivalence more thoroughly -/
 def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut result : List ConceptData := []
   let mut duplicateCount := 0
 
-  -- First collect all existing expressions
-  let mut existingExprs : List (Expr × String) := []
+  -- Build normalized expression cache from existing concepts
+  let mut existingNormalized : List (Expr × String) := []
   for c in existing do
     if let some expr := getConceptExpr c then
-      let expr' ← whnf expr
-      existingExprs := (expr', getConceptName c) :: existingExprs
+      let normalized ← reduce expr
+      existingNormalized := (normalized, getConceptName c) :: existingNormalized
 
   -- Check each new concept
   for c in newConcepts do
     if let some expr := getConceptExpr c then
-      let expr' ← whnf expr
+      let normalized ← reduce expr
       let mut isDuplicate := false
 
       -- Check against existing concepts
-      for (existingExpr, existingName) in existingExprs do
-        if ← exprsEqual expr' existingExpr then
+      for (existingExpr, existingName) in existingNormalized do
+        if ← exprsEqual normalized existingExpr then
           isDuplicate := true
           duplicateCount := duplicateCount + 1
           IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
@@ -270,6 +285,8 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
 
       if !isDuplicate then
         result := c :: result
+        -- Add to our normalized set for checking within this batch
+        existingNormalized := (normalized, getConceptName c) :: existingNormalized
     else
       -- Keep non-expression concepts (heuristics, tasks, patterns)
       result := c :: result
@@ -349,19 +366,76 @@ def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
     isDefEq proofType statement
   catch _ => return false
 
-/-- Try to prove a conjecture using basic tactics -/
+/-- Calculate structural similarity between expressions -/
+partial def structuralSimilarity (e1 e2 : Expr) : MetaM Float := do
+  match (e1, e2) with
+  | (.app f1 a1, .app f2 a2) =>
+    let fSim ← structuralSimilarity f1 f2
+    let aSim ← structuralSimilarity a1 a2
+    return (fSim + aSim) / 2.0
+  | (.const n1 _, .const n2 _) =>
+    return if n1 == n2 then 1.0 else 0.0
+  | (.forallE _ t1 b1 _, .forallE _ t2 b2 _) =>
+    let tSim ← structuralSimilarity t1 t2
+    let bSim ← structuralSimilarity b1 b2
+    return (tSim + bSim) / 2.0
+  | (.lam _ t1 b1 _, .lam _ t2 b2 _) =>
+    let tSim ← structuralSimilarity t1 t2
+    let bSim ← structuralSimilarity b1 b2
+    return (tSim + bSim) / 2.0
+  | _ =>
+    if ← isDefEq e1 e2 then return 0.5
+    else return 0.0
+
+/-- Expression size helper -/
+partial def exprSize : Expr → Nat
+  | .bvar _ => 1
+  | .fvar _ => 1
+  | .mvar _ => 1
+  | .sort _ => 1
+  | .const _ _ => 1
+  | .app f a => 1 + exprSize f + exprSize a
+  | .lam _ _ b _ => 1 + exprSize b
+  | .forallE _ _ b _ => 1 + exprSize b
+  | .letE _ _ v b _ => 1 + exprSize v + exprSize b
+  | .lit _ => 1
+  | .mdata _ e => 1 + exprSize e
+  | .proj _ _ e => 1 + exprSize e
+
+/-- Calculate evidence based on structural similarity and known theorems -/
+def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float := do
+  let mut evidence := 0.1  -- Base evidence
+
+  -- Check structural similarity to proven theorems
+  let mut maxSimilarity := 0.0
+  for c in kb.concepts do
+    match c with
+    | ConceptData.theorem _ thmStmt _ _ _ =>
+      let similarity ← structuralSimilarity stmt thmStmt
+      maxSimilarity := max maxSimilarity similarity
+    | _ => pure ()
+
+  evidence := evidence + maxSimilarity * 0.3
+
+  -- Boost evidence for simpler statements
+  let complexity := exprSize stmt
+  evidence := evidence + (1.0 / (1.0 + complexity.toFloat / 10.0)) * 0.3
+
+  return min 1.0 evidence
+
+/-- Enhanced conjecture proving with more tactics -/
 def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
   try
-    -- Basic strategy: try reflexivity for equality statements
+    -- Try reflexivity for equality statements
     match stmt with
     | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
       if ← isDefEq lhs rhs then
         let proof ← mkAppM ``Eq.refl #[lhs]
         return some proof
       else
-        -- Try reducing both sides once
-        let lhs' ← whnf lhs
-        let rhs' ← whnf rhs
+        -- Try reducing both sides
+        let lhs' ← reduce lhs
+        let rhs' ← reduce rhs
         if ← isDefEq lhs' rhs' then
           let proof ← mkAppM ``Eq.refl #[lhs']
           return some proof
@@ -469,6 +543,49 @@ def seedConcepts : MetaM (List ConceptData) := do
 
   return concepts
 
+/-- Enhanced concept selection based on promise and diversity -/
+def selectFocusConcepts (kb : KnowledgeBase) (maxConcepts : Nat) : List ConceptData :=
+  -- Score concepts by multiple factors
+  let scoredConcepts := kb.concepts.map fun c =>
+    let meta := getConceptMetadata c
+    let recencyBonus := if kb.recentConcepts.any (fun r => getConceptName r == getConceptName c) then 0.3 else 0.0
+    let successBonus := meta.successCount.toFloat * 0.1
+    let underexploredBonus := if meta.useCount < 3 then 0.2 else 0.0
+    let depthPenalty := meta.specializationDepth.toFloat * 0.1
+    let patternBonus := match c with
+      | ConceptData.pattern _ _ instances _ => instances.length.toFloat * 0.05
+      | _ => 0.0
+
+    let score := meta.interestingness + recencyBonus + successBonus +
+                 underexploredBonus + patternBonus - depthPenalty
+    (c, score)
+
+  -- Sort by score and take top concepts
+  let sorted := scoredConcepts.toArray.qsort (·.2 > ·.2)
+
+  -- Ensure diversity by limiting concepts of the same type
+  Id.run do
+    let mut selected : List ConceptData := []
+    let mut typeCount : List (String × Nat) := []
+
+    for (c, _) in sorted do
+      let conceptType := match c with
+        | ConceptData.definition _ _ _ _ _ m => m.generationMethod
+        | ConceptData.theorem _ _ _ _ m => "theorem"
+        | ConceptData.conjecture _ _ _ _ => "conjecture"
+        | ConceptData.pattern _ _ _ _ => "pattern"
+        | _ => "other"
+
+      let currentCount := (typeCount.lookup conceptType).getD 0
+      if currentCount < maxConcepts / 4 then  -- Limit each type
+        selected := selected ++ [c]
+        typeCount := typeCount.filter (·.1 != conceptType) ++ [(conceptType, currentCount + 1)]
+
+      if selected.length >= maxConcepts then
+        break
+
+    selected
+
 /-- Apply evolution heuristics to generate new concepts -/
 def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
   let heuristicRefs := kb.concepts.filterMap fun c => match c with
@@ -482,36 +599,8 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
     if let some newNum ← generateNextNumber kb then
       discoveries := discoveries ++ [Discovery.mk [newNum] [] "Generated next number"]
 
-  -- Use our smart selection instead of including ALL recent concepts
-  let focusedConcepts :=
-    -- Only successful recent concepts
-    let successfulRecent := kb.recentConcepts.filter fun c =>
-      let meta := getConceptMetadata c
-      meta.successCount > 0 ||
-      (match c with
-       | ConceptData.theorem _ _ _ _ m => m.generationMethod == "conjecture_proved"
-       | _ => false)
-
-    -- Add some core concepts if we have too few
-    let coreConceptNames := ["zero", "one", "add", "succ", "two"]
-    let coreConcepts := kb.concepts.filter fun c =>
-      (getConceptName c) ∈ coreConceptNames
-
-    -- High-value unexplored
-    let underexplored := kb.concepts.filter fun c =>
-      let meta := getConceptMetadata c
-      meta.interestingness > 0.6 &&
-      meta.useCount < 3 &&
-      meta.specializationDepth < 2
-
-    -- Combine with strict limits
-    (successfulRecent.take 20) ++
-    (coreConcepts.take 5) ++
-    (underexplored.take 25)
-    |>.foldl (fun acc c =>
-      if acc.any (fun c' => getConceptName c == getConceptName c') then acc
-      else acc ++ [c]
-    ) []
+  -- Use smart selection
+  let focusedConcepts := selectFocusConcepts kb 50
 
   IO.println s!"[DEBUG] Focusing on {focusedConcepts.length} concepts (from {kb.recentConcepts.length} recent, {kb.concepts.length} total)"
 
@@ -600,6 +689,8 @@ def showDiscoveredConcepts (concepts : List ConceptData) (showDetails : Bool := 
     | ConceptData.definition _ _ _ _ _ m => m.generationMethod == "application" | _ => false
   let numbers := concepts.filter fun c => match c with
     | ConceptData.definition n _ _ _ _ m => m.generationMethod == "number_generation" | _ => false
+  let compositions := concepts.filter fun c => match c with
+    | ConceptData.definition _ _ _ _ _ m => m.generationMethod == "composition" | _ => false
 
   if numbers.length > 0 then
     IO.println s!"\n🔢 New Numbers ({numbers.length}):"
@@ -642,6 +733,37 @@ def showDiscoveredConcepts (concepts : List ConceptData) (showDetails : Bool := 
       let name := getConceptName a
       IO.println s!"  - {name}"
 
+  if compositions.length > 0 then
+    IO.println s!"\n🔗 Function Compositions ({compositions.length}):"
+    for c in compositions.take 3 do
+      let name := getConceptName c
+      IO.println s!"  - {name}"
+
+/-- Update cache with new attempts -/
+def updateCache (cache : ConceptCache) (newConcepts : List ConceptData) : ConceptCache :=
+  let newApplications := newConcepts.filterMap fun c => match c with
+    | ConceptData.definition n _ _ _ _ m =>
+      if m.generationMethod == "application" then
+        let parts := n.splitOn "_applied_to_"
+        if parts.length == 2 then some (parts[0]!, parts[1]!)
+        else none
+      else none
+    | _ => none
+
+  let newSpecializations := newConcepts.filterMap fun c => match c with
+    | ConceptData.theorem n _ _ _ m =>
+      if m.generationMethod == "specialization" then
+        let parts := n.splitOn "_spec_"
+        if parts.length == 2 then some (parts[0]!, parts[1]!)
+        else none
+      else none
+    | _ => none
+
+  { cache with
+    attemptedApplications := cache.attemptedApplications ++ newApplications
+    attemptedSpecializations := cache.attemptedSpecializations ++ newSpecializations
+  }
+
 /-- Main discovery loop -/
 partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM KnowledgeBase := do
   if kb.iteration >= maxIterations then
@@ -667,7 +789,8 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 
     -- Count by method manually
     IO.println s!"\n📊 Discovery Summary:"
-    let methods := ["specialization", "application", "conjecture", "pattern_recognition", "lemma_application", "number_generation"]
+    let methods := ["specialization", "application", "conjecture", "pattern_recognition",
+                    "lemma_application", "number_generation", "composition", "pattern_extension"]
     for method in methods do
       let count := evaluatedConcepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
       if count > 0 then
@@ -685,24 +808,46 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   for c in allConjectures do
     match c with
     | ConceptData.conjecture name stmt _ meta =>
-      if let some proof ← tryProveConjecture stmt then
-        IO.println s!"  ✓ Proved conjecture: {name}"
-        let thm := ConceptData.theorem name stmt proof []
-          { meta with generationMethod := "conjecture_proved" }
-        provenConjectures := provenConjectures ++ [thm]
+      -- Check if we've failed this before
+      let failedBefore := kb.failedProofs.any fun fa =>
+        fa.statementStr == toString stmt && fa.attemptCount >= 3
 
-        -- Reward parent concepts for successful proof
-        if let some parentName := meta.parent then
-          remainingConcepts := remainingConcepts.map fun c' =>
-            if getConceptName c' == parentName then
-              updateConceptMetadata c' fun m =>
-                { m with successCount := m.successCount + 1 }
-            else c'
+      if !failedBefore then
+        if let some proof ← tryProveConjecture stmt then
+          IO.println s!"  ✓ Proved conjecture: {name}"
+          let thm := ConceptData.theorem name stmt proof []
+            { meta with generationMethod := "conjecture_proved" }
+          provenConjectures := provenConjectures ++ [thm]
+
+          -- Reward parent concepts for successful proof
+          if let some parentName := meta.parent then
+            remainingConcepts := remainingConcepts.map fun c' =>
+              if getConceptName c' == parentName then
+                updateConceptMetadata c' fun m =>
+                  { m with successCount := m.successCount + 1 }
+              else c'
+        else
+          -- Track failed attempt
+          let stmtStr := toString stmt
+          let mut newFailedProofs := kb.failedProofs
+          match kb.failedProofs.find? (·.statementStr == stmtStr) with
+          | some fa =>
+            newFailedProofs := newFailedProofs.filter (·.statementStr != stmtStr) ++
+              [{ fa with attemptCount := fa.attemptCount + 1, lastAttempt := kb.iteration }]
+          | none =>
+            newFailedProofs := newFailedProofs ++
+              [{ statementStr := stmtStr, attemptCount := 1, lastAttempt := kb.iteration }]
+
+          -- Keep unproven conjectures
+          remainingConcepts := remainingConcepts ++ [c]
       else
-        -- Keep unproven conjectures
-        remainingConcepts := remainingConcepts ++ [c]
+        -- Skip conjectures we've failed too many times
+        pure ()
     | _ =>
       remainingConcepts := remainingConcepts ++ [c]
+
+  -- Update cache with new concepts
+  let newCache := updateCache kb.cache evaluatedConcepts
 
   let newKb : KnowledgeBase := {
     concepts := remainingConcepts ++ provenConjectures
@@ -712,6 +857,8 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
     config := kb.config
     iteration := kb.iteration + 1
     history := kb.history ++ [(kb.iteration, (evaluatedConcepts ++ provenConjectures).map getConceptName)]
+    cache := newCache
+    failedProofs := kb.failedProofs
   }
 
   discoveryLoop newKb maxIterations
@@ -749,6 +896,80 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
         | _ => pure ()
     | _ => pure ()
   return out
+
+/-- Use discovered patterns to guide new concept generation -/
+def patternGuidedHeuristic : HeuristicFn := fun config concepts => do
+  let patterns := concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true
+    | _ => false
+
+  let mut newConcepts := []
+
+  for pattern in patterns do
+    match pattern with
+    | ConceptData.pattern "natural_number_sequence" _ instances _ =>
+      -- If we have a sequence pattern, try to extend it
+      let maxNum := instances.foldl (fun acc inst =>
+        if inst.startsWith "num_" then
+          max acc ((inst.drop 4).toNat?.getD 0)
+        else if inst == "zero" then max acc 0
+        else if inst == "one" then max acc 1
+        else if inst == "two" then max acc 2
+        else acc
+      ) 0
+
+      -- Generate the next few numbers in the sequence
+      for i in [maxNum + 1:min (maxNum + 3) 10] do
+        let numExpr := (List.range i).foldl (fun acc _ =>
+          mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
+        let newConcept := ConceptData.definition s!"num_{i}"
+          (mkConst ``Nat) numExpr none []
+          { name := s!"num_{i}", created := 0, parent := some "natural_number_sequence",
+            interestingness := 0.6, useCount := 0, successCount := 0,
+            specializationDepth := 0, generationMethod := "pattern_extension" }
+        newConcepts := newConcepts ++ [newConcept]
+
+    | ConceptData.pattern name desc instances meta =>
+      -- For function iteration patterns, try to continue the iteration
+      if name.endsWith "_iteration_pattern" then
+        -- Extract function name
+        let funcName := name.dropRight "_iteration_pattern".length
+        -- Find the function
+        if let some funcConcept := concepts.find? fun c =>
+          getConceptName c == funcName then
+          match funcConcept with
+          | ConceptData.definition _ _ funcVal _ _ _ =>
+            -- Find highest iteration
+            let maxIter := instances.foldl (fun acc inst =>
+              if inst.startsWith s!"{funcName}_applied_to_" then
+                let parts := inst.splitOn "_applied_to_"
+                if parts.length >= 2 then
+                  let lastPart := parts.getLast!
+                  if lastPart.startsWith s!"{funcName}_applied_to_" then
+                    acc + 1
+                  else acc
+                else acc
+              else acc
+            ) 0
+
+            if maxIter < 5 then  -- Don't go too deep
+              -- Find the last application and apply function again
+              if let some lastApp := concepts.find? fun c =>
+                instances.contains (getConceptName c) then
+                if let some lastExpr := getConceptExpr lastApp then
+                  let newApp := mkApp funcVal lastExpr
+                  let newName := s!"{funcName}_iter_{maxIter + 1}"
+                  let newType ← inferType newApp
+                  newConcepts := newConcepts ++ [
+                    ConceptData.definition newName newType newApp none [funcName]
+                      { name := newName, created := 0, parent := some name,
+                        interestingness := 0.5, useCount := 0, successCount := 0,
+                        specializationDepth := maxIter + 1, generationMethod := "pattern_extension" }
+                  ]
+          | _ => pure ()
+    | _ => pure ()
+
+  return newConcepts
 
 /-- Pattern recognition heuristic: identify mathematical patterns -/
 def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
@@ -837,12 +1058,23 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
 
   return patterns
 
-/-- Conjecture generation heuristic -/
+/-- Conjecture generation heuristic with evidence calculation -/
 def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
   if !config.enableConjectures then
     return []
 
   let mut conjectures := []
+  let kb : KnowledgeBase := {
+    concepts := concepts
+    recentConcepts := []
+    heuristics := HeuristicRegistry.empty
+    evaluators := EvaluationRegistry.empty
+    config := config
+    iteration := 0
+    history := []
+    cache := {}
+    failedProofs := []
+  }
 
   -- Find interesting theorems to generalize/combine
   let theorems := concepts.filterMap fun c => match c with
@@ -882,13 +1114,13 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
               let mut idx := 0
               for candidate in candidates do
                 let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType comp_zero candidate
-                let confidence := if idx == 2 then 0.3 else 0.2
+                let evidence ← calculateConjectureEvidence stmt kb
 
                 conjectures := conjectures ++ [
                   ConceptData.conjecture
                     s!"{f1_name}_comp_{f2_name}_eq_{idx}"
                     stmt
-                    confidence
+                    evidence
                     { name := s!"{f1_name}_comp_{f2_name}_eq_{idx}",
                       created := 0, parent := none, interestingness := 0.7,
                       useCount := 0, successCount := 0, specializationDepth := 1,
@@ -912,12 +1144,13 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
           let fx := mkApp fn_val x
           let fy := mkApp fn_val y
           let preservationStmt := mkApp3 (mkConst ``Eq [levelOne]) natType fx fy
+          let evidence ← calculateConjectureEvidence preservationStmt kb
 
           conjectures := conjectures ++ [
             ConceptData.conjecture
               s!"{fn_name}_preserves_{thm_name}_maybe"
               preservationStmt
-              0.15
+              evidence
               { name := s!"{fn_name}_preserves_{thm_name}_maybe",
                 created := 0, parent := some thm_name, interestingness := 0.5,
                 useCount := 0, successCount := 0, specializationDepth := 1,
@@ -933,12 +1166,13 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
       -- Conjecture: f(0) = 0 (zero is a fixed point)
       let f_zero := mkApp fn_val zero
       let fixedPointStmt := mkApp3 (mkConst ``Eq [levelOne]) natType f_zero zero
+      let evidence ← calculateConjectureEvidence fixedPointStmt kb
 
       conjectures := conjectures ++ [
         ConceptData.conjecture
           s!"{fn_name}_fixed_point_zero"
           fixedPointStmt
-          0.4
+          evidence
           { name := s!"{fn_name}_fixed_point_zero",
             created := 0, parent := none, interestingness := 0.6,
             useCount := 0, successCount := 0, specializationDepth := 1,
@@ -964,11 +1198,13 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
         mkForall `y .default natType $
           mkApp3 (mkConst ``Eq [levelOne]) natType fxy fx_plus_fy
 
+      let evidence ← calculateConjectureEvidence homoStmt kb
+
       conjectures := conjectures ++ [
         ConceptData.conjecture
           s!"{fn_name}_homomorphism"
           homoStmt
-          0.3
+          evidence
           { name := s!"{fn_name}_homomorphism",
             created := 0, parent := some fn_name, interestingness := 0.7,
             useCount := 0, successCount := 0, specializationDepth := 1,
@@ -996,12 +1232,13 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
         let lhs := mkApp2 addFn v1 v2
         let rhs := mkApp2 addFn v2 v1
         let stmt := mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
+        let evidence ← calculateConjectureEvidence stmt kb
 
         conjectures := conjectures ++ [
           ConceptData.conjecture
             s!"add_comm_{n1}_{n2}"
             stmt
-            0.8
+            evidence
             { name := s!"add_comm_{n1}_{n2}",
               created := 0, parent := none, interestingness := 0.3,
               useCount := 0, successCount := 0, specializationDepth := 1,
@@ -1066,9 +1303,12 @@ def specializationHeuristic : HeuristicFn := fun config concepts => do
 
   return newConcepts
 
-/-- Function application heuristic: apply functions to suitable arguments -/
+/-- Function application heuristic with caching -/
 def applicationHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts := []
+
+  -- Get cache from somewhere (we'd need to pass kb to heuristics for this to work properly)
+  -- For now, we'll just check if the concept already exists
 
   let definitions := concepts.filterMap fun c => match c with
     | ConceptData.definition n t v _ d m => some (n, t, v, d, m)
@@ -1121,20 +1361,46 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
 
   return newConcepts
 
-/-- Expression size helper -/
-def exprSize : Expr → Nat
-  | .bvar _ => 1
-  | .fvar _ => 1
-  | .mvar _ => 1
-  | .sort _ => 1
-  | .const _ _ => 1
-  | .app f a => 1 + exprSize f + exprSize a
-  | .lam _ _ b _ => 1 + exprSize b
-  | .forallE _ _ b _ => 1 + exprSize b
-  | .letE _ _ v b _ => 1 + exprSize v + exprSize b
-  | .lit _ => 1
-  | .mdata _ e => 1 + exprSize e
-  | .proj _ _ e => 1 + exprSize e
+/-- Compose existing concepts to create new ones -/
+def compositionHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts := []
+
+  -- Find composable functions
+  let functions := concepts.filterMap fun c => match c with
+    | ConceptData.definition n t v _ d m =>
+      if t.isForall && m.useCount > 0 && m.specializationDepth < 2 then
+        some (n, t, v, d, m)
+      else none
+    | _ => none
+
+  -- Try function composition where types align
+  for (f1, t1, v1, d1, m1) in functions do
+    for (f2, t2, v2, d2, m2) in functions do
+      if f1 != f2 then
+        -- Check if we can compose f1 ∘ f2
+        match (t1, t2) with
+        | (.forallE _ a1 b1 _, .forallE _ a2 b2 _) =>
+          if ← isDefEq b2 a1 then  -- f2's output matches f1's input
+            -- Check if this composition already exists
+            let compName := s!"{f1}_compose_{f2}"
+            let alreadyExists := concepts.any (fun c => getConceptName c == compName)
+
+            if !alreadyExists then
+              -- Create composition
+              let compType ← mkArrow a2 b1
+              let compValue := mkLambda `x .default a2 $
+                mkApp v1 (mkApp v2 (mkBVar 0))
+
+              newConcepts := newConcepts ++ [
+                ConceptData.definition compName compType compValue none (d1 ++ d2)
+                  { name := compName, created := 0, parent := some f1,
+                    interestingness := 0.7, useCount := 0, successCount := 0,
+                    specializationDepth := max m1.specializationDepth m2.specializationDepth + 1,
+                    generationMethod := "composition" }
+              ]
+        | _ => pure ()
+
+  return newConcepts
 
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
@@ -1268,6 +1534,16 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Generate plausible mathematical conjectures"
     { basicMeta with name := "conjecture_generation" }
 
+  let compositionHeuristicRef := ConceptData.heuristicRef
+    "composition"
+    "Compose functions to create new concepts"
+    { basicMeta with name := "composition" }
+
+  let patternGuidedHeuristicRef := ConceptData.heuristicRef
+    "pattern_guided"
+    "Use discovered patterns to guide generation"
+    { basicMeta with name := "pattern_guided" }
+
   -- Create task references
   let complexityTaskRef := ConceptData.taskRef
     "complexity"
@@ -1291,6 +1567,8 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   heuristics := heuristics.insert "lemma_application" lemmaApplicationHeuristic
   heuristics := heuristics.insert "pattern_recognition" patternRecognitionHeuristic
   heuristics := heuristics.insert "conjecture_generation" conjectureGenerationHeuristic
+  heuristics := heuristics.insert "composition" compositionHeuristic
+  heuristics := heuristics.insert "pattern_guided" patternGuidedHeuristic
 
   let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
   evaluators := evaluators.insert "complexity" complexityTask
@@ -1299,8 +1577,8 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
 
   let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
-      patternHeuristicRef, conjectureHeuristicRef,
-      complexityTaskRef, noveltyTaskRef, patternTaskRef
+      patternHeuristicRef, conjectureHeuristicRef, compositionHeuristicRef,
+      patternGuidedHeuristicRef, complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
   return {
     concepts := allConcepts
@@ -1310,6 +1588,8 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     config := config
     iteration := 0
     history := []
+    cache := {}
+    failedProofs := []
   }
 
 /-- Get concept interestingness -/
