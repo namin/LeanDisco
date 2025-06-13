@@ -642,6 +642,21 @@ def seedConcepts : MetaM (List ConceptData) := do
   []
   (mkMeta "add_comm")]
 
+  -- to test composition heuristic
+  -- add 1 : Nat -> Nat
+  let add1 ← withLocalDecl `x BinderInfo.default natType fun x => do
+    let result := mkApp2 add one x
+    mkLambdaFVars #[x] result
+  let add1Type := mkForall `x BinderInfo.default natType natType
+  concepts := concepts ++ [ConceptData.definition "add1" add1Type add1 none ["add", "one"] (mkMeta "add1")]
+
+  -- add 2 : Nat -> Nat
+  let add2 ← withLocalDecl `x BinderInfo.default natType fun x => do
+    let result := mkApp2 add two x
+    mkLambdaFVars #[x] result
+  let add2Type := mkForall `x BinderInfo.default natType natType
+  concepts := concepts ++ [ConceptData.definition "add2" add2Type add2 none ["add", "two"] (mkMeta "add2")]
+
   return concepts
 
 /-- Enhanced concept selection based on promise and diversity -/
@@ -1488,10 +1503,9 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
 
 /-- Compose existing concepts to create new ones -/
 def compositionHeuristic : HeuristicFn := fun config concepts => do
-  -- Remove the `mut` here
-  let newConcepts : List ConceptData := []
+  let mut newConcepts : List ConceptData := []
 
-  -- Build the list using a fold or by collecting results
+  -- Only look for Nat -> Nat functions
   let natFunctions := concepts.filterMap fun c => match c with
     | ConceptData.definition n t v _ d m =>
         match t with
@@ -1502,15 +1516,16 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
         | _ => none
     | _ => none
 
-  -- Collect all compositions
-  let compositions ← natFunctions.foldlM (fun acc (f₁, v₁, d₁, m₁) => do
-    let innerComps ← natFunctions.foldlM (fun acc2 (f₂, v₂, d₂, m₂) => do
+  IO.println s!"[DEBUG] compositionHeuristic: found {natFunctions.length} Nat->Nat functions"
+
+  -- Compose pairs of Nat -> Nat functions
+  for (f₁, v₁, d₁, m₁) in natFunctions do
+    for (f₂, v₂, d₂, m₂) in natFunctions do
       if f₁ ≠ f₂ then
         let compName := s!"{f₁}_compose_{f₂}"
-        if concepts.any (fun c => getConceptName c = compName) then
-          return acc2
-        else
+        unless concepts.any (fun c => getConceptName c = compName) do
           try
+            IO.println s!"[DEBUG] Trying to compose {f₁} with {f₂}"
             -- For Nat -> Nat, composition is straightforward
             let natType := mkConst ``Nat
             let compType := mkForall `x BinderInfo.default natType natType
@@ -1531,16 +1546,13 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
                 specializationDepth := max m₁.specializationDepth m₂.specializationDepth + 1
                 generationMethod := "composition" }
 
-            return compDef :: acc2
-          catch _ =>
-            return acc2
-      else
-        return acc2
-    ) acc
-    return innerComps
-  ) []
+            newConcepts := newConcepts ++ [compDef]
+            IO.println s!"[DEBUG] Successfully composed {f₁} with {f₂}"
+          catch e =>
+            IO.println s!"[DEBUG] Failed to compose {f₁} with {f₂}"
 
-  return compositions.reverse
+  IO.println s!"[DEBUG] compositionHeuristic: returning {newConcepts.length} concepts"
+  return newConcepts
 
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
