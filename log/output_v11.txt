@@ -1,0 +1,374 @@
+=== Starting Eurisko Discovery System ===
+Config: maxDepth=4, maxPerIter=1000
+Features: conjectures=true, patterns=true
+Mining mode: ON
+Initializing with mathematical seed concepts...
+[DEBUG] Duplicate found: Nat.add_comm duplicates add_comm
+[DEBUG] Duplicate found: Nat.zero_eq duplicates zero_eq_zero
+[DEBUG] Duplicate found: Nat.zero_sub_one duplicates zero_eq_zero
+[DEBUG] Removed 3 duplicates out of 2915 new concepts
+
+Initial concepts (315):
+
+Definitions: 118
+Theorems: 189
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 315 concepts
+
+--- Iteration 1 ---
+Building on 315 recent discoveries:
+  - zero
+  - succ
+  - one
+  - two
+  - add
+[DEBUG] Focusing on 15 concepts (from 315 recent, 315 total)
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 3 concepts
+[DEBUG] After cleanup: 3 concepts
+[DEBUG] After verification: 3 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Removed 2 duplicates out of 6 new concepts
+[DEBUG] After cleanup: 4 concepts
+[DEBUG] After verification: 4 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG] Heuristic lemma_application generated 1 concepts
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Removed 1 duplicates out of 1 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 11
+[DEBUG] Heuristic conjecture_generation generated 11 concepts
+[DEBUG] After cleanup: 11 concepts
+[DEBUG] After verification: 11 concepts
+
+🔢 New Numbers (1):
+  - num_3
+
+🔮 Conjectures (11):
+  - add_comp_succ_eq_0
+    Evidence: 0.200000
+  - add_comp_succ_eq_1
+    Evidence: 0.200000
+  - add_comp_succ_eq_2
+    Evidence: 0.300000
+  - add_comp_succ_eq_3
+    Evidence: 0.200000
+  - succ_preserves_zero_eq_zero_maybe
+    Evidence: 0.150000
+  ... and 6 more
+
+✓ Proven Theorems (3):
+  - add_comm_spec_zero
+    Method: specialization
+  - add_comm_spec_one
+    Method: specialization
+  - add_comm_spec_two
+    Method: specialization
+
+🔍 Patterns (1):
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Examples: [zero, one, two]
+
+🔧 Function Applications (4):
+  - succ_applied_to_two
+  - add_applied_to_zero
+  - add_applied_to_one
+
+📊 Discovery Summary:
+  specialization: 3 concepts
+  application: 4 concepts
+  pattern_recognition: 1 concepts
+  number_generation: 1 concepts
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 2 ---
+Building on 21 recent discoveries:
+  - num_3
+  - add_comm_spec_zero
+  - add_comm_spec_one
+  - add_comm_spec_two
+  - succ_applied_to_two
+[DEBUG] Focusing on 19 concepts (from 21 recent, 335 total)
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 5 concepts
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Removed 3 duplicates out of 5 new concepts
+[DEBUG] After cleanup: 2 concepts
+[DEBUG] After verification: 2 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: add_applied_to_zero duplicates add_applied_to_zero
+[DEBUG] Duplicate found: add_applied_to_one duplicates add_applied_to_one
+[DEBUG] Duplicate found: add_applied_to_two duplicates add_applied_to_two
+[DEBUG] Removed 5 duplicates out of 6 new concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG] Heuristic lemma_application generated 2 concepts
+[DEBUG] Duplicate found: add_comm_zero_one_on_one duplicates add_comm_zero_one
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Removed 2 duplicates out of 2 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 13
+[DEBUG] Heuristic conjecture_generation generated 13 concepts
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: succ_preserves_add_comm_zero_one_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_zero_one_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_zero_eq_zero_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_zero_eq_zero_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_fixed_point_zero duplicates add_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Duplicate found: add_comm_zero_one duplicates add_comm_zero_one
+[DEBUG] Removed 13 duplicates out of 13 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+✓ Proven Theorems (2):
+  - add_comm_spec_num_3
+    Method: specialization
+  - add_comm_spec_succ_applied_to_two
+    Method: specialization
+
+🔧 Function Applications (1):
+  - succ_applied_to_num_3
+
+📊 Discovery Summary:
+  specialization: 2 concepts
+  application: 1 concepts
+
+--- Iteration 3 ---
+Building on 3 recent discoveries:
+  - add_comm_spec_num_3
+  - add_comm_spec_succ_applied_to_two
+  - succ_applied_to_num_3
+[DEBUG] Focusing on 20 concepts (from 3 recent, 338 total)
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 5 concepts
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_num_3 duplicates add_comm_spec_succ_applied_to_two
+[DEBUG] Duplicate found: add_comm_spec_succ_applied_to_two duplicates add_comm_spec_succ_applied_to_two
+[DEBUG] Removed 5 duplicates out of 5 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_succ_applied_to_two duplicates succ_applied_to_num_3
+[DEBUG] Duplicate found: add_applied_to_zero duplicates add_applied_to_zero
+[DEBUG] Duplicate found: add_applied_to_one duplicates add_applied_to_one
+[DEBUG] Duplicate found: add_applied_to_two duplicates add_applied_to_two
+[DEBUG] Removed 6 duplicates out of 6 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 2 concepts
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Duplicate found: add_comm_zero_one_on_one duplicates add_comm_zero_one
+[DEBUG] Removed 2 duplicates out of 2 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 13
+[DEBUG] Heuristic conjecture_generation generated 13 concepts
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: succ_preserves_zero_eq_zero_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_zero_eq_zero_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_zero_one_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_zero_one_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_fixed_point_zero duplicates add_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Duplicate found: add_comm_zero_one duplicates add_comm_zero_one
+[DEBUG] Removed 13 duplicates out of 13 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+🔢 New Numbers (1):
+  - num_4
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 4 ---
+Building on 1 recent discoveries:
+  - num_4
+[DEBUG] Focusing on 20 concepts (from 1 recent, 339 total)
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 5 concepts
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_num_3 duplicates add_comm_spec_succ_applied_to_two
+[DEBUG] Duplicate found: add_comm_spec_succ_applied_to_two duplicates add_comm_spec_succ_applied_to_two
+[DEBUG] Removed 5 duplicates out of 5 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_succ_applied_to_two duplicates num_4
+[DEBUG] Duplicate found: add_applied_to_zero duplicates add_applied_to_zero
+[DEBUG] Duplicate found: add_applied_to_one duplicates add_applied_to_one
+[DEBUG] Duplicate found: add_applied_to_two duplicates add_applied_to_two
+[DEBUG] Removed 6 duplicates out of 6 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 2 concepts
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Duplicate found: add_comm_zero_one_on_one duplicates add_comm_zero_one
+[DEBUG] Removed 2 duplicates out of 2 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 13
+[DEBUG] Heuristic conjecture_generation generated 13 concepts
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: succ_preserves_zero_eq_zero_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_zero_eq_zero_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_zero_one_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_zero_one_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_fixed_point_zero duplicates add_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Duplicate found: add_comm_zero_one duplicates add_comm_zero_one
+[DEBUG] Removed 13 duplicates out of 13 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+No new concepts discovered this iteration
+
+--- Iteration 5 ---
+[DEBUG] Focusing on 20 concepts (from 0 recent, 339 total)
+[DEBUG] Invoking heuristics: [conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 5 concepts
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_num_3 duplicates add_comm_spec_succ_applied_to_two
+[DEBUG] Duplicate found: add_comm_spec_succ_applied_to_two duplicates add_comm_spec_succ_applied_to_two
+[DEBUG] Removed 5 duplicates out of 5 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_succ_applied_to_two duplicates num_4
+[DEBUG] Duplicate found: add_applied_to_zero duplicates add_applied_to_zero
+[DEBUG] Duplicate found: add_applied_to_one duplicates add_applied_to_one
+[DEBUG] Duplicate found: add_applied_to_two duplicates add_applied_to_two
+[DEBUG] Removed 6 duplicates out of 6 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 2 concepts
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Duplicate found: add_comm_zero_one_on_one duplicates add_comm_zero_one
+[DEBUG] Removed 2 duplicates out of 2 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 13
+[DEBUG] Heuristic conjecture_generation generated 13 concepts
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_3
+[DEBUG] Duplicate found: succ_preserves_zero_eq_zero_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_zero_eq_zero_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: succ_preserves_add_comm_zero_one_maybe duplicates succ_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_preserves_add_comm_zero_one_maybe duplicates add_preserves_add_comm_maybe
+[DEBUG] Duplicate found: add_fixed_point_zero duplicates add_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Duplicate found: add_comm_zero_one duplicates add_comm_zero_one
+[DEBUG] Removed 13 duplicates out of 13 new concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+🔢 New Numbers (1):
+  - num_5
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+=== Discovery Complete ===
+Total concepts: 340
+
+Definitions: 126
+Theorems: 195
+Conjectures: 10
+Patterns: 1
+
+Depth distribution:
+  Depth 0: 319 concepts
+  Depth 1: 21 concepts
+
+Discovered Patterns:
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two]
+
+Top discovered concepts:
+  conjecture_generation (score: 1.000000, depth: 0)
+  zero (score: 1.000000, depth: 0)
+  succ (score: 1.000000, depth: 0)
+  one (score: 1.000000, depth: 0)
+  two (score: 1.000000, depth: 0)
+  add (score: 1.000000, depth: 0)
+  zero_eq_zero (score: 1.000000, depth: 0)
+  add_comm (score: 1.000000, depth: 0)
+  specialization (score: 1.000000, depth: 0)
+  application (score: 1.000000, depth: 0)
+  lemma_application (score: 1.000000, depth: 0)
+  pattern_importance (score: 1.000000, depth: 0)
+  pattern_recognition (score: 1.000000, depth: 0)
+  complexity (score: 1.000000, depth: 0)
+  novelty (score: 1.000000, depth: 0)
+  natural_number_sequence (PATTERN, score: 0.755072)
+  add_comm_zero_one (score: 0.719608, depth: 1)
+  succ_applied_to_two (score: 0.639136, depth: 1)
+  succ_applied_to_num_3 (score: 0.636630, depth: 1)
+  num_3 (score: 0.632275, depth: 0)
+Main.lean:1:0
+Imports are out of date and should be rebuilt; use the "Restart File" command in your editor.
