@@ -640,8 +640,9 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
 
         if limitedConcepts.length > 0 then
           discoveries := discoveries ++ [Discovery.mk limitedConcepts [] s!"Applied heuristic {meta.name}"]
-      catch _ =>
-        IO.println s!"[DEBUG] Error in heuristic {name}"
+      catch err =>
+        let msg := err.toMessageData
+        logInfo m!"[DEBUG] Error in heuristic {name}: {msg}"
         pure ()
 
   return discoveries
@@ -1129,7 +1130,8 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
                 idx := idx + 1
           | _ => pure ()
         | _ => pure ()
-
+  /-
+  -- TODO: commented out because causing errors
   -- PATTERN 2: Look for preservation properties
   for (thm_name, stmt, _, _, _) in theorems do
     -- Look for theorems that might be properties
@@ -1211,7 +1213,7 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
             generationMethod := "homomorphism_pattern" }
       ]
     | _ => pure ()
-
+  -/
   -- Still keep some original commutativity conjectures
   let numbers := concepts.filterMap fun c => match c with
     | ConceptData.definition n _ v _ _ m =>
