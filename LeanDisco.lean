@@ -6,7 +6,9 @@ import Lean
 import Lean.Meta.Basic
 import Lean.Elab.Command
 
-import Mathlib.Algebra.Group.Basic -- for mining!
+ -- for mining!
+import Mathlib.Algebra.Group.Basic
+import Mathlib.Algebra.Ring.Basic
 
 set_option autoImplicit false
 set_option linter.unusedVariables false
@@ -153,6 +155,16 @@ def getConceptMetadata : ConceptData → ConceptMetadata
   | ConceptData.heuristicRef _ _ m => m
   | ConceptData.taskRef _ _ m => m
 
+/-- Update concept metadata -/
+def updateConceptMetadata (c : ConceptData) (f : ConceptMetadata → ConceptMetadata) : ConceptData :=
+  match c with
+  | ConceptData.definition n t v cv d m => ConceptData.definition n t v cv d (f m)
+  | ConceptData.theorem n s p d m => ConceptData.theorem n s p d (f m)
+  | ConceptData.conjecture n s e m => ConceptData.conjecture n s e (f m)
+  | ConceptData.pattern n d i m => ConceptData.pattern n d i (f m)
+  | ConceptData.heuristicRef n d m => ConceptData.heuristicRef n d (f m)
+  | ConceptData.taskRef n g m => ConceptData.taskRef n g (f m)
+
 /-- Get concept value/statement -/
 def getConceptExpr : ConceptData → Option Expr
   | ConceptData.definition _ _ v _ _ _ => some v
@@ -171,6 +183,37 @@ partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
     else
       return none
   | _ => return none
+
+/-- Generate the next natural number -/
+def generateNextNumber (kb : KnowledgeBase) : MetaM (Option ConceptData) := do
+  let existingNumbers := kb.concepts.filterMap fun c => match c with
+    | ConceptData.definition n _ _ _ _ _ =>
+      if n.startsWith "num_" then
+        n.drop 4 |>.toNat?
+      else if n == "zero" then some 0
+      else if n == "one" then some 1
+      else if n == "two" then some 2
+      else none
+    | _ => none
+
+  let maxNum := existingNumbers.foldl max 0
+  if maxNum < 10 then  -- Don't go too high
+    let nextNum := maxNum + 1
+    let numExpr := (List.range nextNum).foldl (fun acc _ =>
+      mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
+
+    return some $ ConceptData.definition s!"num_{nextNum}"
+      (mkConst ``Nat) numExpr none []
+      { name := s!"num_{nextNum}"
+        created := kb.iteration
+        parent := none
+        interestingness := 0.5
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "number_generation" }
+  else
+    return none
 
 /-- Canonicalize a concept to its simplest form -/
 def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
@@ -202,6 +245,7 @@ def exprsEqual (e1 e2 : Expr) : MetaM Bool := do
 /-- Deduplicate concepts by canonical form, checking against existing concepts -/
 def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut result : List ConceptData := []
+  let mut duplicateCount := 0
 
   -- First collect all existing expressions
   let mut existingExprs : List (Expr × String) := []
@@ -217,24 +261,21 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
       let mut isDuplicate := false
 
       -- Check against existing concepts
-      for (existingExpr, _) in existingExprs do
+      for (existingExpr, existingName) in existingExprs do
         if ← exprsEqual expr' existingExpr then
           isDuplicate := true
+          duplicateCount := duplicateCount + 1
+          IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
           break
-
-      -- Also check against already processed new concepts
-      for processed in result do
-        if let some processedExpr := getConceptExpr processed then
-          let processedExpr' ← whnf processedExpr
-          if ← exprsEqual expr' processedExpr' then
-            isDuplicate := true
-            break
 
       if !isDuplicate then
         result := c :: result
     else
-      -- Keep non-expression concepts (heuristics, tasks)
+      -- Keep non-expression concepts (heuristics, tasks, patterns)
       result := c :: result
+
+  if duplicateCount > 0 then
+    IO.println s!"[DEBUG] Removed {duplicateCount} duplicates out of {newConcepts.length} new concepts"
 
   return result.reverse
 
@@ -267,14 +308,12 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
   if config.deduplicateConcepts then
     cleaned ← deduplicateAgainstExisting existing cleaned
 
-  -- Special deduplication for patterns - check by name and instances
+  -- Special deduplication for patterns - check by name only
   let cleanedPatterns := cleaned.filter fun c => match c with
-    | ConceptData.pattern name _ instances _ =>
-      -- Check if a pattern with same name and instances already exists
+    | ConceptData.pattern name _ _ _ =>
+      -- Just check if pattern name already exists
       !existing.any fun e => match e with
-        | ConceptData.pattern ename _ einstances _ =>
-          name == ename && instances.length == einstances.length &&
-          instances.all (einstances.contains ·)
+        | ConceptData.pattern ename _ _ _ => name == ename
         | _ => false
     | _ => true
 
@@ -313,14 +352,21 @@ def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
 /-- Try to prove a conjecture using basic tactics -/
 def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
   try
-    -- Very basic: try reflexivity for equality statements
+    -- Basic strategy: try reflexivity for equality statements
     match stmt with
     | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
       if ← isDefEq lhs rhs then
         let proof ← mkAppM ``Eq.refl #[lhs]
         return some proof
       else
-        return none
+        -- Try reducing both sides once
+        let lhs' ← whnf lhs
+        let rhs' ← whnf rhs
+        if ← isDefEq lhs' rhs' then
+          let proof ← mkAppM ``Eq.refl #[lhs']
+          return some proof
+        else
+          return none
     | _ => return none
   catch _ => return none
 
@@ -407,9 +453,7 @@ def seedConcepts : MetaM (List ConceptData) := do
   let add := mkConst ``Nat.add
   concepts := concepts ++ [ConceptData.definition "add" addType add none [] (mkMeta "add")]
 
-  -- Basic theorem: 0 + 0 = 0
-  -- Note: This is actually false (0 + 0 = 0, not a proof of equality)
-  -- Let's create a simpler theorem: 0 = 0
+  -- Basic theorem: 0 = 0
   let zeroEqZero := mkApp3 (mkConst ``Eq [levelOne]) natType zero zero
   let zeroEqZeroProof := mkApp2 (mkConst ``Eq.refl [levelOne]) natType zero
   concepts := concepts ++ [ConceptData.theorem "zero_eq_zero" zeroEqZero zeroEqZeroProof ["zero"] (mkMeta "zero_eq_zero")]
@@ -433,16 +477,43 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
 
   let mut discoveries := []
 
-  let focusedConcepts := kb.recentConcepts ++
-    (kb.concepts.filter fun c =>
-      (getConceptMetadata c).interestingness > 0.7 ||
-      (getConceptName c) ∈ ["zero", "one", "add", "succ", "mul"]
-    ).take 50 ++
-    (kb.concepts.drop (kb.iteration * 10)).take 20 -- pseudo-random
+  -- Generate new numbers every other iteration
+  if kb.iteration % 2 == 0 then
+    if let some newNum ← generateNextNumber kb then
+      discoveries := discoveries ++ [Discovery.mk [newNum] [] "Generated next number"]
 
+  -- Use our smart selection instead of including ALL recent concepts
+  let focusedConcepts :=
+    -- Only successful recent concepts
+    let successfulRecent := kb.recentConcepts.filter fun c =>
+      let meta := getConceptMetadata c
+      meta.successCount > 0 ||
+      (match c with
+       | ConceptData.theorem _ _ _ _ m => m.generationMethod == "conjecture_proved"
+       | _ => false)
 
-  IO.println s!"[DEBUG] Focusing on {kb.recentConcepts.length} recent + {focusedConcepts.length - kb.recentConcepts.length} context concepts"
+    -- Add some core concepts if we have too few
+    let coreConceptNames := ["zero", "one", "add", "succ", "two"]
+    let coreConcepts := kb.concepts.filter fun c =>
+      (getConceptName c) ∈ coreConceptNames
 
+    -- High-value unexplored
+    let underexplored := kb.concepts.filter fun c =>
+      let meta := getConceptMetadata c
+      meta.interestingness > 0.6 &&
+      meta.useCount < 3 &&
+      meta.specializationDepth < 2
+
+    -- Combine with strict limits
+    (successfulRecent.take 20) ++
+    (coreConcepts.take 5) ++
+    (underexplored.take 25)
+    |>.foldl (fun acc c =>
+      if acc.any (fun c' => getConceptName c == getConceptName c') then acc
+      else acc ++ [c]
+    ) []
+
+  IO.println s!"[DEBUG] Focusing on {focusedConcepts.length} concepts (from {kb.recentConcepts.length} recent, {kb.concepts.length} total)"
 
   IO.println s!"[DEBUG] Invoking heuristics: {kb.heuristics.entries.map Prod.fst}"
   for (name, meta) in heuristicRefs do
@@ -527,6 +598,13 @@ def showDiscoveredConcepts (concepts : List ConceptData) (showDetails : Bool := 
     | ConceptData.pattern _ _ _ _ => true | _ => false
   let applications := concepts.filter fun c => match c with
     | ConceptData.definition _ _ _ _ _ m => m.generationMethod == "application" | _ => false
+  let numbers := concepts.filter fun c => match c with
+    | ConceptData.definition n _ _ _ _ m => m.generationMethod == "number_generation" | _ => false
+
+  if numbers.length > 0 then
+    IO.println s!"\n🔢 New Numbers ({numbers.length}):"
+    for n in numbers do
+      IO.println s!"  - {getConceptName n}"
 
   if conjectures.length > 0 then
     IO.println s!"\n🔮 Conjectures ({conjectures.length}):"
@@ -589,7 +667,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 
     -- Count by method manually
     IO.println s!"\n📊 Discovery Summary:"
-    let methods := ["specialization", "application", "conjecture", "pattern_recognition", "lemma_application"]
+    let methods := ["specialization", "application", "conjecture", "pattern_recognition", "lemma_application", "number_generation"]
     for method in methods do
       let count := evaluatedConcepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
       if count > 0 then
@@ -599,7 +677,12 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 
   -- Try to prove conjectures
   let mut provenConjectures := []
-  for c in kb.concepts ++ evaluatedConcepts do
+  let mut allConjectures := kb.concepts ++ evaluatedConcepts
+
+  -- Remove conjectures that get proved
+  let mut remainingConcepts := []
+
+  for c in allConjectures do
     match c with
     | ConceptData.conjecture name stmt _ meta =>
       if let some proof ← tryProveConjecture stmt then
@@ -607,10 +690,22 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
         let thm := ConceptData.theorem name stmt proof []
           { meta with generationMethod := "conjecture_proved" }
         provenConjectures := provenConjectures ++ [thm]
-    | _ => pure ()
+
+        -- Reward parent concepts for successful proof
+        if let some parentName := meta.parent then
+          remainingConcepts := remainingConcepts.map fun c' =>
+            if getConceptName c' == parentName then
+              updateConceptMetadata c' fun m =>
+                { m with successCount := m.successCount + 1 }
+            else c'
+      else
+        -- Keep unproven conjectures
+        remainingConcepts := remainingConcepts ++ [c]
+    | _ =>
+      remainingConcepts := remainingConcepts ++ [c]
 
   let newKb : KnowledgeBase := {
-    concepts := kb.concepts ++ evaluatedConcepts ++ provenConjectures
+    concepts := remainingConcepts ++ provenConjectures
     recentConcepts := evaluatedConcepts ++ provenConjectures
     heuristics := kb.heuristics
     evaluators := kb.evaluators
@@ -622,7 +717,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   discoveryLoop newKb maxIterations
 
 /--
-Heuristic: apply any mined Eq-theorem whose left-hand side matches another concept’s expression,
+Heuristic: apply any mined Eq-theorem whose left-hand side matches another concept's expression,
 producing new theorems `thName_on_targetName` via lemma application.
 -/
 def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
@@ -630,8 +725,6 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
   for c in concepts do
     match c with
     | ConceptData.theorem thName stmt proof deps meta => do
-      -- Debug: log each Eq-theorem considered
-      -- IO.println s!"[DEBUG][lemma_application] considering theorem {thName}"
       let fn := stmt.getAppFn
       if fn.isConstOf ``Eq then
         let argsList := stmt.getAppArgs.toList
@@ -852,10 +945,41 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
             generationMethod := "fixed_point_search" }
       ]
 
+  -- Add homomorphism pattern
+  -- Pattern: f(x + y) = f(x) + f(y)
+  for (fn_name, fn_val, fn_type) in functions do
+    match fn_type with
+    | .forallE _ (.const ``Nat _) (.const ``Nat _) _ =>
+      let natType := mkConst ``Nat
+      let x := mkBVar 1
+      let y := mkBVar 0
+      let add := mkConst ``Nat.add
+      let xy := mkApp2 add x y
+      let fxy := mkApp fn_val xy
+      let fx := mkApp fn_val x
+      let fy := mkApp fn_val y
+      let fx_plus_fy := mkApp2 add fx fy
+
+      let homoStmt := mkForall `x .default natType $
+        mkForall `y .default natType $
+          mkApp3 (mkConst ``Eq [levelOne]) natType fxy fx_plus_fy
+
+      conjectures := conjectures ++ [
+        ConceptData.conjecture
+          s!"{fn_name}_homomorphism"
+          homoStmt
+          0.3
+          { name := s!"{fn_name}_homomorphism",
+            created := 0, parent := some fn_name, interestingness := 0.7,
+            useCount := 0, successCount := 0, specializationDepth := 1,
+            generationMethod := "homomorphism_pattern" }
+      ]
+    | _ => pure ()
+
   -- Still keep some original commutativity conjectures
   let numbers := concepts.filterMap fun c => match c with
     | ConceptData.definition n _ v _ _ m =>
-      if n == "zero" || n == "one" || n == "two" then
+      if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
         some (n, v, m)
       else none
     | _ => none
@@ -886,7 +1010,7 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
     | _ => pure ()
 
   IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
-  return conjectures --.take 20
+  return conjectures
 
 /-- Specialization heuristic: create specific instances -/
 def specializationHeuristic : HeuristicFn := fun config concepts => do
@@ -964,7 +1088,11 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
         if applicationCount >= 3 then  -- Limit applications per function
           break
 
-        if fname != aname && ameta.specializationDepth < 2 then
+        -- Check if this combination already exists
+        let proposedName := s!"{fname}_applied_to_{aname}"
+        let alreadyTried := concepts.any (fun c => getConceptName c == proposedName)
+
+        if !alreadyTried && fname != aname && ameta.specializationDepth < 2 then
           let atype ← inferType avalue
           if ← isDefEq atype argType then
             -- Apply function to argument
@@ -973,7 +1101,7 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
 
             -- Check if this reduces to something simpler
             let _ ← whnf resultValue
-            let resultName := s!"{fname}_applied_to_{aname}"
+            let resultName := proposedName
 
             let newMeta := {
               name := resultName
@@ -1109,10 +1237,10 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
 
   -- Optionally add some mined concepts
   if useMining then
-    let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add", "Nat.sub", "Nat.mul"] ["Mathlib.Algebra.Group"]
+    let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add", "Nat.sub", "Nat.mul"] ["Mathlib.Algebra.Group", "Mathlib.Algebra.Ring"]
     -- Clean up mined concepts against existing
     let cleanedMined ← cleanupConcepts config initialConcepts minedConcepts
-    initialConcepts := initialConcepts ++ cleanedMined.take 100
+    initialConcepts := initialConcepts ++ cleanedMined.take 300
 
   -- Create heuristic references
   let specHeuristicRef := ConceptData.heuristicRef
