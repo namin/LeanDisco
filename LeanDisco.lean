@@ -760,8 +760,8 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
         if limitedConcepts.length > 0 then
           discoveries := discoveries ++ [Discovery.mk limitedConcepts [] s!"Applied heuristic {meta.name}"]
       catch err =>
-        --let msg := err.toMessageData
-        logInfo m!"[DEBUG] Error in heuristic {name}" --": {msg}"
+        let msg := err.toMessageData
+        logInfo m!"[DEBUG] Error in heuristic {name}: {msg}"
         pure ()
 
   return discoveries
@@ -1486,60 +1486,61 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
 
   return newConcepts
 
-/-- Compose existing concepts to create new ones (FIXED). -/
+/-- Compose existing concepts to create new ones -/
 def compositionHeuristic : HeuristicFn := fun config concepts => do
-  let mut newConcepts : List ConceptData := []
+  -- Remove the `mut` here
+  let newConcepts : List ConceptData := []
 
-  -- 1. collect candidate functions
-  let functions := concepts.filterMap fun c => match c with
+  -- Build the list using a fold or by collecting results
+  let natFunctions := concepts.filterMap fun c => match c with
     | ConceptData.definition n t v _ d m =>
-        if t.isForall && m.useCount > 0 && m.specializationDepth < 2 then
-          some (n, t, v, d, m) else none
+        match t with
+        | Expr.forallE _ (Expr.const ``Nat _) (Expr.const ``Nat _) _ =>
+          if m.specializationDepth < 2 then
+            some (n, v, d, m)
+          else none
+        | _ => none
     | _ => none
 
-  -- 2. try every ordered pair
-  for (f₁, t₁, v₁, d₁, m₁) in functions do
-    for (f₂, t₂, v₂, d₂, m₂) in functions do
+  -- Collect all compositions
+  let compositions ← natFunctions.foldlM (fun acc (f₁, v₁, d₁, m₁) => do
+    let innerComps ← natFunctions.foldlM (fun acc2 (f₂, v₂, d₂, m₂) => do
       if f₁ ≠ f₂ then
-        match (t₁, t₂) with
-        | ((.forallE _ A₁ B₁ _), (.forallE _ A₂ B₂ _)) =>
-            -- Check if we can compose: output of f₂ matches input of f₁
-            if ← isDefEq B₂ A₁ then
-              let compName := s!"{f₁}_compose_{f₂}"
-              unless concepts.any (fun c => getConceptName c = compName) do
-                -- Additional safety check: ensure no loose bvars
-                if !v₁.hasLooseBVars && !v₂.hasLooseBVars then
-                  try
-                    -- Build the composed value safely
-                    let compVal ← mkSafeLambda `x A₂ fun x => do
-                      let f₂x := mkApp v₂ x
-                      pure (mkApp v₁ f₂x)
+        let compName := s!"{f₁}_compose_{f₂}"
+        if concepts.any (fun c => getConceptName c = compName) then
+          return acc2
+        else
+          try
+            -- For Nat -> Nat, composition is straightforward
+            let natType := mkConst ``Nat
+            let compType := mkForall `x BinderInfo.default natType natType
 
-                    -- Build the composed type safely
-                    let compType ← mkSafeForall `x A₂ fun x => do
-                      let f₂x := mkApp v₂ x
-                      let body := mkApp v₁ f₂x
-                      inferType body
+            -- Build λ x => f₁ (f₂ x)
+            let compVal ← withLocalDecl `x BinderInfo.default natType fun x => do
+              let f₂x := mkApp v₂ x
+              let result := mkApp v₁ f₂x
+              mkLambdaFVars #[x] result
 
-                    -- Create the concept data
-                    let compDef := ConceptData.definition compName compType compVal none (d₁ ++ d₂)
-                      { name := compName
-                        created := 0
-                        parent  := some f₁
-                        interestingness := 0.7
-                        useCount := 0
-                        successCount := 0
-                        specializationDepth :=
-                          max m₁.specializationDepth m₂.specializationDepth + 1
-                        generationMethod := "composition" }
+            let compDef := ConceptData.definition compName compType compVal none (d₁ ++ d₂)
+              { name := compName
+                created := 0
+                parent := some f₁
+                interestingness := 0.7
+                useCount := 0
+                successCount := 0
+                specializationDepth := max m₁.specializationDepth m₂.specializationDepth + 1
+                generationMethod := "composition" }
 
-                    newConcepts := compDef :: newConcepts
-                  catch _ =>
-                    -- Skip if composition fails
-                    pure ()
-        | _ => pure ()
+            return compDef :: acc2
+          catch _ =>
+            return acc2
+      else
+        return acc2
+    ) acc
+    return innerComps
+  ) []
 
-  return newConcepts.reverse
+  return compositions.reverse
 
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
