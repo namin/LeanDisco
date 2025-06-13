@@ -189,15 +189,21 @@ def getConceptExpr : ConceptData → Option Expr
 
 /-- Extract natural number literal from expression -/
 partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
-  let e' ← whnf e
-  match e' with
-  | .const ``Nat.zero _ => return some 0
-  | .app (.const ``Nat.succ _) n => do
-    if let some n' ← extractNatLiteral n then
-      return some (n' + 1)
-    else
+  try
+    -- Check for loose bvars first
+    if e.hasLooseBVars then
       return none
-  | _ => return none
+
+    let e' ← whnf e
+    match e' with
+    | .const ``Nat.zero _ => return some 0
+    | .app (.const ``Nat.succ _) n => do
+      if let some n' ← extractNatLiteral n then
+        return some (n' + 1)
+      else
+        return none
+    | _ => return none
+  catch _ => return none
 
 def contains (s sub : String) : Bool :=
   (List.range (s.length - sub.length + 1)).any fun i =>
@@ -242,14 +248,23 @@ def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
     if cached.isSome then
       return c  -- Already canonicalized
     else
-      let v' ← reduce v  -- Use reduce instead of just whnf
-      -- Check if it's a natural number
-      if let some num ← extractNatLiteral v' then
-        let newName := s!"num_{num}"
-        return ConceptData.definition newName t v' (some v') deps
-          { meta with name := newName }
-      else
-        return ConceptData.definition n t v' (some v') deps meta
+      try
+        -- First check if the value has loose bvars
+        if v.hasLooseBVars then
+          -- Don't try to reduce expressions with loose bvars
+          return ConceptData.definition n t v (some v) deps meta
+        else
+          let v' ← reduce v  -- Use reduce instead of just whnf
+          -- Check if it's a natural number
+          if let some num ← extractNatLiteral v' then
+            let newName := s!"num_{num}"
+            return ConceptData.definition newName t v' (some v') deps
+              { meta with name := newName }
+          else
+            return ConceptData.definition n t v' (some v') deps meta
+      catch _ =>
+        -- If reduction fails, just cache the original value
+        return ConceptData.definition n t v (some v) deps meta
   | _ => return c
 
 /-- Check if a concept name indicates an internal proof term -/
@@ -259,7 +274,13 @@ def isInternalProofTerm (name : String) : Bool :=
 /-- Check if two expressions are definitionally equal -/
 def exprsEqual (e1 e2 : Expr) : MetaM Bool := do
   try
-    isDefEq e1 e2
+    -- Instantiate metavariables first
+    let e1' ← instantiateMVars e1
+    let e2' ← instantiateMVars e2
+    -- Check for loose bvars
+    if e1'.hasLooseBVars || e2'.hasLooseBVars then
+      return false
+    isDefEq e1' e2'
   catch _ => return false
 
 /-- Safely build `fun x : α => body x` where `body` may mention `x`. -/
@@ -283,27 +304,41 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
   let mut existingNormalized : List (Expr × String) := []
   for c in existing do
     if let some expr := getConceptExpr c then
-      let normalized ← reduce expr
-      existingNormalized := (normalized, getConceptName c) :: existingNormalized
+      try
+        -- Only normalize if no loose bvars
+        if !expr.hasLooseBVars then
+          let normalized ← reduce expr
+          existingNormalized := (normalized, getConceptName c) :: existingNormalized
+        else
+          -- Use the expression as-is if it has loose bvars
+          existingNormalized := (expr, getConceptName c) :: existingNormalized
+      catch _ =>
+        -- If normalization fails, use the original expression
+        existingNormalized := (expr, getConceptName c) :: existingNormalized
 
   -- Check each new concept
   for c in newConcepts do
     if let some expr := getConceptExpr c then
-      let normalized ← reduce expr
       let mut isDuplicate := false
 
-      -- Check against existing concepts
-      for (existingExpr, existingName) in existingNormalized do
-        if ← exprsEqual normalized existingExpr then
-          isDuplicate := true
-          duplicateCount := duplicateCount + 1
-          IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
-          break
+      try
+        let normalized ← if expr.hasLooseBVars then pure expr else reduce expr
 
-      if !isDuplicate then
+        -- Check against existing concepts
+        for (existingExpr, existingName) in existingNormalized do
+          if ← exprsEqual normalized existingExpr then
+            isDuplicate := true
+            duplicateCount := duplicateCount + 1
+            IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
+            break
+
+        if !isDuplicate then
+          result := c :: result
+          -- Add to our normalized set for checking within this batch
+          existingNormalized := (normalized, getConceptName c) :: existingNormalized
+      catch _ =>
+        -- If anything fails during deduplication, keep the concept
         result := c :: result
-        -- Add to our normalized set for checking within this batch
-        existingNormalized := (normalized, getConceptName c) :: existingNormalized
     else
       -- Keep non-expression concepts (heuristics, tasks, patterns)
       result := c :: result
@@ -327,20 +362,41 @@ def filterInternalTerms (concepts : List ConceptData) : List ConceptData :=
 def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut cleaned := newConcepts
 
+  IO.println s!"[DEBUG] cleanupConcepts: starting with {cleaned.length} concepts"
+
   -- Filter internal proof terms
   if config.filterInternalProofs then
     cleaned := filterInternalTerms cleaned
+    IO.println s!"[DEBUG] After filterInternalTerms: {cleaned.length} concepts"
 
   -- Filter by depth
   cleaned := filterByDepth config.maxSpecializationDepth cleaned
+  IO.println s!"[DEBUG] After filterByDepth: {cleaned.length} concepts"
+
+  -- Check for loose bvars before canonicalization
+  let mut safeForCanon := []
+  for c in cleaned do
+    match c with
+    | ConceptData.definition _ _ v _ _ _ =>
+      if !v.hasLooseBVars then
+        safeForCanon := safeForCanon ++ [c]
+      else
+        IO.println s!"[DEBUG] Skipping canonicalization of {getConceptName c} due to loose bvars"
+        safeForCanon := safeForCanon ++ [c]  -- Keep it but don't canonicalize
+    | _ => safeForCanon := safeForCanon ++ [c]
+  cleaned := safeForCanon
 
   -- Canonicalize
   if config.canonicalizeConcepts then
+    IO.println s!"[DEBUG] Starting canonicalization..."
     cleaned ← cleaned.mapM canonicalizeConcept
+    IO.println s!"[DEBUG] After canonicalizeConcepts: {cleaned.length} concepts"
 
   -- Deduplicate against existing concepts
   if config.deduplicateConcepts then
+    IO.println s!"[DEBUG] Starting deduplication..."
     cleaned ← deduplicateAgainstExisting existing cleaned
+    IO.println s!"[DEBUG] After deduplication: {cleaned.length} concepts"
 
   -- Special deduplication for patterns - check by name only
   let cleanedPatterns := cleaned.filter fun c => match c with
@@ -351,6 +407,7 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
         | _ => false
     | _ => true
 
+  IO.println s!"[DEBUG] cleanupConcepts: returning {cleanedPatterns.length} concepts"
   return cleanedPatterns
 
 /-- Update concept's interestingness score -/
@@ -372,16 +429,28 @@ def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
 /-- Verify a definition is type-correct -/
 def verifyDefinition (type : Expr) (value : Expr) : MetaM Bool := do
   try
+    -- Check for loose bvars first
+    if type.hasLooseBVars || value.hasLooseBVars then
+      IO.println s!"[DEBUG] verifyDefinition: skipping due to loose bvars"
+      return false
     let valueType ← inferType value
     isDefEq valueType type
-  catch _ => return false
+  catch e =>
+    IO.println s!"[DEBUG] verifyDefinition failed"
+    return false
 
 /-- Verify a theorem by checking its proof -/
 def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
   try
+    -- Check for loose bvars first
+    if statement.hasLooseBVars || proof.hasLooseBVars then
+      IO.println s!"[DEBUG] verifyTheorem: skipping due to loose bvars"
+      return false
     let proofType ← inferType proof
     isDefEq proofType statement
-  catch _ => return false
+  catch e =>
+    IO.println s!"[DEBUG] verifyTheorem failed"
+    return false
 
 def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
   try
@@ -391,20 +460,26 @@ def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
 
 /-- Calculate a very rough structural similarity score. -/
 partial def structuralSimilarity (e1 e2 : Expr) : MetaM Float := do
-  match (e1, e2) with
-  | (.app f1 a1, .app f2 a2) =>
-      return ((← structuralSimilarity f1 f2) +
-              (← structuralSimilarity a1 a2)) / 2.0
-  | (.const n1 _, .const n2 _) =>
-      return if n1 == n2 then 1.0 else 0.0
-  | (.forallE _ t1 b1 _, .forallE _ t2 b2 _) =>
-      return ((← structuralSimilarity t1 t2) +
-              (← structuralSimilarity b1 b2)) / 2.0
-  | (.lam _ t1 b1 _, .lam _ t2 b2 _) =>
-      return ((← structuralSimilarity t1 t2) +
-              (← structuralSimilarity b1 b2)) / 2.0
-  | _ =>
-      return if ← safeIsDefEq e1 e2 then 0.5 else 0.0
+  try
+    -- Safety check for loose bvars
+    if e1.hasLooseBVars || e2.hasLooseBVars then
+      return 0.0
+
+    match (e1, e2) with
+    | (.app f1 a1, .app f2 a2) =>
+        return ((← structuralSimilarity f1 f2) +
+                (← structuralSimilarity a1 a2)) / 2.0
+    | (.const n1 _, .const n2 _) =>
+        return if n1 == n2 then 1.0 else 0.0
+    | (.forallE _ t1 b1 _, .forallE _ t2 b2 _) =>
+        return ((← structuralSimilarity t1 t2) +
+                (← structuralSimilarity b1 b2)) / 2.0
+    | (.lam _ t1 b1 _, .lam _ t2 b2 _) =>
+        return ((← structuralSimilarity t1 t2) +
+                (← structuralSimilarity b1 b2)) / 2.0
+    | _ =>
+        return if ← safeIsDefEq e1 e2 then 0.5 else 0.0
+  catch _ => return 0.0
 
 /-- Expression size helper -/
 partial def exprSize : Expr → Nat
@@ -496,12 +571,19 @@ def mineEnvironment (allowedPrefixes : List String) (allowedLibs : List String) 
       | .defnInfo val =>
         match val.safety with
         | .safe =>
-          concepts := concepts ++ [ConceptData.definition
-            name.toString val.type val.value none [] (mkMeta name.toString)]
+          -- Check for loose bvars before adding
+          if !val.type.hasLooseBVars && !val.value.hasLooseBVars then
+            concepts := concepts ++ [ConceptData.definition
+              name.toString val.type val.value none [] (mkMeta name.toString)]
         | _ => pure ()
       | .thmInfo val =>
-        concepts := concepts ++ [ConceptData.theorem
-          name.toString val.type val.value [] (mkMeta name.toString)]
+        -- For theorems, we need to be more careful about the proof term
+        -- The proof term might reference the theorem's parameters
+        if !val.type.hasLooseBVars then
+          -- Instead of using the raw proof value, use a constant reference
+          let proofRef := mkConst name
+          concepts := concepts ++ [ConceptData.theorem
+            name.toString val.type proofRef [] (mkMeta name.toString)]
       | _ => pure ()
 
   return concepts
@@ -631,7 +713,14 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
 
         IO.println s!"[DEBUG] Heuristic {name} generated {newConcepts.length} concepts"
 
+        -- Add more detailed debugging here
+        for c in newConcepts do
+          if let some expr := getConceptExpr c then
+            if expr.hasLooseBVars then
+              IO.println s!"[DEBUG] WARNING: Concept {getConceptName c} from {name} has loose bvars!"
+
         -- Clean up new concepts against ALL existing concepts
+        IO.println s!"[DEBUG] Starting cleanup..."
         let cleanedConcepts ← cleanupConcepts kb.config kb.concepts newConcepts
 
         IO.println s!"[DEBUG] After cleanup: {cleanedConcepts.length} concepts"
@@ -639,18 +728,29 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
         -- Verify all new concepts
         let mut verifiedConcepts := []
         for concept in cleanedConcepts do
-          match concept with
-          | ConceptData.definition _ t v _ _ _ =>
-            if ← verifyDefinition t v then
+          -- Add safety check before verification
+          let shouldVerify := match concept with
+            | ConceptData.definition _ t v _ _ _ =>
+              !t.hasLooseBVars && !v.hasLooseBVars
+            | ConceptData.theorem _ s p _ _ =>
+              !s.hasLooseBVars && !p.hasLooseBVars
+            | _ => true
+
+          if shouldVerify then
+            match concept with
+            | ConceptData.definition _ t v _ _ _ =>
+              if ← verifyDefinition t v then
+                verifiedConcepts := verifiedConcepts ++ [concept]
+            | ConceptData.theorem _ s p _ _ =>
+              if ← verifyTheorem s p then
+                verifiedConcepts := verifiedConcepts ++ [concept]
+            | ConceptData.conjecture _ _ _ _ =>
               verifiedConcepts := verifiedConcepts ++ [concept]
-          | ConceptData.theorem _ s p _ _ =>
-            if ← verifyTheorem s p then
+            | ConceptData.pattern _ _ _ _ =>
               verifiedConcepts := verifiedConcepts ++ [concept]
-          | ConceptData.conjecture _ _ _ _ =>
-            verifiedConcepts := verifiedConcepts ++ [concept]
-          | ConceptData.pattern _ _ _ _ =>
-            verifiedConcepts := verifiedConcepts ++ [concept]
-          | _ => verifiedConcepts := verifiedConcepts ++ [concept]
+            | _ => verifiedConcepts := verifiedConcepts ++ [concept]
+          else
+            IO.println s!"[DEBUG] Skipping verification of {getConceptName concept} due to loose bvars"
 
         IO.println s!"[DEBUG] After verification: {verifiedConcepts.length} concepts"
 
@@ -892,27 +992,51 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
   for c in concepts do
     match c with
     | ConceptData.theorem thName stmt proof deps meta => do
+      -- Check for loose bvars in theorem
+      if stmt.hasLooseBVars || proof.hasLooseBVars then
+        IO.println s!"[DEBUG][lemma_application] Skipping theorem {thName} due to loose bvars"
+        continue
+
       let fn := stmt.getAppFn
       if fn.isConstOf ``Eq then
         let argsList := stmt.getAppArgs.toList
         match argsList with
         | α :: lhs :: rhs :: [] =>
+          -- Check for loose bvars in the equation parts
+          if α.hasLooseBVars || lhs.hasLooseBVars || rhs.hasLooseBVars then
+            IO.println s!"[DEBUG][lemma_application] Skipping {thName} - equation parts have loose bvars"
+            continue
+
           let lemmaName := Name.mkStr Name.anonymous thName
           for tgt in concepts do
             if let some tgtExpr := getConceptExpr tgt then
-              if ← isDefEq lhs tgtExpr then
-                -- Debug: matched lhs on target
-                IO.println s!"[DEBUG][lemma_application] applying {thName} to {getConceptName tgt}"
-                let eqConst := mkConst ``Eq [levelOne]
-                let newStmt := mkApp3 eqConst α tgtExpr rhs
-                let newProof := proof
-                let newName := thName ++ "_on_" ++ getConceptName tgt
-                let newMeta := { meta with
-                  name := newName,
-                  parent := some thName,
-                  generationMethod := "lemma_application"
-                }
-                out := out ++ [ConceptData.theorem newName newStmt newProof deps newMeta]
+              -- Check target expression for loose bvars
+              if tgtExpr.hasLooseBVars then
+                continue
+
+              try
+                if ← isDefEq lhs tgtExpr then
+                  -- Debug: matched lhs on target
+                  IO.println s!"[DEBUG][lemma_application] applying {thName} to {getConceptName tgt}"
+                  let eqConst := mkConst ``Eq [levelOne]
+                  let newStmt := mkApp3 eqConst α tgtExpr rhs
+
+                  -- Final check on the new statement
+                  if newStmt.hasLooseBVars then
+                    IO.println s!"[DEBUG][lemma_application] Generated statement has loose bvars, skipping"
+                    continue
+
+                  let newProof := proof
+                  let newName := thName ++ "_on_" ++ getConceptName tgt
+                  let newMeta := { meta with
+                    name := newName,
+                    parent := some thName,
+                    generationMethod := "lemma_application"
+                  }
+                  out := out ++ [ConceptData.theorem newName newStmt newProof deps newMeta]
+              catch e =>
+                IO.println s!"[DEBUG][lemma_application] isDefEq failed"
+                pure ()
         | _ => pure ()
     | _ => pure ()
   return out
@@ -998,71 +1122,34 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
 
   let mut patterns := []
 
-  -- Look for arithmetic sequences
-  let numbers := concepts.filterMap fun c => match c with
-    | ConceptData.definition n _ v _ _ m =>
-      if n.startsWith "num_" || n == "zero" || n == "one" || n == "two" then
-        some (n, v, m)
-      else none
-    | _ => none
+  try
+    -- Look for arithmetic sequences
+    let numbers := concepts.filterMap fun c => match c with
+      | ConceptData.definition n _ v _ _ m =>
+        if n.startsWith "num_" || n == "zero" || n == "one" || n == "two" then
+          -- Check that the value doesn't have loose bvars
+          if !v.hasLooseBVars then
+            some (n, v, m)
+          else none
+        else none
+      | _ => none
 
-  if numbers.length >= 3 then
-    -- Check if we have 0, 1, 2...
-    let mut hasSequence := false
-    let mut sequenceNames := []
+    if numbers.length >= 3 then
+      -- Check if we have 0, 1, 2...
+      let mut hasSequence := false
+      let mut sequenceNames := []
 
-    for (n, _, _) in numbers do
-      if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
-        sequenceNames := sequenceNames ++ [n]
-        hasSequence := true
+      for (n, _, _) in numbers do
+        if n == "zero" || n == "one" || n == "two" || n.startsWith "num_" then
+          sequenceNames := sequenceNames ++ [n]
+          hasSequence := true
 
-    if hasSequence && sequenceNames.length >= 3 then
-      let patternMeta := {
-        name := "natural_number_sequence"
-        created := 0
-        parent := none
-        interestingness := 0.8
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "pattern_recognition"
-      }
-      patterns := patterns ++ [
-        ConceptData.pattern
-          "natural_number_sequence"
-          "Sequence: 0, 1, 2, ... (natural numbers via successor)"
-          sequenceNames
-          patternMeta
-      ]
-
-  -- Look for function iteration patterns
-  let applications := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m =>
-      m.generationMethod == "application" && ((n.splitOn "_applied_to_").length > 1)
-    | _ => false
-
-  if applications.length >= 3 then
-    -- Check for repeated application of same function
-    let mut functionApplications : List (String × List String) := []
-
-    for c in applications do
-      let name := getConceptName c
-      let parts := name.splitOn "_applied_to_"
-      if parts.length > 0 then
-        let func := parts.head!
-        match functionApplications.find? (·.1 == func) with
-        | some (_, apps) =>
-          functionApplications := functionApplications.filter (·.1 != func) ++ [(func, apps ++ [name])]
-        | none =>
-          functionApplications := functionApplications ++ [(func, [name])]
-
-    for (func, apps) in functionApplications do
-      if apps.length >= 2 then
+      if hasSequence && sequenceNames.length >= 3 then
         let patternMeta := {
-          name := s!"{func}_iteration_pattern"
+          name := "natural_number_sequence"
           created := 0
           parent := none
-          interestingness := 0.7
+          interestingness := 0.8
           useCount := 0
           successCount := 0
           specializationDepth := 0
@@ -1070,15 +1157,59 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
         }
         patterns := patterns ++ [
           ConceptData.pattern
-            s!"{func}_iteration_pattern"
-            s!"Repeated application of {func}"
-            apps
+            "natural_number_sequence"
+            "Sequence: 0, 1, 2, ... (natural numbers via successor)"
+            sequenceNames
             patternMeta
         ]
 
+    -- Look for function iteration patterns
+    let applications := concepts.filter fun c => match c with
+      | ConceptData.definition n _ v _ _ m =>
+        m.generationMethod == "application" && ((n.splitOn "_applied_to_").length > 1) && !v.hasLooseBVars
+      | _ => false
+
+    if applications.length >= 3 then
+      -- Check for repeated application of same function
+      let mut functionApplications : List (String × List String) := []
+
+      for c in applications do
+        let name := getConceptName c
+        let parts := name.splitOn "_applied_to_"
+        if parts.length > 0 then
+          let func := parts.head!
+          match functionApplications.find? (·.1 == func) with
+          | some (_, apps) =>
+            functionApplications := functionApplications.filter (·.1 != func) ++ [(func, apps ++ [name])]
+          | none =>
+            functionApplications := functionApplications ++ [(func, [name])]
+
+      for (func, apps) in functionApplications do
+        if apps.length >= 2 then
+          let patternMeta := {
+            name := s!"{func}_iteration_pattern"
+            created := 0
+            parent := none
+            interestingness := 0.7
+            useCount := 0
+            successCount := 0
+            specializationDepth := 0
+            generationMethod := "pattern_recognition"
+          }
+          patterns := patterns ++ [
+            ConceptData.pattern
+              s!"{func}_iteration_pattern"
+              s!"Repeated application of {func}"
+              apps
+              patternMeta
+          ]
+  catch _ =>
+    -- If anything fails, just return what we have so far
+    pure ()
+
   return patterns
 
-/-- Conjecture generation heuristic (re‑organised so that each pattern is executed **once** instead of once per function‑pair). -/
+/-- Conjecture generation heuristic with FIX for loose bvar -/
 def conjectureGenerationHeuristic : HeuristicFn :=
   fun cfg concepts => do
     if !cfg.enableConjectures then
@@ -1117,26 +1248,28 @@ def conjectureGenerationHeuristic : HeuristicFn :=
           match (t₁, t₂) with
           | ((.forallE _ A₁ _ _), (.forallE _ _  B₂ _)) =>
               if ← isDefEq B₂ A₁ then
-                let natTy := mkConst ``Nat
-                let z     := mkConst ``Nat.zero
-                let one   := mkApp (mkConst ``Nat.succ) z
-                let comp0 := mkApp v₁ (mkApp v₂ z)
-                let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
-                for (idx, cand) in candidates do
-                  let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
-                  let ev   ← calculateConjectureEvidence stmt kb
-                  conjectures := conjectures ++
-                    [ ConceptData.conjecture
-                        s!"{f₁}_comp_{f₂}_eq_{idx}"
-                        stmt ev
-                        { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
-                          created            := 0
-                          parent             := none
-                          interestingness    := 0.7
-                          useCount           := 0
-                          successCount       := 0
-                          specializationDepth:= 1
-                          generationMethod   := "composition_pattern" } ]
+                -- Safety check: only compose if the functions are not complex
+                if !v₁.hasLooseBVars && !v₂.hasLooseBVars then
+                  let natTy := mkConst ``Nat
+                  let z     := mkConst ``Nat.zero
+                  let one   := mkApp (mkConst ``Nat.succ) z
+                  let comp0 := mkApp v₁ (mkApp v₂ z)
+                  let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
+                  for (idx, cand) in candidates do
+                    let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
+                    let ev   ← calculateConjectureEvidence stmt kb
+                    conjectures := conjectures ++
+                      [ ConceptData.conjecture
+                          s!"{f₁}_comp_{f₂}_eq_{idx}"
+                          stmt ev
+                          { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
+                            created            := 0
+                            parent             := none
+                            interestingness    := 0.7
+                            useCount           := 0
+                            successCount       := 0
+                            specializationDepth:= 1
+                            generationMethod   := "composition_pattern" } ]
           | _ => pure ()
 
     -- PATTERN 2: Preservation: theorems × functions (once)
@@ -1145,62 +1278,64 @@ def conjectureGenerationHeuristic : HeuristicFn :=
         for (fn, fv, ft) in functions do
           match ft with
           | Expr.forallE _ (.const ``Nat _) (.const ``Nat _) _ => do
-              let natTy := mkConst ``Nat
-              let z     := mkConst ``Nat.zero
-              let one   := mkApp (mkConst ``Nat.succ) z
-              let stmt  := mkApp3 (mkConst ``Eq [levelOne])
-                                  natTy (mkApp fv z) (mkApp fv one)
-              let ev ← calculateConjectureEvidence stmt kb
-              conjectures := conjectures ++
-                [ ConceptData.conjecture
-                    s!"{fn}_preserves_{thm}_maybe"
-                    stmt ev
-                    { name := s!"{fn}_preserves_{thm}_maybe",
-                      created := 0, parent := some thm,
-                      interestingness := 0.5, useCount := 0, successCount := 0,
-                      specializationDepth := 1,
-                      generationMethod := "preservation_pattern" } ]
+              if !fv.hasLooseBVars then
+                let natTy := mkConst ``Nat
+                let z     := mkConst ``Nat.zero
+                let one   := mkApp (mkConst ``Nat.succ) z
+                let stmt  := mkApp3 (mkConst ``Eq [levelOne])
+                                    natTy (mkApp fv z) (mkApp fv one)
+                let ev ← calculateConjectureEvidence stmt kb
+                conjectures := conjectures ++
+                  [ ConceptData.conjecture
+                      s!"{fn}_preserves_{thm}_maybe"
+                      stmt ev
+                      { name := s!"{fn}_preserves_{thm}_maybe",
+                        created := 0, parent := some thm,
+                        interestingness := 0.5, useCount := 0, successCount := 0,
+                        specializationDepth := 1,
+                        generationMethod := "preservation_pattern" } ]
           | _ => pure ()
 
     -- PATTERN 3: Fixed‑point & Homomorphism: functions (once)
     for (fn, fv, ft) in functions do
       match ft with
       | Expr.forallE _ (.const ``Nat _) (.const ``Nat _) _ => do
-          -- 3a. fixed point f 0 = 0
-          let natTy := mkConst ``Nat
-          let z     := mkConst ``Nat.zero
-          let stmt1 := mkApp3 (mkConst ``Eq [levelOne])
-                              natTy (mkApp fv z) z
-          let ev1 ← calculateConjectureEvidence stmt1 kb
-          conjectures := conjectures ++
-            [ ConceptData.conjecture
-                s!"{fn}_fixed_point_zero"
-                stmt1 ev1
-                { name := s!"{fn}_fixed_point_zero",
-                  created := 0, parent := none,
-                  interestingness := 0.6, useCount := 0, successCount := 0,
-                  specializationDepth := 1,
-                  generationMethod := "fixed_point_search" } ]
+          if !fv.hasLooseBVars then
+            -- 3a. fixed point f 0 = 0
+            let natTy := mkConst ``Nat
+            let z     := mkConst ``Nat.zero
+            let stmt1 := mkApp3 (mkConst ``Eq [levelOne])
+                                natTy (mkApp fv z) z
+            let ev1 ← calculateConjectureEvidence stmt1 kb
+            conjectures := conjectures ++
+              [ ConceptData.conjecture
+                  s!"{fn}_fixed_point_zero"
+                  stmt1 ev1
+                  { name := s!"{fn}_fixed_point_zero",
+                    created := 0, parent := none,
+                    interestingness := 0.6, useCount := 0, successCount := 0,
+                    specializationDepth := 1,
+                    generationMethod := "fixed_point_search" } ]
 
-          -- 3b. homomorphism  ∀ x y, f(x+y)=f x + f y
-          let stmt2 ← Lean.Meta.withLocalDecl `x .default natTy fun xVar => do
-            Lean.Meta.withLocalDecl `y .default natTy fun yVar => do
-              let add := mkConst ``Nat.add
-              let eq  := mkConst ``Eq  [levelOne]
-              let fxy := mkApp fv (mkApp2 add xVar yVar)
-              let rhs := mkApp2 add (mkApp fv xVar) (mkApp fv yVar)
-              let body := mkApp3 eq natTy fxy rhs
-              Lean.Meta.mkForallFVars #[xVar,yVar] body
-          let ev2 ← calculateConjectureEvidence stmt2 kb
-          conjectures := conjectures ++
-            [ ConceptData.conjecture
-                s!"{fn}_homomorphism"
-                stmt2 ev2
-                { name := s!"{fn}_homomorphism",
-                  created := 0, parent := some fn,
-                  interestingness := 0.7, useCount := 0, successCount := 0,
-                  specializationDepth := 1,
-                  generationMethod := "homomorphism_pattern" } ]
+            -- 3b. homomorphism  ∀ x y, f(x+y)=f x + f y
+            let stmt2 ← Lean.Meta.withLocalDecl `x .default natTy fun xVar => do
+              Lean.Meta.withLocalDecl `y .default natTy fun yVar => do
+                let add := mkConst ``Nat.add
+                let eq  := mkConst ``Eq  [levelOne]
+                let fxy := mkApp fv (mkApp2 add xVar yVar)
+                let rhs := mkApp2 add (mkApp fv xVar) (mkApp fv yVar)
+                let body := mkApp3 eq natTy fxy rhs
+                Lean.Meta.mkForallFVars #[xVar,yVar] body
+            let ev2 ← calculateConjectureEvidence stmt2 kb
+            conjectures := conjectures ++
+              [ ConceptData.conjecture
+                  s!"{fn}_homomorphism"
+                  stmt2 ev2
+                  { name := s!"{fn}_homomorphism",
+                    created := 0, parent := some fn,
+                    interestingness := 0.7, useCount := 0, successCount := 0,
+                    specializationDepth := 1,
+                    generationMethod := "homomorphism_pattern" } ]
       | _ => pure ()
 
     -- PATTERN 4: Concrete add_comm conjecture
@@ -1288,11 +1423,12 @@ def specializationHeuristic : HeuristicFn := fun config concepts => do
 def applicationHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts := []
 
-  -- Get cache from somewhere (we'd need to pass kb to heuristics for this to work properly)
-  -- For now, we'll just check if the concept already exists
-
   let definitions := concepts.filterMap fun c => match c with
-    | ConceptData.definition n t v _ d m => some (n, t, v, d, m)
+    | ConceptData.definition n t v _ d m =>
+      -- Check for loose bvars in both type and value
+      if !t.hasLooseBVars && !v.hasLooseBVars then
+        some (n, t, v, d, m)
+      else none
     | _ => none
 
   for (fname, ftype, fvalue, fdeps, fmeta) in definitions do
@@ -1316,33 +1452,39 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
         if !alreadyTried && fname != aname && ameta.specializationDepth < 2 then
           let atype ← inferType avalue
           if ← isDefEq atype argType then
-            -- Apply function to argument
-            let resultValue := mkApp fvalue avalue
-            let resultType ← inferType resultValue
+            try
+              -- Apply function to argument
+              let resultValue := mkApp fvalue avalue
+              -- Check the result doesn't have loose bvars
+              if !resultValue.hasLooseBVars then
+                let resultType ← inferType resultValue
 
-            -- Check if this reduces to something simpler
-            let _ ← whnf resultValue
-            let resultName := proposedName
+                -- Check if this reduces to something simpler
+                let _ ← whnf resultValue
+                let resultName := proposedName
 
-            let newMeta := {
-              name := resultName
-              created := 0
-              parent := some fname
-              interestingness := 0.0
-              useCount := 0
-              successCount := 0
-              specializationDepth := max fmeta.specializationDepth ameta.specializationDepth + 1
-              generationMethod := "application"
-            }
-            newConcepts := newConcepts ++ [
-              ConceptData.definition resultName resultType resultValue none (fdeps ++ adeps ++ [aname]) newMeta
-            ]
-            applicationCount := applicationCount + 1
+                let newMeta := {
+                  name := resultName
+                  created := 0
+                  parent := some fname
+                  interestingness := 0.0
+                  useCount := 0
+                  successCount := 0
+                  specializationDepth := max fmeta.specializationDepth ameta.specializationDepth + 1
+                  generationMethod := "application"
+                }
+                newConcepts := newConcepts ++ [
+                  ConceptData.definition resultName resultType resultValue none (fdeps ++ adeps ++ [aname]) newMeta
+                ]
+                applicationCount := applicationCount + 1
+            catch _ =>
+              -- Skip if application fails
+              pure ()
     | _ => pure ()
 
   return newConcepts
 
-/-- Compose existing concepts to create new ones. -/
+/-- Compose existing concepts to create new ones (FIXED). -/
 def compositionHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
 
@@ -1359,40 +1501,43 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
       if f₁ ≠ f₂ then
         match (t₁, t₂) with
         | ((.forallE _ A₁ B₁ _), (.forallE _ A₂ B₂ _)) =>
+            -- Check if we can compose: output of f₂ matches input of f₁
             if ← isDefEq B₂ A₁ then
               let compName := s!"{f₁}_compose_{f₂}"
               unless concepts.any (fun c => getConceptName c = compName) do
+                -- Additional safety check: ensure no loose bvars
+                if !v₁.hasLooseBVars && !v₂.hasLooseBVars then
+                  try
+                    -- Build the composed value safely
+                    let compVal ← mkSafeLambda `x A₂ fun x => do
+                      let f₂x := mkApp v₂ x
+                      pure (mkApp v₁ f₂x)
 
-                -- Build the composed value
-                let compVal ← mkSafeLambda `x A₂ fun x => do
-                  let f₂x := mkApp v₂ x
-                  pure <| mkApp v₁ f₂x
+                    -- Build the composed type safely
+                    let compType ← mkSafeForall `x A₂ fun x => do
+                      let f₂x := mkApp v₂ x
+                      let body := mkApp v₁ f₂x
+                      inferType body
 
-                -- Build the composed type
-                let compType ← mkSafeForall `x A₂ fun x => do
-                  let f₂x := mkApp v₂ x
-                  let body := mkApp v₁ f₂x
-                  inferType body
+                    -- Create the concept data
+                    let compDef := ConceptData.definition compName compType compVal none (d₁ ++ d₂)
+                      { name := compName
+                        created := 0
+                        parent  := some f₁
+                        interestingness := 0.7
+                        useCount := 0
+                        successCount := 0
+                        specializationDepth :=
+                          max m₁.specializationDepth m₂.specializationDepth + 1
+                        generationMethod := "composition" }
 
-                -- Create the concept data (this happens after the do blocks complete)
-                let compDef := ConceptData.definition compName compType compVal none (d₁ ++ d₂)
-                  { name := compName
-                    created := 0
-                    parent  := some f₁
-                    interestingness := 0.7
-                    useCount := 0
-                    successCount := 0
-                    specializationDepth :=
-                      max m₁.specializationDepth m₂.specializationDepth + 1
-                    generationMethod := "composition" }
-
-                -- Append to newConcepts (this is outside any closure)
-                newConcepts := compDef :: newConcepts
+                    newConcepts := compDef :: newConcepts
+                  catch _ =>
+                    -- Skip if composition fails
+                    pure ()
         | _ => pure ()
 
   return newConcepts.reverse
-
-
 
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
