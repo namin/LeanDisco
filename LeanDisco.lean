@@ -905,6 +905,8 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   let evaluatedConcepts ← evaluate kb discoveries
 
   if evaluatedConcepts.length > 0 then
+    IO.println s!"{evaluatedConcepts.length} new concepts discovered this iteration"
+
     showDiscoveredConcepts evaluatedConcepts
 
     -- Count by method manually
