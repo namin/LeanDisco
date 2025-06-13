@@ -1,0 +1,1127 @@
+=== Starting Eurisko Discovery System ===
+Config: maxDepth=4, maxPerIter=1000
+Features: conjectures=true, patterns=true
+Mining mode: ON
+Initializing with mathematical seed concepts...
+[DEBUG] cleanupConcepts: starting with 2915 concepts
+[DEBUG] After filterInternalTerms: 2915 concepts
+[DEBUG] After filterByDepth: 2915 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 2915 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: DivisionMonoid.zpow._inherited_default duplicates DivisionCommMonoid.zpow._inherited_default
+[DEBUG] Duplicate found: add_left_inj duplicates add_right_cancel_iff
+[DEBUG] Duplicate found: zpow_natCast duplicates zpow_ofNat
+[DEBUG] Duplicate found: Monoid.npow_zero._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: NonUnitalNonAssocRing.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: CommRing.natCast._inherited_default duplicates Semiring.natCast._inherited_default
+[DEBUG] Duplicate found: DivInvOneMonoid.npow._inherited_default duplicates CancelCommMonoidWithZero.npow._inherited_default
+[DEBUG] Duplicate found: LeftCancelMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: DivInvMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: InvolutiveInv.casesOn duplicates InvolutiveInv.recOn
+[DEBUG] Duplicate found: SubNegMonoid.sub_eq_add_neg._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: SubtractionCommMonoid.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: AddCommute.nsmul_nsmul_self duplicates nsmul_add_comm
+[DEBUG] Duplicate found: pullback_nonzero duplicates domain_nontrivial
+[DEBUG] Duplicate found: DivInvMonoid.div._default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: MonoidHom.flipHom_apply duplicates MonoidHom.flip.eq_1
+[DEBUG] Duplicate found: NonUnitalSemiring.casesOn duplicates NonUnitalSemiring.recOn
+[DEBUG] Duplicate found: AddCommSemigroup.recOn duplicates AddCommSemigroup.casesOn
+[DEBUG] Duplicate found: CommRing.intCast._inherited_default duplicates Ring.intCast._inherited_default
+[DEBUG] Duplicate found: CommGroupWithZero.casesOn duplicates CommGroupWithZero.recOn
+[DEBUG] Duplicate found: pow_mul_comm' duplicates Commute.pow_self
+[DEBUG] Duplicate found: CommGroup.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: DivInvOneMonoid.zpow._inherited_default duplicates CommGroupWithZero.zpow._inherited_default
+[DEBUG] Duplicate found: Nat.add_one_pos duplicates Nat.zero_lt_succ
+[DEBUG] Duplicate found: DivInvOneMonoid.recOn duplicates DivInvOneMonoid.casesOn
+[DEBUG] Duplicate found: mul_add duplicates left_distrib
+[DEBUG] Duplicate found: AddCommGroup.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: AddMonoidHom.id_comp duplicates AddMonoidHom.comp_id
+[DEBUG] Duplicate found: LeftCancelSemigroup.recOn duplicates LeftCancelSemigroup.casesOn
+[DEBUG] Duplicate found: CancelMonoidWithZero.npow._inherited_default duplicates CancelCommMonoidWithZero.npow._inherited_default
+[DEBUG] Duplicate found: DivInvMonoid.zpow_neg'._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: DivisionMonoid.div._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: GroupWithZero.zpow._inherited_default duplicates DivisionCommMonoid.zpow._inherited_default
+[DEBUG] Duplicate found: rightInverse_neg duplicates neg_involutive
+[DEBUG] Duplicate found: self_eq_add_right duplicates left_eq_add
+[DEBUG] Duplicate found: Nat.succ_le_of_lt duplicates Nat.add_one_le_of_lt
+[DEBUG] Duplicate found: DivInvOneMonoid.div._inherited_default duplicates SubNegZeroMonoid.sub._inherited_default
+[DEBUG] Duplicate found: AddLeftCancelMonoid.casesOn duplicates AddLeftCancelMonoid.recOn
+[DEBUG] Duplicate found: MulHom.casesOn duplicates MulHom.recOn
+[DEBUG] Duplicate found: Nat.mul_div_cancel_left duplicates Nat.mul_div_right
+[DEBUG] Duplicate found: Nat.succ_mul_succ_eq duplicates Nat.add_one_mul_add_one
+[DEBUG] Duplicate found: AddGroup.recOn duplicates AddGroup.casesOn
+[DEBUG] Duplicate found: AddMonoid.nsmul_zero._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: Nat.mul_lt_mul'' duplicates Nat.mul_lt_mul_of_lt_of_lt
+[DEBUG] Duplicate found: SubNegMonoid.sub._default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: IsRightCancelMulZero.casesOn duplicates IsRightCancelMulZero.recOn
+[DEBUG] Duplicate found: Nat.add_left_eq_self duplicates Nat.add_eq_right
+[DEBUG] Duplicate found: NonUnitalCommSemiring.recOn duplicates NonUnitalCommSemiring.casesOn
+[DEBUG] Duplicate found: GroupWithZero.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: leftInverse_neg duplicates neg_involutive
+[DEBUG] Duplicate found: MonoidHom.comp_id duplicates MonoidHom.id_comp
+[DEBUG] Duplicate found: CancelMonoid.recOn duplicates CancelMonoid.casesOn
+[DEBUG] Duplicate found: Nat.add_one duplicates Nat.succ_eq_add_one
+[DEBUG] Duplicate found: NonAssocRing.recOn duplicates NonAssocRing.casesOn
+[DEBUG] Duplicate found: SemiconjBy.one_right duplicates Commute.one_right
+[DEBUG] Duplicate found: Nat.zero_pow_of_pos duplicates Nat.zero_pow
+[DEBUG] Duplicate found: DivisionCommMonoid.div._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: AddCommute.nsmul_self duplicates nsmul_add_comm'
+[DEBUG] Duplicate found: add_left_eq_self duplicates add_eq_right
+[DEBUG] Duplicate found: Nat.succ_pred_eq_of_pos duplicates Nat.sub_one_add_one_eq_of_pos
+[DEBUG] Duplicate found: IsLeftCancelAdd.recOn duplicates IsLeftCancelAdd.casesOn
+[DEBUG] Duplicate found: RightCancelSemigroup.casesOn duplicates RightCancelSemigroup.recOn
+[DEBUG] Duplicate found: Nat.add_one_ne_add_one_iff duplicates Nat.succ_ne_succ
+[DEBUG] Duplicate found: Nat.sub_mul duplicates Nat.mul_sub_right_distrib
+[DEBUG] Duplicate found: Nat.succ_ne_succ_iff duplicates Nat.succ_ne_succ
+[DEBUG] Duplicate found: NegZeroClass.recOn duplicates NegZeroClass.casesOn
+[DEBUG] Duplicate found: Monoid.npow._default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: SubNegMonoid.casesOn duplicates SubNegMonoid.recOn
+[DEBUG] Duplicate found: rightInverse_inv duplicates inv_involutive
+[DEBUG] Duplicate found: AddMonoidHom.casesOn duplicates AddMonoidHom.recOn
+[DEBUG] Duplicate found: Nat.mul_sub duplicates Nat.mul_sub_left_distrib
+[DEBUG] Duplicate found: Ring.recOn duplicates Ring.casesOn
+[DEBUG] Duplicate found: SemigroupWithZero.casesOn duplicates SemigroupWithZero.recOn
+[DEBUG] Duplicate found: left_ne_add duplicates self_ne_add_right
+[DEBUG] Duplicate found: MulZeroOneClass.casesOn duplicates MulZeroOneClass.recOn
+[DEBUG] Duplicate found: NonUnitalRing.recOn duplicates NonUnitalRing.casesOn
+[DEBUG] Duplicate found: AddRightCancelSemigroup.casesOn duplicates AddRightCancelSemigroup.recOn
+[DEBUG] Duplicate found: CancelCommMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: NonUnitalNonAssocCommSemiring.recOn duplicates NonUnitalNonAssocCommSemiring.casesOn
+[DEBUG] Duplicate found: CommRing.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: OneHom.recOn duplicates OneHom.casesOn
+[DEBUG] Duplicate found: AddMonoidHom.toFun_eq_coe duplicates AddMonoidHom.toZeroHom_coe
+[DEBUG] Duplicate found: AddCommGroup.casesOn duplicates AddCommGroup.recOn
+[DEBUG] Duplicate found: div_div_self' duplicates div_div_cancel
+[DEBUG] Duplicate found: Nat.succ_pred_eq_of_ne_zero duplicates Nat.succ_pred
+[DEBUG] Duplicate found: right_eq_add duplicates self_eq_add_left
+[DEBUG] Duplicate found: Nat.add_sub_cancel_left duplicates Nat.add_sub_self_left
+[DEBUG] Duplicate found: AddMonoidHom.mul duplicates AddMonoid.End.mulLeft
+[DEBUG] Duplicate found: mul_left_ne_self duplicates mul_ne_right
+[DEBUG] Duplicate found: MulOneClass.recOn duplicates MulOneClass.casesOn
+[DEBUG] Duplicate found: Group.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: sub_mul duplicates mul_sub_right_distrib
+[DEBUG] Duplicate found: CommMonoidWithZero.casesOn duplicates CommMonoidWithZero.recOn
+[DEBUG] Duplicate found: IsCancelMulZero.casesOn duplicates IsCancelMulZero.recOn
+[DEBUG] Duplicate found: CommGroupWithZero.npow._inherited_default duplicates CancelCommMonoidWithZero.npow._inherited_default
+[DEBUG] Duplicate found: Nat.succ_inj' duplicates Nat.add_one_inj
+[DEBUG] Duplicate found: mul_div duplicates mul_div_assoc'
+[DEBUG] Duplicate found: CommSemiring.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: HasDistribNeg.recOn duplicates HasDistribNeg.casesOn
+[DEBUG] Duplicate found: AddRightCancelMonoid.casesOn duplicates AddRightCancelMonoid.recOn
+[DEBUG] Duplicate found: Nat.sub_succ' duplicates Nat.sub_succ
+[DEBUG] Duplicate found: Nat.add_comm duplicates add_comm
+[DEBUG] Duplicate found: MulOneClass.mul_one duplicates mul_one
+[DEBUG] Duplicate found: Group.zpow._inherited_default duplicates DivisionCommMonoid.zpow._inherited_default
+[DEBUG] Duplicate found: Semiring.recOn duplicates Semiring.casesOn
+[DEBUG] Duplicate found: Nat.add_one_sub_one duplicates Nat.sub_zero
+[DEBUG] Duplicate found: ofNat_zsmul duplicates natCast_zsmul
+[DEBUG] Duplicate found: Nat.add_succ_sub_one duplicates Nat.add_eq
+[DEBUG] Duplicate found: SubNegMonoid.zsmul_succ'._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: Nat.succ_mul_succ duplicates Nat.add_one_mul_add_one
+[DEBUG] Duplicate found: SubNegMonoid.zsmul_zero'._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: DivInvMonoid.div_eq_mul_inv._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: Monoid.coe_mul duplicates Monoid.End.coe_mul
+[DEBUG] Duplicate found: SubtractionMonoid.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: Nat.succ_sub_one duplicates Nat.sub_zero
+[DEBUG] Duplicate found: Nat.sub_one_add_one duplicates Nat.succ_pred
+[DEBUG] Duplicate found: AddMonoid.recOn duplicates AddMonoid.casesOn
+[DEBUG] Duplicate found: Ring.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: left_eq_mul duplicates self_eq_mul_right
+[DEBUG] Duplicate found: AddCommute.zero_right duplicates AddSemiconjBy.zero_right
+[DEBUG] Duplicate found: Nat.succ_pos duplicates Nat.zero_lt_succ
+[DEBUG] Duplicate found: CommGroup.div._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: AddMonoidHom.toAddHom_coe duplicates AddMonoidHom.toZeroHom_coe
+[DEBUG] Duplicate found: AddMonoidHom.flip.eq_1 duplicates AddMonoidHom.flipHom_apply
+[DEBUG] Duplicate found: AddCommute.eq duplicates AddCommute.addSemiconjBy
+[DEBUG] Duplicate found: Ring.natCast._inherited_default duplicates Semiring.natCast._inherited_default
+[DEBUG] Duplicate found: ZeroHomClass.recOn duplicates ZeroHomClass.casesOn
+[DEBUG] Duplicate found: add_right_eq_self duplicates add_eq_left
+[DEBUG] Duplicate found: DivInvMonoid.recOn duplicates DivInvMonoid.casesOn
+[DEBUG] Duplicate found: ZeroHom.recOn duplicates ZeroHom.casesOn
+[DEBUG] Duplicate found: mul_right_injective duplicates mul_left_cancel
+[DEBUG] Duplicate found: inv_neg' duplicates inv_neg
+[DEBUG] Duplicate found: Nat.mul_one duplicates Nat.zero_add
+[DEBUG] Duplicate found: IsCancelMul.casesOn duplicates IsCancelMul.recOn
+[DEBUG] Duplicate found: CancelCommMonoid.recOn duplicates CancelCommMonoid.casesOn
+[DEBUG] Duplicate found: Semigroup.recOn duplicates Semigroup.casesOn
+[DEBUG] Duplicate found: AddZeroClass.zero_add duplicates zero_add
+[DEBUG] Duplicate found: SubtractionCommMonoid.recOn duplicates SubtractionCommMonoid.casesOn
+[DEBUG] Duplicate found: Nat.succ_le_succ_iff duplicates Nat.add_one_le_add_one_iff
+[DEBUG] Duplicate found: Group.div._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: Nat.add_sub_cancel duplicates Nat.add_sub_self_right
+[DEBUG] Duplicate found: InvOneClass.recOn duplicates InvOneClass.casesOn
+[DEBUG] Duplicate found: Nat.succ_inj duplicates Nat.add_one_inj
+[DEBUG] Duplicate found: CommSemiring.natCast._inherited_default duplicates Semiring.natCast._inherited_default
+[DEBUG] Duplicate found: IsLeftCancelMulZero.casesOn duplicates IsLeftCancelMulZero.recOn
+[DEBUG] Duplicate found: DivisionMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: leftInverse_inv duplicates inv_involutive
+[DEBUG] Duplicate found: SemiconjBy.one_left duplicates Commute.one_left
+[DEBUG] Duplicate found: CommGroupWithZero.div._inherited_default duplicates SubNegZeroMonoid.sub._inherited_default
+[DEBUG] Duplicate found: Monoid.coe_one duplicates Monoid.End.coe_one
+[DEBUG] Duplicate found: right_ne_add duplicates self_ne_add_left
+[DEBUG] Duplicate found: Nat.mul_add_one duplicates Nat.mul_succ
+[DEBUG] Duplicate found: Nat.zero_lt_sub_of_lt duplicates Nat.sub_pos_of_lt
+[DEBUG] Duplicate found: CommRing.recOn duplicates CommRing.casesOn
+[DEBUG] Duplicate found: right_distrib duplicates add_mul
+[DEBUG] Duplicate found: SubNegZeroMonoid.casesOn duplicates SubNegZeroMonoid.recOn
+[DEBUG] Duplicate found: mul_right_inj duplicates mul_left_cancel_iff
+[DEBUG] Duplicate found: division_def duplicates div_eq_mul_inv
+[DEBUG] Duplicate found: CommSemigroup.recOn duplicates CommSemigroup.casesOn
+[DEBUG] Duplicate found: NonAssocSemiring.natCast._inherited_default duplicates Semiring.natCast._inherited_default
+[DEBUG] Duplicate found: NonAssocSemiring.casesOn duplicates NonAssocSemiring.recOn
+[DEBUG] Duplicate found: GroupWithZero.inv_zero duplicates inv_zero
+[DEBUG] Duplicate found: Nat.succ_le_iff duplicates Nat.succ_le
+[DEBUG] Duplicate found: sub_sub_self duplicates sub_sub_cancel
+[DEBUG] Duplicate found: CancelCommMonoidWithZero.casesOn duplicates CancelCommMonoidWithZero.recOn
+[DEBUG] Duplicate found: CancelMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: IsMulCommutative.casesOn duplicates IsMulCommutative.recOn
+[DEBUG] Duplicate found: CommGroup.casesOn duplicates CommGroup.recOn
+[DEBUG] Duplicate found: self_ne_mul_left duplicates right_ne_mul
+[DEBUG] Duplicate found: CommRing.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: IsDomain.recOn duplicates IsDomain.casesOn
+[DEBUG] Duplicate found: DivisionCommMonoid.recOn duplicates DivisionCommMonoid.casesOn
+[DEBUG] Duplicate found: Monoid.casesOn duplicates Monoid.recOn
+[DEBUG] Duplicate found: NonUnitalNonAssocCommRing.casesOn duplicates NonUnitalNonAssocCommRing.recOn
+[DEBUG] Duplicate found: Nat.zero_eq duplicates zero_eq_zero
+[DEBUG] Duplicate found: DivisionMonoid.recOn duplicates DivisionMonoid.casesOn
+[DEBUG] Duplicate found: add_sq duplicates add_pow_two
+[DEBUG] Duplicate found: RightDistribClass.casesOn duplicates RightDistribClass.recOn
+[DEBUG] Duplicate found: Monoid.npow_succ._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: Nat.add_one_ne_zero duplicates Nat.succ_ne_zero
+[DEBUG] Duplicate found: AddZeroClass.add_zero duplicates add_zero
+[DEBUG] Duplicate found: IsRightCancelAdd.casesOn duplicates IsRightCancelAdd.recOn
+[DEBUG] Duplicate found: mul_eq_right duplicates mul_left_eq_self
+[DEBUG] Duplicate found: Ring.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: Nat.add_right_eq_self duplicates Nat.add_eq_left
+[DEBUG] Duplicate found: NonUnitalRing.sub._inherited_default duplicates NonAssocRing.sub._inherited_default
+[DEBUG] Duplicate found: SubNegMonoid.zsmul_neg'._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: AddCommMagma.casesOn duplicates AddCommMagma.recOn
+[DEBUG] Duplicate found: mul_sub_left_distrib duplicates mul_sub
+[DEBUG] Duplicate found: NonUnitalNonAssocRing.recOn duplicates NonUnitalNonAssocRing.casesOn
+[DEBUG] Duplicate found: MonoidHom.recOn duplicates MonoidHom.casesOn
+[DEBUG] Duplicate found: Nat.succ_add_eq_add_succ duplicates Nat.succ_add
+[DEBUG] Duplicate found: sq duplicates pow_two
+[DEBUG] Duplicate found: AddZeroClass.recOn duplicates AddZeroClass.casesOn
+[DEBUG] Duplicate found: MonoidWithZero.recOn duplicates MonoidWithZero.casesOn
+[DEBUG] Duplicate found: add_ne_right duplicates add_left_ne_self
+[DEBUG] Duplicate found: AddCancelCommMonoid.recOn duplicates AddCancelCommMonoid.casesOn
+[DEBUG] Duplicate found: MulDivCancelClass.casesOn duplicates MulDivCancelClass.recOn
+[DEBUG] Duplicate found: AddMonoidHomClass.recOn duplicates AddMonoidHomClass.casesOn
+[DEBUG] Duplicate found: pow_mul_comm duplicates Commute.pow_pow_self
+[DEBUG] Duplicate found: self_eq_mul_left duplicates right_eq_mul
+[DEBUG] Duplicate found: Nat.mul_add_mod' duplicates Nat.mul_add_mod_self_right
+[DEBUG] Duplicate found: GroupWithZero.div._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: Nat.mul_div_cancel duplicates Nat.mul_div_left
+[DEBUG] Duplicate found: NoZeroDivisors.recOn duplicates NoZeroDivisors.casesOn
+[DEBUG] Duplicate found: NonUnitalNonAssocCommRing.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: AddSemigroup.recOn duplicates AddSemigroup.casesOn
+[DEBUG] Duplicate found: IsAddCyclic.casesOn duplicates IsAddCyclic.recOn
+[DEBUG] Duplicate found: add_ne_left duplicates add_right_ne_self
+[DEBUG] Duplicate found: mul_right_ne_self duplicates mul_ne_left
+[DEBUG] Duplicate found: Nat.add_one_mul duplicates Nat.succ_mul
+[DEBUG] Duplicate found: NonUnitalCommRing.recOn duplicates NonUnitalCommRing.casesOn
+[DEBUG] Duplicate found: Nat.sub_lt_add_one duplicates Nat.sub_lt_succ
+[DEBUG] Duplicate found: AddMonoid.nsmul_succ._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: AddCommMonoid.recOn duplicates AddCommMonoid.casesOn
+[DEBUG] Duplicate found: Nat.succ_sub_succ duplicates Nat.succ_sub_succ_eq_sub
+[DEBUG] Duplicate found: GroupWithZero.mul_inv_cancel duplicates mul_inv_cancel₀
+[DEBUG] Duplicate found: Nat.add_one_le_iff duplicates Nat.succ_le
+[DEBUG] Duplicate found: MonoidHom.toFun_eq_coe duplicates MonoidHom.toMulHom_coe
+[DEBUG] Duplicate found: Nat.succ_succ_ne_one duplicates Nat.add_one_add_one_ne_one
+[DEBUG] Duplicate found: DivInvMonoid.zpow_succ'._autoParam duplicates DivInvMonoid.zpow_zero'._autoParam
+[DEBUG] Duplicate found: AddHom.id_comp duplicates AddHom.comp_id
+[DEBUG] Duplicate found: MonoidHomClass.recOn duplicates MonoidHomClass.casesOn
+[DEBUG] Duplicate found: ZeroHom.id_comp duplicates ZeroHom.comp_id
+[DEBUG] Duplicate found: Semiring.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: RightCancelMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: CommSemiring.recOn duplicates CommSemiring.casesOn
+[DEBUG] Duplicate found: MulHomClass.recOn duplicates MulHomClass.casesOn
+[DEBUG] Duplicate found: add_right_injective duplicates add_left_cancel
+[DEBUG] Duplicate found: Nat.mul_add_mod duplicates Nat.mul_add_mod_self_left
+[DEBUG] Duplicate found: OneHom.id_comp duplicates OneHom.comp_id
+[DEBUG] Duplicate found: AddMonoidHom.mul_apply duplicates AddMonoidHom.mulRight_apply
+[DEBUG] Duplicate found: IsLeftCancelMul.casesOn duplicates IsLeftCancelMul.recOn
+[DEBUG] Duplicate found: Nat.add_left_inj duplicates Nat.add_right_cancel_iff
+[DEBUG] Duplicate found: Nat.add_eq_zero_iff duplicates Nat.add_eq_zero
+[DEBUG] Duplicate found: Nat.mul_sub_one duplicates Nat.mul_pred
+[DEBUG] Duplicate found: Commute.inv duplicates Commute.mul_inv
+[DEBUG] Duplicate found: mul_right_eq_self duplicates mul_eq_left
+[DEBUG] Duplicate found: AddHom.recOn duplicates AddHom.casesOn
+[DEBUG] Duplicate found: AddCommute.neg duplicates AddCommute.add_neg
+[DEBUG] Duplicate found: IsCancelAdd.recOn duplicates IsCancelAdd.casesOn
+[DEBUG] Duplicate found: MulZeroClass.casesOn duplicates MulZeroClass.recOn
+[DEBUG] Duplicate found: OneHomClass.recOn duplicates OneHomClass.casesOn
+[DEBUG] Duplicate found: Group.recOn duplicates Group.casesOn
+[DEBUG] Duplicate found: IsCyclic.casesOn duplicates IsCyclic.recOn
+[DEBUG] Duplicate found: div_neg duplicates div_neg_eq_neg_div
+[DEBUG] Duplicate found: IsRightCancelMul.casesOn duplicates IsRightCancelMul.recOn
+[DEBUG] Duplicate found: Nat.succ_lt_succ_iff duplicates Nat.add_one_lt_add_one_iff
+[DEBUG] Duplicate found: Distrib.casesOn duplicates Distrib.recOn
+[DEBUG] Duplicate found: LeftDistribClass.recOn duplicates LeftDistribClass.casesOn
+[DEBUG] Duplicate found: add_left_cancel_iff duplicates add_right_inj
+[DEBUG] Duplicate found: Nat.add_left_cancel_iff duplicates Nat.add_right_inj
+[DEBUG] Duplicate found: one_mul duplicates MulOneClass.one_mul
+[DEBUG] Duplicate found: LeftCancelMonoid.recOn duplicates LeftCancelMonoid.casesOn
+[DEBUG] Duplicate found: Nat.sub_one_sub_lt duplicates Nat.sub_one_sub_lt_of_lt
+[DEBUG] Duplicate found: NonUnitalNonAssocSemiring.casesOn duplicates NonUnitalNonAssocSemiring.recOn
+[DEBUG] Duplicate found: AddCommute.zero_left duplicates AddSemiconjBy.zero_left
+[DEBUG] Duplicate found: InvolutiveNeg.casesOn duplicates InvolutiveNeg.recOn
+[DEBUG] Duplicate found: Nat.add_one_ne duplicates Nat.add_one_ne_self
+[DEBUG] Duplicate found: AddMonoid.End.mulLeft_apply_apply duplicates AddMonoidHom.mulRight_apply
+[DEBUG] Duplicate found: RightCancelMonoid.casesOn duplicates RightCancelMonoid.recOn
+[DEBUG] Duplicate found: MonoidHom.toOneHom_coe duplicates MonoidHom.toMulHom_coe
+[DEBUG] Duplicate found: AddHomClass.recOn duplicates AddHomClass.casesOn
+[DEBUG] Duplicate found: Commute.semiconjBy duplicates Commute.eq
+[DEBUG] Duplicate found: SubtractionMonoid.casesOn duplicates SubtractionMonoid.recOn
+[DEBUG] Duplicate found: Nat.succ_ne_self duplicates Nat.add_one_ne_self
+[DEBUG] Duplicate found: self_ne_mul_right duplicates left_ne_mul
+[DEBUG] Duplicate found: Nat.zero_sub_one duplicates zero_eq_zero
+[DEBUG] Duplicate found: Nat.add_zero duplicates Nat.sub_zero
+[DEBUG] Duplicate found: CommMonoid.casesOn duplicates CommMonoid.recOn
+[DEBUG] Duplicate found: MonoidWithZero.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: AddCancelMonoid.casesOn duplicates AddCancelMonoid.recOn
+[DEBUG] Duplicate found: Nat.add_sub_cancel_right duplicates Nat.add_sub_self_right
+[DEBUG] Duplicate found: CommMonoid.npow._inherited_default duplicates DivisionCommMonoid.npow._inherited_default
+[DEBUG] Duplicate found: DivInvMonoid.zpow._default duplicates DivisionCommMonoid.zpow._inherited_default
+[DEBUG] Duplicate found: AddLeftCancelSemigroup.casesOn duplicates AddLeftCancelSemigroup.recOn
+[DEBUG] Duplicate found: add_sub duplicates add_sub_assoc'
+[DEBUG] Duplicate found: IsAddCommutative.recOn duplicates IsAddCommutative.casesOn
+[DEBUG] Duplicate found: Nat.mul_div_cancel_left' duplicates Nat.mul_div_cancel'
+[DEBUG] Duplicate found: CancelMonoidWithZero.casesOn duplicates CancelMonoidWithZero.recOn
+[DEBUG] Duplicate found: AddGroup.sub._inherited_default duplicates NonUnitalCommRing.sub._inherited_default
+[DEBUG] Duplicate found: mul_right_cancel_iff duplicates mul_left_inj
+[DEBUG] Duplicate found: CommMonoidWithZero.npow._inherited_default duplicates CancelCommMonoidWithZero.npow._inherited_default
+[DEBUG] Duplicate found: GroupWithZero.recOn duplicates GroupWithZero.casesOn
+[DEBUG] Duplicate found: Nat.zero_mod duplicates Nat.mul_zero
+[DEBUG] Duplicate found: CommGroup.zpow._inherited_default duplicates DivisionCommMonoid.zpow._inherited_default
+[DEBUG] Duplicate found: MulHom.comp_id duplicates MulHom.id_comp
+[DEBUG] Duplicate found: CommMagma.casesOn duplicates CommMagma.recOn
+[DEBUG] Removed 288 duplicates out of 2915 new concepts
+[DEBUG] After deduplication: 2627 concepts
+[DEBUG] cleanupConcepts: returning 2627 concepts
+
+Initial concepts (317):
+
+Definitions: 118
+Theorems: 189
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 317 concepts
+
+--- Iteration 1 ---
+Building on 317 recent discoveries:
+  - zero
+  - succ
+  - one
+  - two
+  - add
+[DEBUG] Focusing on 39 concepts (from 317 recent, 317 total)
+[DEBUG] Invoking heuristics: [pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 6 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 6 concepts
+[DEBUG] After filterInternalTerms: 6 concepts
+[DEBUG] After filterByDepth: 6 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 6 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 6 concepts
+[DEBUG] cleanupConcepts: returning 6 concepts
+[DEBUG] After cleanup: 6 concepts
+[DEBUG] After verification: 6 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 6 concepts
+[DEBUG] After filterInternalTerms: 6 concepts
+[DEBUG] After filterByDepth: 6 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 6 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Removed 2 duplicates out of 6 new concepts
+[DEBUG] After deduplication: 4 concepts
+[DEBUG] cleanupConcepts: returning 4 concepts
+[DEBUG] After cleanup: 4 concepts
+[DEBUG] After verification: 4 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG] Heuristic lemma_application generated 1 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 1 concepts
+[DEBUG] After filterInternalTerms: 1 concepts
+[DEBUG] After filterByDepth: 1 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 1 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Removed 1 duplicates out of 1 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 1 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 1 concepts
+[DEBUG] After filterInternalTerms: 1 concepts
+[DEBUG] After filterByDepth: 1 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 1 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 1 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 7
+[DEBUG] Heuristic conjecture_generation generated 7 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 7 concepts
+[DEBUG] After filterInternalTerms: 7 concepts
+[DEBUG] After filterByDepth: 7 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 7 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_1
+[DEBUG] Removed 1 duplicates out of 7 new concepts
+[DEBUG] After deduplication: 6 concepts
+[DEBUG] cleanupConcepts: returning 6 concepts
+[DEBUG] After cleanup: 6 concepts
+[DEBUG] After verification: 6 concepts
+[DEBUG] Heuristic composition generated 0 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 0 concepts
+[DEBUG] After filterInternalTerms: 0 concepts
+[DEBUG] After filterByDepth: 0 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 0 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_guided generated 0 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 0 concepts
+[DEBUG] After filterInternalTerms: 0 concepts
+[DEBUG] After filterByDepth: 0 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 0 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+🔢 New Numbers (1):
+  - num_3
+
+🔮 Conjectures (6):
+  - add_comp_succ_eq_0
+    Evidence: 0.305435
+  - add_comp_succ_eq_1
+    Evidence: 0.305435
+  - add_comp_succ_eq_2
+    Evidence: 0.467857
+  - succ_fixed_point_zero
+    Evidence: 0.482895
+  - succ_homomorphism
+    Evidence: 0.340909
+  ... and 1 more
+
+✓ Proven Theorems (6):
+  - add_comm_spec_zero
+    Method: specialization
+  - add_comm_spec_one
+    Method: specialization
+  - add_comm_spec_two
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_one
+    Method: specialization
+
+🔍 Patterns (1):
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Examples: [zero, one, two]
+
+🔧 Function Applications (4):
+  - succ_applied_to_two
+  - add_applied_to_zero
+  - add_applied_to_one
+
+📊 Discovery Summary:
+  specialization: 6 concepts
+  application: 4 concepts
+  pattern_recognition: 1 concepts
+  number_generation: 1 concepts
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 2 ---
+Building on 19 recent discoveries:
+  - num_3
+  - add_comm_spec_zero
+  - add_comm_spec_one
+  - add_comm_spec_two
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+[DEBUG] Focusing on 50 concepts (from 19 recent, 335 total)
+[DEBUG] Invoking heuristics: [pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 10 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 10 concepts
+[DEBUG] After filterInternalTerms: 10 concepts
+[DEBUG] After filterByDepth: 10 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 10 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_succ_applied_to_two duplicates add_comm_spec_num_3
+[DEBUG] Duplicate found: Nat.mul_div_mul_left_spec_succ_applied_to_two duplicates Nat.mul_div_mul_left_spec_num_3
+[DEBUG] Removed 5 duplicates out of 10 new concepts
+[DEBUG] After deduplication: 5 concepts
+[DEBUG] cleanupConcepts: returning 5 concepts
+[DEBUG] After cleanup: 5 concepts
+[DEBUG] After verification: 5 concepts
+[DEBUG] Heuristic application generated 14 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 14 concepts
+[DEBUG] After filterInternalTerms: 14 concepts
+[DEBUG] After filterByDepth: 14 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 14 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: add_applied_to_succ_applied_to_two duplicates add_applied_to_num_3
+[DEBUG] Duplicate found: add_applied_to_two_applied_to_one duplicates succ_applied_to_two
+[DEBUG] Duplicate found: add_applied_to_two_applied_to_two duplicates succ_applied_to_num_3
+[DEBUG] Duplicate found: add_applied_to_two_applied_to_zero duplicates two
+[DEBUG] Duplicate found: add_applied_to_zero_applied_to_one duplicates one
+[DEBUG] Duplicate found: add_applied_to_zero_applied_to_two duplicates two
+[DEBUG] Duplicate found: add_applied_to_zero_applied_to_zero duplicates zero
+[DEBUG] Duplicate found: add_applied_to_one_applied_to_one duplicates two
+[DEBUG] Duplicate found: add_applied_to_one_applied_to_two duplicates succ_applied_to_two
+[DEBUG] Duplicate found: add_applied_to_one_applied_to_zero duplicates one
+[DEBUG] Removed 12 duplicates out of 14 new concepts
+[DEBUG] After deduplication: 2 concepts
+[DEBUG] cleanupConcepts: returning 2 concepts
+[DEBUG] After cleanup: 2 concepts
+[DEBUG] After verification: 2 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_zero_one to one
+[DEBUG] Heuristic lemma_application generated 2 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 2 concepts
+[DEBUG] After filterInternalTerms: 2 concepts
+[DEBUG] After filterByDepth: 2 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 2 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Duplicate found: add_comm_zero_one_on_one duplicates add_comm_zero_one
+[DEBUG] Removed 2 duplicates out of 2 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 2 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 2 concepts
+[DEBUG] After filterInternalTerms: 2 concepts
+[DEBUG] After filterByDepth: 2 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 2 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 2 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 9
+[DEBUG] Heuristic conjecture_generation generated 9 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 9 concepts
+[DEBUG] After filterInternalTerms: 9 concepts
+[DEBUG] After filterByDepth: 9 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 9 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: succ_preserves_add_comm_spec_one_maybe duplicates succ_preserves_add_comm_spec_zero_maybe
+[DEBUG] Duplicate found: succ_fixed_point_zero duplicates succ_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Removed 7 duplicates out of 9 new concepts
+[DEBUG] After deduplication: 2 concepts
+[DEBUG] cleanupConcepts: returning 2 concepts
+[DEBUG] After cleanup: 2 concepts
+[DEBUG] After verification: 2 concepts
+[DEBUG] Heuristic composition generated 0 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 0 concepts
+[DEBUG] After filterInternalTerms: 0 concepts
+[DEBUG] After filterByDepth: 0 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 0 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_guided generated 2 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 2 concepts
+[DEBUG] After filterInternalTerms: 2 concepts
+[DEBUG] After filterByDepth: 2 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 2 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: num_3 duplicates succ_applied_to_two
+[DEBUG] Removed 1 duplicates out of 2 new concepts
+[DEBUG] After deduplication: 1 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+
+🔮 Conjectures (2):
+  - succ_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.305435
+  - add_comm_one_two
+    Evidence: 0.349831
+
+✓ Proven Theorems (5):
+  - add_comm_spec_num_3
+    Method: specialization
+  - Nat.mul_div_mul_left_spec_one
+    Method: specialization
+  - Nat.mul_div_mul_left_spec_two
+    Method: specialization
+  - Nat.mul_div_mul_left_spec_zero
+    Method: specialization
+  - Nat.mul_div_mul_left_spec_num_3
+    Method: specialization
+
+🔍 Patterns (1):
+  - add_iteration_pattern: Repeated application of add
+    Examples: [add_applied_to_two, add_applied_to_zero, add_applied_to_one]
+
+🔧 Function Applications (2):
+  - succ_applied_to_num_3
+  - add_applied_to_num_3
+
+📊 Discovery Summary:
+  specialization: 5 concepts
+  application: 2 concepts
+  pattern_recognition: 1 concepts
+  pattern_extension: 1 concepts
+  ✓ Proved conjecture: add_comm_one_two
+
+--- Iteration 3 ---
+Building on 12 recent discoveries:
+  - add_comm_spec_num_3
+  - Nat.mul_div_mul_left_spec_one
+  - Nat.mul_div_mul_left_spec_two
+  - Nat.mul_div_mul_left_spec_zero
+  - Nat.mul_div_mul_left_spec_num_3
+[DEBUG] Focusing on 50 concepts (from 12 recent, 346 total)
+[DEBUG] Invoking heuristics: [pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 10 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 10 concepts
+[DEBUG] After filterInternalTerms: 10 concepts
+[DEBUG] After filterByDepth: 10 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 10 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_succ_applied_to_num_3 duplicates add_comm_spec_num_4
+[DEBUG] Duplicate found: Nat.mul_dvd_of_dvd_div_spec_succ_applied_to_num_3 duplicates Nat.mul_dvd_of_dvd_div_spec_num_4
+[DEBUG] Removed 5 duplicates out of 10 new concepts
+[DEBUG] After deduplication: 5 concepts
+[DEBUG] cleanupConcepts: returning 5 concepts
+[DEBUG] After cleanup: 5 concepts
+[DEBUG] After verification: 5 concepts
+[DEBUG] Heuristic application generated 18 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 18 concepts
+[DEBUG] After filterInternalTerms: 18 concepts
+[DEBUG] After filterByDepth: 18 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 18 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_applied_to_succ_applied_to_num_3 duplicates add_applied_to_num_4
+[DEBUG] Duplicate found: add_applied_to_succ_applied_to_two duplicates add_applied_to_num_3
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: add_applied_to_num_3_applied_to_one duplicates num_4
+[DEBUG] Duplicate found: add_applied_to_num_3_applied_to_two duplicates succ_applied_to_num_4
+[DEBUG] Duplicate found: add_applied_to_two_applied_to_one duplicates succ_applied_to_two
+[DEBUG] Duplicate found: add_applied_to_two_applied_to_two duplicates num_4
+[DEBUG] Duplicate found: add_applied_to_zero_applied_to_num_4 duplicates num_4
+[DEBUG] Duplicate found: add_applied_to_zero_applied_to_one duplicates one
+[DEBUG] Duplicate found: add_applied_to_zero_applied_to_two duplicates two
+[DEBUG] Duplicate found: add_applied_to_one_applied_to_num_4 duplicates succ_applied_to_num_4
+[DEBUG] Duplicate found: add_applied_to_one_applied_to_one duplicates two
+[DEBUG] Duplicate found: add_applied_to_one_applied_to_two duplicates succ_applied_to_two
+[DEBUG] Removed 14 duplicates out of 18 new concepts
+[DEBUG] After deduplication: 4 concepts
+[DEBUG] cleanupConcepts: returning 4 concepts
+[DEBUG] After cleanup: 4 concepts
+[DEBUG] After verification: 4 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_one_two to num_3
+[DEBUG][lemma_application] applying add_comm_one_two to succ_applied_to_two
+[DEBUG] Heuristic lemma_application generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Duplicate found: add_comm_one_two_on_num_3 duplicates add_comm_one_two
+[DEBUG] Duplicate found: add_comm_one_two_on_succ_applied_to_two duplicates add_comm_one_two
+[DEBUG] Removed 3 duplicates out of 3 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 3 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 7
+[DEBUG] Heuristic conjecture_generation generated 7 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 7 concepts
+[DEBUG] After filterInternalTerms: 7 concepts
+[DEBUG] After filterByDepth: 7 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 7 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: succ_fixed_point_zero duplicates succ_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Removed 6 duplicates out of 7 new concepts
+[DEBUG] After deduplication: 1 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Heuristic composition generated 0 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 0 concepts
+[DEBUG] After filterInternalTerms: 0 concepts
+[DEBUG] After filterByDepth: 0 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 0 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_guided generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: num_3 duplicates succ_applied_to_two
+[DEBUG] Duplicate found: num_4 duplicates num_4
+[DEBUG] Removed 2 duplicates out of 3 new concepts
+[DEBUG] After deduplication: 1 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+
+🔢 New Numbers (1):
+  - num_5
+
+🔮 Conjectures (1):
+  - add_comm_num_4_one
+    Evidence: 0.372198
+
+✓ Proven Theorems (5):
+  - add_comm_spec_num_4
+    Method: specialization
+  - Nat.mul_dvd_of_dvd_div_spec_num_4
+    Method: specialization
+  - Nat.mul_dvd_of_dvd_div_spec_one
+    Method: specialization
+  - Nat.mul_dvd_of_dvd_div_spec_two
+    Method: specialization
+  - Nat.mul_dvd_of_dvd_div_spec_zero
+    Method: specialization
+
+🔍 Patterns (1):
+  - succ_iteration_pattern: Repeated application of succ
+    Examples: [succ_applied_to_num_3, succ_applied_to_two]
+
+🔧 Function Applications (4):
+  - add_applied_to_num_4
+  - succ_applied_to_num_4
+  - add_applied_to_num_3_applied_to_num_4
+
+📊 Discovery Summary:
+  specialization: 5 concepts
+  application: 4 concepts
+  pattern_recognition: 1 concepts
+  number_generation: 1 concepts
+  pattern_extension: 1 concepts
+  ✓ Proved conjecture: add_comm_num_4_one
+
+--- Iteration 4 ---
+Building on 14 recent discoveries:
+  - num_5
+  - add_comm_spec_num_4
+  - Nat.mul_dvd_of_dvd_div_spec_num_4
+  - Nat.mul_dvd_of_dvd_div_spec_one
+  - Nat.mul_dvd_of_dvd_div_spec_two
+[DEBUG] Focusing on 50 concepts (from 14 recent, 359 total)
+[DEBUG] Invoking heuristics: [pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 10 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 10 concepts
+[DEBUG] After filterInternalTerms: 10 concepts
+[DEBUG] After filterByDepth: 10 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 10 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_num_5 duplicates add_comm_spec_succ_applied_to_num_4
+[DEBUG] Duplicate found: Nat.mul_div_mul_left_spec_one duplicates Nat.mul_div_mul_left_spec_one
+[DEBUG] Duplicate found: Nat.mul_div_mul_left_spec_two duplicates Nat.mul_div_mul_left_spec_two
+[DEBUG] Duplicate found: Nat.mul_div_mul_left_spec_zero duplicates Nat.mul_div_mul_left_spec_zero
+[DEBUG] Duplicate found: Nat.mul_div_mul_left_spec_num_5 duplicates Nat.mul_div_mul_left_spec_succ_applied_to_num_4
+[DEBUG] Removed 8 duplicates out of 10 new concepts
+[DEBUG] After deduplication: 2 concepts
+[DEBUG] cleanupConcepts: returning 2 concepts
+[DEBUG] After cleanup: 2 concepts
+[DEBUG] After verification: 2 concepts
+[DEBUG] Heuristic application generated 12 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 12 concepts
+[DEBUG] After filterInternalTerms: 12 concepts
+[DEBUG] After filterByDepth: 12 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 12 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_succ_applied_to_num_4 duplicates add_applied_to_two_applied_to_num_4
+[DEBUG] Duplicate found: add_applied_to_one duplicates add_applied_to_one
+[DEBUG] Duplicate found: add_applied_to_two duplicates add_applied_to_two
+[DEBUG] Duplicate found: add_applied_to_zero duplicates add_applied_to_zero
+[DEBUG] Duplicate found: add_applied_to_num_4_applied_to_one duplicates succ_applied_to_num_4
+[DEBUG] Duplicate found: add_applied_to_num_4_applied_to_two duplicates add_applied_to_two_applied_to_num_4
+[DEBUG] Duplicate found: add_applied_to_num_4_applied_to_zero duplicates num_4
+[DEBUG] Duplicate found: add_iter_1_applied_to_zero duplicates add_applied_to_two
+[DEBUG] Removed 10 duplicates out of 12 new concepts
+[DEBUG] After deduplication: 2 concepts
+[DEBUG] cleanupConcepts: returning 2 concepts
+[DEBUG] After cleanup: 2 concepts
+[DEBUG] After verification: 2 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG][lemma_application] applying add_comm_num_4_one to succ_applied_to_num_4
+[DEBUG][lemma_application] applying add_comm_num_4_one to num_5
+[DEBUG] Heuristic lemma_application generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Duplicate found: add_comm_num_4_one_on_succ_applied_to_num_4 duplicates add_comm_num_4_one
+[DEBUG] Duplicate found: add_comm_num_4_one_on_num_5 duplicates add_comm_num_4_one
+[DEBUG] Removed 3 duplicates out of 3 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 3 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Total conjectures generated: 8
+[DEBUG] Heuristic conjecture_generation generated 8 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 8 concepts
+[DEBUG] After filterInternalTerms: 8 concepts
+[DEBUG] After filterByDepth: 8 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 8 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: succ_preserves_add_comm_spec_num_4_maybe duplicates succ_preserves_add_comm_spec_zero_maybe
+[DEBUG] Duplicate found: succ_fixed_point_zero duplicates succ_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Duplicate found: add_comm_one_two duplicates add_comm_one_two
+[DEBUG] Removed 8 duplicates out of 8 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic composition generated 0 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 0 concepts
+[DEBUG] After filterInternalTerms: 0 concepts
+[DEBUG] After filterByDepth: 0 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 0 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_guided generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: succ_iter_1 duplicates num_4
+[DEBUG] Duplicate found: num_3 duplicates succ_applied_to_two
+[DEBUG] Duplicate found: num_4 duplicates num_4
+[DEBUG] Removed 3 duplicates out of 3 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+✓ Proven Theorems (2):
+  - add_comm_spec_succ_applied_to_num_4
+    Method: specialization
+  - Nat.mul_div_mul_left_spec_succ_applied_to_num_4
+    Method: specialization
+
+🔧 Function Applications (2):
+  - add_iter_1_applied_to_one
+  - add_iter_1_applied_to_two
+
+📊 Discovery Summary:
+  specialization: 2 concepts
+  application: 2 concepts
+
+--- Iteration 5 ---
+Building on 4 recent discoveries:
+  - add_comm_spec_succ_applied_to_num_4
+  - Nat.mul_div_mul_left_spec_succ_applied_to_num_4
+  - add_iter_1_applied_to_one
+  - add_iter_1_applied_to_two
+[DEBUG] Focusing on 50 concepts (from 4 recent, 363 total)
+[DEBUG] Invoking heuristics: [pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[DEBUG] Heuristic specialization generated 10 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 10 concepts
+[DEBUG] After filterInternalTerms: 10 concepts
+[DEBUG] After filterByDepth: 10 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 10 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comm_spec_zero duplicates add_comm_spec_zero
+[DEBUG] Duplicate found: add_comm_spec_one duplicates add_comm_spec_one
+[DEBUG] Duplicate found: add_comm_spec_two duplicates add_comm_spec_two
+[DEBUG] Duplicate found: add_comm_spec_num_4 duplicates add_comm_spec_num_4
+[DEBUG] Duplicate found: add_comm_spec_num_3 duplicates add_comm_spec_num_3
+[DEBUG] Duplicate found: Nat.mul_dvd_of_dvd_div_spec_zero duplicates Nat.mul_dvd_of_dvd_div_spec_zero
+[DEBUG] Duplicate found: Nat.mul_dvd_of_dvd_div_spec_one duplicates Nat.mul_dvd_of_dvd_div_spec_one
+[DEBUG] Duplicate found: Nat.mul_dvd_of_dvd_div_spec_two duplicates Nat.mul_dvd_of_dvd_div_spec_two
+[DEBUG] Duplicate found: Nat.mul_dvd_of_dvd_div_spec_num_4 duplicates Nat.mul_dvd_of_dvd_div_spec_num_4
+[DEBUG] Removed 9 duplicates out of 10 new concepts
+[DEBUG] After deduplication: 1 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Heuristic application generated 6 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 6 concepts
+[DEBUG] After filterInternalTerms: 6 concepts
+[DEBUG] After filterByDepth: 6 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 6 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: succ_applied_to_zero duplicates one
+[DEBUG] Duplicate found: succ_applied_to_one duplicates two
+[DEBUG] Duplicate found: succ_applied_to_succ_applied_to_two duplicates num_4
+[DEBUG] Duplicate found: add_applied_to_zero duplicates add_applied_to_zero
+[DEBUG] Duplicate found: add_applied_to_one duplicates add_applied_to_one
+[DEBUG] Duplicate found: add_applied_to_two duplicates add_applied_to_two
+[DEBUG] Removed 6 duplicates out of 6 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG][lemma_application] applying zero_eq_zero to zero
+[DEBUG] Heuristic lemma_application generated 1 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 1 concepts
+[DEBUG] After filterInternalTerms: 1 concepts
+[DEBUG] After filterByDepth: 1 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 1 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: zero_eq_zero_on_zero duplicates zero_eq_zero
+[DEBUG] Removed 1 duplicates out of 1 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_recognition generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 3 concepts
+[DEBUG] cleanupConcepts: returning 1 concepts
+[DEBUG] After cleanup: 1 concepts
+[DEBUG] After verification: 1 concepts
+[DEBUG] Total conjectures generated: 8
+[DEBUG] Heuristic conjecture_generation generated 8 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 8 concepts
+[DEBUG] After filterInternalTerms: 8 concepts
+[DEBUG] After filterByDepth: 8 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 8 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: add_comp_succ_eq_0 duplicates add_comp_succ_eq_0
+[DEBUG] Duplicate found: add_comp_succ_eq_1 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: add_comp_succ_eq_2 duplicates add_comp_succ_eq_2
+[DEBUG] Duplicate found: add_comp_succ_eq_3 duplicates add_comp_succ_eq_1
+[DEBUG] Duplicate found: succ_preserves_add_comm_spec_succ_applied_to_num_4_maybe duplicates succ_preserves_add_comm_spec_zero_maybe
+[DEBUG] Duplicate found: succ_fixed_point_zero duplicates succ_fixed_point_zero
+[DEBUG] Duplicate found: succ_homomorphism duplicates succ_homomorphism
+[DEBUG] Duplicate found: add_comm_zero_one duplicates add_comm_zero_one
+[DEBUG] Removed 8 duplicates out of 8 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic composition generated 0 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 0 concepts
+[DEBUG] After filterInternalTerms: 0 concepts
+[DEBUG] After filterByDepth: 0 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 0 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+[DEBUG] Heuristic pattern_guided generated 3 concepts
+[DEBUG] Starting cleanup...
+[DEBUG] cleanupConcepts: starting with 3 concepts
+[DEBUG] After filterInternalTerms: 3 concepts
+[DEBUG] After filterByDepth: 3 concepts
+[DEBUG] Starting canonicalization...
+[DEBUG] After canonicalizeConcepts: 3 concepts
+[DEBUG] Starting deduplication...
+[DEBUG] Duplicate found: num_3 duplicates succ_applied_to_two
+[DEBUG] Duplicate found: num_4 duplicates num_4
+[DEBUG] Duplicate found: succ_iter_1 duplicates num_4
+[DEBUG] Removed 3 duplicates out of 3 new concepts
+[DEBUG] After deduplication: 0 concepts
+[DEBUG] cleanupConcepts: returning 0 concepts
+[DEBUG] After cleanup: 0 concepts
+[DEBUG] After verification: 0 concepts
+
+🔢 New Numbers (1):
+  - num_6
+
+✓ Proven Theorems (1):
+  - Nat.mul_dvd_of_dvd_div_spec_num_3
+    Method: specialization
+
+🔍 Patterns (1):
+  - add_iter_1_iteration_pattern: Repeated application of add_iter_1
+    Examples: [add_iter_1_applied_to_one, add_iter_1_applied_to_two]
+
+📊 Discovery Summary:
+  specialization: 1 concepts
+  pattern_recognition: 1 concepts
+  number_generation: 1 concepts
+
+=== Discovery Complete ===
+Total concepts: 366
+
+Definitions: 135
+Theorems: 211
+Conjectures: 6
+Patterns: 4
+
+Depth distribution:
+  Depth 0: 325 concepts
+  Depth 1: 37 concepts
+  Depth 2: 4 concepts
+
+Discovered Patterns:
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two]
+  - add_iteration_pattern: Repeated application of add
+    Instances: [add_applied_to_two, add_applied_to_zero, add_applied_to_one]
+  - succ_iteration_pattern: Repeated application of succ
+    Instances: [succ_applied_to_num_3, succ_applied_to_two]
+  - add_iter_1_iteration_pattern: Repeated application of add_iter_1
+    Instances: [add_iter_1_applied_to_one, add_iter_1_applied_to_two]
+
+Top discovered concepts:
+  conjecture_generation (score: 1.000000, depth: 0)
+  zero (score: 1.000000, depth: 0)
+  succ (score: 1.000000, depth: 0)
+  one (score: 1.000000, depth: 0)
+  two (score: 1.000000, depth: 0)
+  add (score: 1.000000, depth: 0)
+  zero_eq_zero (score: 1.000000, depth: 0)
+  add_comm (score: 1.000000, depth: 0)
+  specialization (score: 1.000000, depth: 0)
+  application (score: 1.000000, depth: 0)
+  lemma_application (score: 1.000000, depth: 0)
+  pattern_importance (score: 1.000000, depth: 0)
+  pattern_recognition (score: 1.000000, depth: 0)
+  composition (score: 1.000000, depth: 0)
+  pattern_guided (score: 1.000000, depth: 0)
+  complexity (score: 1.000000, depth: 0)
+  novelty (score: 1.000000, depth: 0)
+  num_4 (score: 0.755556, depth: 0)
+  natural_number_sequence (PATTERN, score: 0.755072)
+  add_iteration_pattern (PATTERN, score: 0.741270)
