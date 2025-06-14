@@ -2,6 +2,8 @@ import LeanDisco.Basic
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Ring.Basic
 
+set_option linter.unusedVariables false
+
 namespace LeanDisco.Domains.GroupRing
 
 open Lean Meta Elab
@@ -62,6 +64,8 @@ def mineGroupRingConcepts (config : GroupRingConfig) : MetaM (List ConceptData) 
               (mkConst name)
               []
               (mkMeta thmName "group")]
+            IO.println s!"[DEBUG] Mined theorem: {thmName}"
+            IO.println s!"[DEBUG] Type: {val.type}"
             break
           | _ => continue
 
@@ -109,12 +113,45 @@ def mineGroupRingConcepts (config : GroupRingConfig) : MetaM (List ConceptData) 
             break
           | _ => continue
 
-  IO.println s!"[GroupRing] Mined {concepts.length} fundamental concepts"
+  -- Mine concrete Nat arithmetic theorems
+  if config.includeBasicGroupTheory then
+    IO.println "[DEBUG] Looking for Nat arithmetic theorems..."
+    let natTheorems : List (String × Name) := [
+      ("nat_add_zero", ``Nat.add_zero),
+      ("nat_zero_add", ``Nat.zero_add),
+      ("nat_add_assoc", ``Nat.add_assoc),
+      ("nat_add_comm", ``Nat.add_comm),
+      ("nat_succ_add", ``Nat.succ_add),
+      ("nat_add_succ", ``Nat.add_succ),
+      ("nat_add_one", ``Nat.add_one),
+      ("nat_one_add", ``Nat.one_add)
+    ]
+
+    for (name, constName) in natTheorems do
+      try
+        if let some info := env.find? constName then
+          match info with
+          | .thmInfo val =>
+            IO.println s!"[DEBUG] Found Nat theorem: {name}"
+            concepts := concepts ++ [ConceptData.theorem
+              name
+              val.type
+              (mkConst constName)
+              []
+              (mkMeta name "nat_arithmetic")]
+          | _ =>
+            IO.println s!"[DEBUG] {constName} is not a theorem"
+      catch e =>
+        IO.println s!"[DEBUG] Error with {name}"
+
+  IO.println s!"[GroupRing] Mined {concepts.length} concepts"
   return concepts
 
 /-- Look for dual concepts (additive vs multiplicative) -/
 def dualityHeuristic : HeuristicFn := fun _config concepts => do
   let mut newConcepts : List ConceptData := []
+
+  IO.println s!"[Duality] Checking {concepts.length} concepts for duality"
 
   -- Map between multiplicative and additive versions
   let dualMap : List (String × String) := [
@@ -126,22 +163,11 @@ def dualityHeuristic : HeuristicFn := fun _config concepts => do
 
   for concept in concepts do
     match concept with
-    | ConceptData.theorem name stmt _proof _deps meta =>
-      -- Check if this is a multiplicative theorem
+    | ConceptData.theorem name _ _ _ _ =>
+      IO.println s!"[Duality] Checking theorem: {name}"
       for (mulTerm, addTerm) in dualMap do
         if contains name mulTerm then
-          -- Try to find the additive version
-          let dualName := name.replace mulTerm addTerm
-          if !concepts.any (fun c => getConceptName c == dualName) then
-            -- Generate a conjecture for the dual version
-            let newMeta : ConceptMetadata := { meta with
-              name := dualName,
-              generationMethod := "duality",
-              parent := some name
-            }
-            newConcepts := newConcepts ++ [
-              ConceptData.conjecture dualName stmt 0.8 newMeta
-            ]
+          IO.println s!"[Duality] Found {mulTerm} in {name}, suggesting dual with {addTerm}"
     | _ => pure ()
 
   return newConcepts

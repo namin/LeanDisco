@@ -653,6 +653,33 @@ def seedConcepts : MetaM (List ConceptData) := do
   let add2Type := mkForall `x BinderInfo.default natType natType
   concepts := concepts ++ [ConceptData.definition "add2" add2Type add2 none ["add", "two"] (mkMeta "add2")]
 
+  -- Add these concrete arithmetic facts
+  concepts := concepts ++ [
+  ConceptData.theorem "zero_add_zero"
+    (mkApp3 (mkConst ``Eq [levelOne]) natType
+      (mkApp2 add zero zero)
+      zero)
+    (mkApp2 (mkConst ``Eq.refl [levelOne]) natType zero)
+    ["add", "zero"]
+    (mkMeta "zero_add_zero" "arithmetic"),
+
+  ConceptData.theorem "one_add_one_eq_two"
+    (mkApp3 (mkConst ``Eq [levelOne]) natType
+      (mkApp2 add one one)
+      two)
+    (mkApp2 (mkConst ``Eq.refl [levelOne]) natType two)
+    ["add", "one", "two"]
+    (mkMeta "one_add_one_eq_two" "arithmetic"),
+
+  ConceptData.theorem "two_add_one_eq_three"
+    (mkApp3 (mkConst ``Eq [levelOne]) natType
+      (mkApp2 add two one)
+      (mkApp succ two))
+    (mkApp2 (mkConst ``Eq.refl [levelOne]) natType (mkApp succ two))
+    ["add", "two", "one", "succ"]
+    (mkMeta "two_add_one_eq_three" "arithmetic")
+  ]
+
   return concepts
 
 /-- Enhanced concept selection based on promise and diversity -/
