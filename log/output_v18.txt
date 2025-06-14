@@ -1,0 +1,159 @@
+[GroupRing] Mined 6 fundamental concepts
+=== Starting Group/Ring Theory Discovery ===
+Domain config: group theory=true, rings=true
+Discovery config: maxDepth=3, maxPerIter=50
+Initial concepts: 15 (6 from group/ring theory)
+
+--- Iteration 1 ---
+Building on 15 recent discoveries:
+  - zero
+  - succ
+  - one
+  - two
+  - add
+[DEBUG] Focusing on 15 concepts (from 15 recent, 15 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_3
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 2 ---
+Building on 1 recent discoveries:
+  - num_3
+[DEBUG] Focusing on 16 concepts (from 1 recent, 16 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 3 ---
+[DEBUG] Focusing on 16 concepts (from 0 recent, 16 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_4
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 4 ---
+Building on 1 recent discoveries:
+  - num_4
+[DEBUG] Focusing on 17 concepts (from 1 recent, 17 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 5 ---
+[DEBUG] Focusing on 17 concepts (from 0 recent, 17 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_5
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 6 ---
+Building on 1 recent discoveries:
+  - num_5
+[DEBUG] Focusing on 18 concepts (from 1 recent, 18 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 7 ---
+[DEBUG] Focusing on 18 concepts (from 0 recent, 18 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_6
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 8 ---
+Building on 1 recent discoveries:
+  - num_6
+[DEBUG] Focusing on 19 concepts (from 1 recent, 19 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 9 ---
+[DEBUG] Focusing on 19 concepts (from 0 recent, 19 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_7
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 10 ---
+Building on 1 recent discoveries:
+  - num_7
+[DEBUG] Focusing on 20 concepts (from 1 recent, 20 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 11 ---
+[DEBUG] Focusing on 20 concepts (from 0 recent, 20 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_8
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 12 ---
+Building on 1 recent discoveries:
+  - num_8
+[DEBUG] Focusing on 21 concepts (from 1 recent, 21 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 13 ---
+[DEBUG] Focusing on 21 concepts (from 0 recent, 21 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_9
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 14 ---
+Building on 1 recent discoveries:
+  - num_9
+[DEBUG] Focusing on 22 concepts (from 1 recent, 22 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+No new concepts discovered this iteration
+
+--- Iteration 15 ---
+[DEBUG] Focusing on 22 concepts (from 0 recent, 22 total)
+[DEBUG] Invoking heuristics: [group_ring_identity, group_ring_homomorphism, group_ring_duality, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_10
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+=== Discovery Complete ===
+Total concepts: 23
+
+Definitions: 15
+Theorems: 8
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 23 concepts
