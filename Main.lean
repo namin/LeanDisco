@@ -9,6 +9,8 @@ open LeanDisco.Domains.GroupRing
 def main : IO Unit := do
   IO.println "Hello from LeanDisco!"
 
+#eval runDiscovery 15 true
+
 #eval runGroupRingDiscovery
       { includeBasicGroupTheory := true
         includeCommutativeGroups := false  -- Start simple
