@@ -644,7 +644,7 @@ def runGroupRingDiscovery
 
   -- Run using the base runner
   let description := s!"Group/Ring Theory Discovery (group: {grConfig.includeBasicGroupTheory}, ring: {grConfig.includeBasicRingTheory})"
-  runDiscoveryCustom description allInitialConcepts customHeuristics [] maxIterations false discoConfig
+  runDiscoveryCustom description allInitialConcepts customHeuristics [] maxIterations true discoConfig
 
 
 end LeanDisco.Domains.GroupRing
