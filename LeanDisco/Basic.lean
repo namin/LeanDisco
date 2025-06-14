@@ -1000,39 +1000,19 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
   for c in concepts do
     match c with
     | ConceptData.theorem thName stmt proof deps meta => do
-      -- Check for loose bvars in theorem
-      if stmt.hasLooseBVars || proof.hasLooseBVars then
-        IO.println s!"[DEBUG][lemma_application] Skipping theorem {thName} due to loose bvars"
-        continue
-
       let fn := stmt.getAppFn
       if fn.isConstOf ``Eq then
         let argsList := stmt.getAppArgs.toList
         match argsList with
         | α :: lhs :: rhs :: [] =>
-          -- Check for loose bvars in the equation parts
-          if α.hasLooseBVars || lhs.hasLooseBVars || rhs.hasLooseBVars then
-            IO.println s!"[DEBUG][lemma_application] Skipping {thName} - equation parts have loose bvars"
-            continue
-
           let lemmaName := Name.mkStr Name.anonymous thName
           for tgt in concepts do
             if let some tgtExpr := getConceptExpr tgt then
-              -- Check target expression for loose bvars
-              if tgtExpr.hasLooseBVars then
-                continue
-
               try
                 if ← isDefEq lhs tgtExpr then
-                  -- Debug: matched lhs on target
                   IO.println s!"[DEBUG][lemma_application] applying {thName} to {getConceptName tgt}"
                   let eqConst := mkConst ``Eq [levelOne]
                   let newStmt := mkApp3 eqConst α tgtExpr rhs
-
-                  -- Final check on the new statement
-                  if newStmt.hasLooseBVars then
-                    IO.println s!"[DEBUG][lemma_application] Generated statement has loose bvars, skipping"
-                    continue
 
                   let newProof := proof
                   let newName := thName ++ "_on_" ++ getConceptName tgt
@@ -1135,10 +1115,7 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
     let numbers := concepts.filterMap fun c => match c with
       | ConceptData.definition n _ v _ _ m =>
         if n.startsWith "num_" || n == "zero" || n == "one" || n == "two" then
-          -- Check that the value doesn't have loose bvars
-          if !v.hasLooseBVars then
             some (n, v, m)
-          else none
         else none
       | _ => none
 
@@ -1217,7 +1194,7 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
 
   return patterns
 
-/-- Conjecture generation heuristic with FIX for loose bvar -/
+/-- Conjecture generation heuristic -/
 def conjectureGenerationHeuristic : HeuristicFn :=
   fun cfg concepts => do
     if !cfg.enableConjectures then
@@ -1256,28 +1233,26 @@ def conjectureGenerationHeuristic : HeuristicFn :=
           match (t₁, t₂) with
           | ((.forallE _ A₁ _ _), (.forallE _ _  B₂ _)) =>
               if ← isDefEq B₂ A₁ then
-                -- Safety check: only compose if the functions are not complex
-                if !v₁.hasLooseBVars && !v₂.hasLooseBVars then
-                  let natTy := mkConst ``Nat
-                  let z     := mkConst ``Nat.zero
-                  let one   := mkApp (mkConst ``Nat.succ) z
-                  let comp0 := mkApp v₁ (mkApp v₂ z)
-                  let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
-                  for (idx, cand) in candidates do
-                    let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
-                    let ev   ← calculateConjectureEvidence stmt kb
-                    conjectures := conjectures ++
-                      [ ConceptData.conjecture
-                          s!"{f₁}_comp_{f₂}_eq_{idx}"
-                          stmt ev
-                          { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
-                            created            := 0
-                            parent             := none
-                            interestingness    := 0.7
-                            useCount           := 0
-                            successCount       := 0
-                            specializationDepth:= 1
-                            generationMethod   := "composition_pattern" } ]
+                let natTy := mkConst ``Nat
+                let z     := mkConst ``Nat.zero
+                let one   := mkApp (mkConst ``Nat.succ) z
+                let comp0 := mkApp v₁ (mkApp v₂ z)
+                let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
+                for (idx, cand) in candidates do
+                  let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
+                  let ev   ← calculateConjectureEvidence stmt kb
+                  conjectures := conjectures ++
+                    [ ConceptData.conjecture
+                        s!"{f₁}_comp_{f₂}_eq_{idx}"
+                        stmt ev
+                        { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
+                          created            := 0
+                          parent             := none
+                          interestingness    := 0.7
+                          useCount           := 0
+                          successCount       := 0
+                          specializationDepth:= 1
+                          generationMethod   := "composition_pattern" } ]
           | _ => pure ()
 
     -- PATTERN 2: Preservation: theorems × functions (once)
