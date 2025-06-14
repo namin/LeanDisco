@@ -296,44 +296,47 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
   let mut result : List ConceptData := []
   let mut duplicateCount := 0
 
+  -- Build normalized expression cache from existing concepts
+  let mut existingNormalized : List (Expr × String) := []
+  for c in existing do
+    if let some expr := getConceptExpr c then
+      try
+        -- Only normalize if no loose bvars
+        if !expr.hasLooseBVars then
+          let normalized ← reduce expr
+          existingNormalized := (normalized, getConceptName c) :: existingNormalized
+        else
+          -- Use the expression as-is if it has loose bvars
+          existingNormalized := (expr, getConceptName c) :: existingNormalized
+      catch _ =>
+        -- If normalization fails, use the original expression
+        existingNormalized := (expr, getConceptName c) :: existingNormalized
+
+  -- Check each new concept
   for c in newConcepts do
-    let mut isDuplicate := false
-    let conceptName := getConceptName c
+    if let some expr := getConceptExpr c then
+      let mut isDuplicate := false
 
-    -- First check: exact name match
-    if existing.any (fun e => getConceptName e == conceptName) then
-      isDuplicate := true
-      duplicateCount := duplicateCount + 1
-      IO.println s!"[DEBUG] Duplicate found: {conceptName} already exists"
+      try
+        let normalized ← if expr.hasLooseBVars then pure expr else reduce expr
+
+        -- Check against existing concepts
+        for (existingExpr, existingName) in existingNormalized do
+          if ← exprsEqual normalized existingExpr then
+            isDuplicate := true
+            duplicateCount := duplicateCount + 1
+            IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
+            break
+
+        if !isDuplicate then
+          result := c :: result
+          -- Add to our normalized set for checking within this batch
+          existingNormalized := (normalized, getConceptName c) :: existingNormalized
+      catch _ =>
+        -- If anything fails during deduplication, keep the concept
+        result := c :: result
     else
-      -- For theorems, check structural equivalence more carefully
-      match c with
-      | ConceptData.theorem _ stmt _ _ _ =>
-        -- Only compare with other theorems
-        for e in existing do
-          match e with
-          | ConceptData.theorem eName eStmt _ _ _ =>
-            -- Check if statements are definitionally equal
-            if ← exprsEqual stmt eStmt then
-              isDuplicate := true
-              duplicateCount := duplicateCount + 1
-              IO.println s!"[DEBUG] Duplicate theorem: {conceptName} has same statement as {eName}"
-              break
-          | _ => pure ()
-      | ConceptData.definition _ _ v _ _ _ =>
-        -- For definitions, check value equivalence
-        for e in existing do
-          match e with
-          | ConceptData.definition eName _ eV _ _ _ =>
-            if ← exprsEqual v eV then
-              isDuplicate := true
-              duplicateCount := duplicateCount + 1
-              IO.println s!"[DEBUG] Duplicate definition: {conceptName} has same value as {eName}"
-              break
-          | _ => pure ()
-      | _ => pure ()
-
-    if !isDuplicate then
+      -- Keep non-expression concepts (heuristics, tasks, patterns)
       result := c :: result
 
   if duplicateCount > 0 then
@@ -355,7 +358,7 @@ def filterInternalTerms (concepts : List ConceptData) : List ConceptData :=
 def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut cleaned := newConcepts
 
-  IO.println s!"[DEBUG] improvedCleanupConcepts: starting with {cleaned.length} concepts"
+  IO.println s!"[DEBUG] cleanupConcepts: starting with {cleaned.length} concepts"
 
   -- Filter internal proof terms
   if config.filterInternalProofs then
@@ -366,18 +369,42 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
   cleaned := filterByDepth config.maxSpecializationDepth cleaned
   IO.println s!"[DEBUG] After filterByDepth: {cleaned.length} concepts"
 
+  -- Check for loose bvars before canonicalization
+  let mut safeForCanon := []
+  for c in cleaned do
+    match c with
+    | ConceptData.definition _ _ v _ _ _ =>
+      if !v.hasLooseBVars then
+        safeForCanon := safeForCanon ++ [c]
+      else
+        IO.println s!"[DEBUG] Skipping canonicalization of {getConceptName c} due to loose bvars"
+        safeForCanon := safeForCanon ++ [c]  -- Keep it but don't canonicalize
+    | _ => safeForCanon := safeForCanon ++ [c]
+  cleaned := safeForCanon
+
   -- Canonicalize
   if config.canonicalizeConcepts then
+    IO.println s!"[DEBUG] Starting canonicalization..."
     cleaned ← cleaned.mapM canonicalizeConcept
     IO.println s!"[DEBUG] After canonicalizeConcepts: {cleaned.length} concepts"
 
-  -- Use improved deduplication
+  -- Deduplicate against existing concepts
   if config.deduplicateConcepts then
-    IO.println s!"[DEBUG] Starting improved deduplication..."
+    IO.println s!"[DEBUG] Starting deduplication..."
     cleaned ← deduplicateAgainstExisting existing cleaned
     IO.println s!"[DEBUG] After deduplication: {cleaned.length} concepts"
 
-  return cleaned
+  -- Special deduplication for patterns - check by name only
+  let cleanedPatterns := cleaned.filter fun c => match c with
+    | ConceptData.pattern name _ _ _ =>
+      -- Just check if pattern name already exists
+      !existing.any fun e => match e with
+        | ConceptData.pattern ename _ _ _ => name == ename
+        | _ => false
+    | _ => true
+
+  IO.println s!"[DEBUG] cleanupConcepts: returning {cleanedPatterns.length} concepts"
+  return cleanedPatterns
 
 /-- Update concept's interestingness score -/
 def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
@@ -1778,45 +1805,33 @@ def showConceptStats (concepts : List ConceptData) : IO Unit := do
   for (depth, count) in sorted do
     IO.println s!"  Depth {depth}: {count} concepts"
 
-/-- Get standard heuristics as a list -/
-def getStandardHeuristics : List (String × HeuristicFn) := [
-  ("specialization", specializationHeuristic),
-  ("application", applicationHeuristic),
-  ("lemma_application", lemmaApplicationHeuristic),
-  ("pattern_recognition", patternRecognitionHeuristic),
-  ("conjecture_generation", conjectureGenerationHeuristic),
-  ("composition", compositionHeuristic),
-  ("pattern_guided", patternGuidedHeuristic)
-]
-
-/-- Get standard evaluators as a list -/
-def getStandardEvaluators : List (String × EvaluationFn) := [
-  ("complexity", complexityTask),
-  ("novelty", noveltyTask),
-  ("pattern_importance", patternImportanceTask)
-]
-
-/-- Base discovery runner that all others use -/
+/-- Run the discovery system -/
 def runDiscoveryCustom
+  (description : String)
   (initialConcepts : List ConceptData)
   (customHeuristics : List (String × HeuristicFn))
   (customEvaluators : List (String × EvaluationFn))
-  (config : DiscoveryConfig)
-  (maxIterations : Nat)
-  (description : String := "Custom Discovery") : MetaM Unit := do
+  (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
+  IO.println s!"=== Starting {description}Discovery System ==="
+  IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
+  IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
+  IO.println s!"Mining mode: {if useMining then "ON" else "OFF"}"
+  IO.println "Initializing with mathematical seed concepts..."
+
+  let kb0 ← initializeSystem config useMining
 
   -- Build heuristics registry
-  let mut heuristics : HeuristicRegistry := HeuristicRegistry.empty
+  let mut heuristics : HeuristicRegistry := kb0.heuristics
 
   -- Add all heuristics (custom ones override standard if same name)
-  for (name, fn) in getStandardHeuristics ++ customHeuristics do
+  for (name, fn) in customHeuristics do
     heuristics := heuristics.insert name fn
 
   -- Build evaluators registry
-  let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
+  let mut evaluators : EvaluationRegistry := kb0.evaluators
 
   -- Add all evaluators (custom ones override standard if same name)
-  for (name, fn) in getStandardEvaluators ++ customEvaluators do
+  for (name, fn) in customEvaluators do
     evaluators := evaluators.insert name fn
 
   -- Create heuristic reference concepts
@@ -1833,29 +1848,22 @@ def runDiscoveryCustom
 
   -- Create knowledge base
   let kb : KnowledgeBase := {
-    concepts := initialConcepts ++ heuristicRefs
-    recentConcepts := initialConcepts
+    concepts := initialConcepts ++ kb0.concepts ++ heuristicRefs
+    recentConcepts := initialConcepts ++ kb0.concepts
     heuristics := heuristics
     evaluators := evaluators
-    config := config
-    iteration := 0
-    history := []
-    cache := {}
-    failedProofs := []
+    config := kb0.config
+    iteration := kb0.iteration
+    history := kb0.history
+    cache := kb0.cache
+    failedProofs := kb0.failedProofs
   }
 
-  IO.println s!"=== Starting {description} ==="
-  IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
-  IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
-  IO.println s!"Initial concepts: {initialConcepts.length}"
-  if customHeuristics.length > 0 then
-    IO.println s!"Custom heuristics: {customHeuristics.map (·.1)}"
-  showConceptStats initialConcepts
+  IO.println s!"\nInitial concepts ({kb.concepts.length}):"
+  showConceptStats kb.concepts
 
-  -- Run discovery loop
   let finalKb ← discoveryLoop kb maxIterations
 
-  -- Show final results
   IO.println s!"\n=== Discovery Complete ==="
   IO.println s!"Total concepts: {finalKb.concepts.length}"
   showConceptStats finalKb.concepts
@@ -1891,20 +1899,8 @@ def runDiscoveryCustom
       | _ =>
         IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {meta.specializationDepth})"
 
-/-- Run vanilla discovery system -/
-def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
-  -- Get initial concepts
-  let basicSeed ← seedConcepts
-  let initialConcepts ← if useMining then do
-    let mined ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add"] ["Mathlib.Algebra.Group", "Mathlib.Algebra.Ring"]
-    let cleaned ← cleanupConcepts config basicSeed mined
-    pure (basicSeed ++ cleaned.take 300)
-  else
-    pure basicSeed
-
-  -- Run using the custom runner with no custom heuristics
-  let description := s!"Lean Discovery System (mining: {if useMining then "ON" else "OFF"})"
-  runDiscoveryCustom initialConcepts [] [] config maxIterations description
-
+def runDiscovery
+  (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
+  runDiscoveryCustom "Lean" [] [] [] maxIterations useMining config
 
 end LeanDisco
