@@ -296,47 +296,44 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
   let mut result : List ConceptData := []
   let mut duplicateCount := 0
 
-  -- Build normalized expression cache from existing concepts
-  let mut existingNormalized : List (Expr × String) := []
-  for c in existing do
-    if let some expr := getConceptExpr c then
-      try
-        -- Only normalize if no loose bvars
-        if !expr.hasLooseBVars then
-          let normalized ← reduce expr
-          existingNormalized := (normalized, getConceptName c) :: existingNormalized
-        else
-          -- Use the expression as-is if it has loose bvars
-          existingNormalized := (expr, getConceptName c) :: existingNormalized
-      catch _ =>
-        -- If normalization fails, use the original expression
-        existingNormalized := (expr, getConceptName c) :: existingNormalized
-
-  -- Check each new concept
   for c in newConcepts do
-    if let some expr := getConceptExpr c then
-      let mut isDuplicate := false
+    let mut isDuplicate := false
+    let conceptName := getConceptName c
 
-      try
-        let normalized ← if expr.hasLooseBVars then pure expr else reduce expr
-
-        -- Check against existing concepts
-        for (existingExpr, existingName) in existingNormalized do
-          if ← exprsEqual normalized existingExpr then
-            isDuplicate := true
-            duplicateCount := duplicateCount + 1
-            IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
-            break
-
-        if !isDuplicate then
-          result := c :: result
-          -- Add to our normalized set for checking within this batch
-          existingNormalized := (normalized, getConceptName c) :: existingNormalized
-      catch _ =>
-        -- If anything fails during deduplication, keep the concept
-        result := c :: result
+    -- First check: exact name match
+    if existing.any (fun e => getConceptName e == conceptName) then
+      isDuplicate := true
+      duplicateCount := duplicateCount + 1
+      IO.println s!"[DEBUG] Duplicate found: {conceptName} already exists"
     else
-      -- Keep non-expression concepts (heuristics, tasks, patterns)
+      -- For theorems, check structural equivalence more carefully
+      match c with
+      | ConceptData.theorem _ stmt _ _ _ =>
+        -- Only compare with other theorems
+        for e in existing do
+          match e with
+          | ConceptData.theorem eName eStmt _ _ _ =>
+            -- Check if statements are definitionally equal
+            if ← exprsEqual stmt eStmt then
+              isDuplicate := true
+              duplicateCount := duplicateCount + 1
+              IO.println s!"[DEBUG] Duplicate theorem: {conceptName} has same statement as {eName}"
+              break
+          | _ => pure ()
+      | ConceptData.definition _ _ v _ _ _ =>
+        -- For definitions, check value equivalence
+        for e in existing do
+          match e with
+          | ConceptData.definition eName _ eV _ _ _ =>
+            if ← exprsEqual v eV then
+              isDuplicate := true
+              duplicateCount := duplicateCount + 1
+              IO.println s!"[DEBUG] Duplicate definition: {conceptName} has same value as {eName}"
+              break
+          | _ => pure ()
+      | _ => pure ()
+
+    if !isDuplicate then
       result := c :: result
 
   if duplicateCount > 0 then
@@ -358,7 +355,7 @@ def filterInternalTerms (concepts : List ConceptData) : List ConceptData :=
 def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut cleaned := newConcepts
 
-  IO.println s!"[DEBUG] cleanupConcepts: starting with {cleaned.length} concepts"
+  IO.println s!"[DEBUG] improvedCleanupConcepts: starting with {cleaned.length} concepts"
 
   -- Filter internal proof terms
   if config.filterInternalProofs then
@@ -369,42 +366,18 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
   cleaned := filterByDepth config.maxSpecializationDepth cleaned
   IO.println s!"[DEBUG] After filterByDepth: {cleaned.length} concepts"
 
-  -- Check for loose bvars before canonicalization
-  let mut safeForCanon := []
-  for c in cleaned do
-    match c with
-    | ConceptData.definition _ _ v _ _ _ =>
-      if !v.hasLooseBVars then
-        safeForCanon := safeForCanon ++ [c]
-      else
-        IO.println s!"[DEBUG] Skipping canonicalization of {getConceptName c} due to loose bvars"
-        safeForCanon := safeForCanon ++ [c]  -- Keep it but don't canonicalize
-    | _ => safeForCanon := safeForCanon ++ [c]
-  cleaned := safeForCanon
-
   -- Canonicalize
   if config.canonicalizeConcepts then
-    IO.println s!"[DEBUG] Starting canonicalization..."
     cleaned ← cleaned.mapM canonicalizeConcept
     IO.println s!"[DEBUG] After canonicalizeConcepts: {cleaned.length} concepts"
 
-  -- Deduplicate against existing concepts
+  -- Use improved deduplication
   if config.deduplicateConcepts then
-    IO.println s!"[DEBUG] Starting deduplication..."
+    IO.println s!"[DEBUG] Starting improved deduplication..."
     cleaned ← deduplicateAgainstExisting existing cleaned
     IO.println s!"[DEBUG] After deduplication: {cleaned.length} concepts"
 
-  -- Special deduplication for patterns - check by name only
-  let cleanedPatterns := cleaned.filter fun c => match c with
-    | ConceptData.pattern name _ _ _ =>
-      -- Just check if pattern name already exists
-      !existing.any fun e => match e with
-        | ConceptData.pattern ename _ _ _ => name == ename
-        | _ => false
-    | _ => true
-
-  IO.println s!"[DEBUG] cleanupConcepts: returning {cleanedPatterns.length} concepts"
-  return cleanedPatterns
+  return cleaned
 
 /-- Update concept's interestingness score -/
 def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
