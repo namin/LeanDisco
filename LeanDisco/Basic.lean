@@ -186,7 +186,6 @@ def getConceptExpr : ConceptData → Option Expr
 /-- Extract natural number literal from expression -/
 partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
   try
-    -- Check for loose bvars first
     if e.hasLooseBVars then
       return none
 
@@ -245,19 +244,14 @@ def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
       return c  -- Already canonicalized
     else
       try
-        -- First check if the value has loose bvars
-        if v.hasLooseBVars then
-          -- Don't try to reduce expressions with loose bvars
-          return ConceptData.definition n t v (some v) deps meta
+        let v' ← reduce v  -- Use reduce instead of just whnf
+        -- Check if it's a natural number
+        if let some num ← extractNatLiteral v' then
+          let newName := s!"num_{num}"
+          return ConceptData.definition newName t v' (some v') deps
+            { meta with name := newName }
         else
-          let v' ← reduce v  -- Use reduce instead of just whnf
-          -- Check if it's a natural number
-          if let some num ← extractNatLiteral v' then
-            let newName := s!"num_{num}"
-            return ConceptData.definition newName t v' (some v') deps
-              { meta with name := newName }
-          else
-            return ConceptData.definition n t v' (some v') deps meta
+          return ConceptData.definition n t v' (some v') deps meta
       catch _ =>
         -- If reduction fails, just cache the original value
         return ConceptData.definition n t v (some v) deps meta
@@ -301,13 +295,8 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
   for c in existing do
     if let some expr := getConceptExpr c then
       try
-        -- Only normalize if no loose bvars
-        if !expr.hasLooseBVars then
-          let normalized ← reduce expr
-          existingNormalized := (normalized, getConceptName c) :: existingNormalized
-        else
-          -- Use the expression as-is if it has loose bvars
-          existingNormalized := (expr, getConceptName c) :: existingNormalized
+        let normalized ← reduce expr
+        existingNormalized := (normalized, getConceptName c) :: existingNormalized
       catch _ =>
         -- If normalization fails, use the original expression
         existingNormalized := (expr, getConceptName c) :: existingNormalized
@@ -318,7 +307,7 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
       let mut isDuplicate := false
 
       try
-        let normalized ← if expr.hasLooseBVars then pure expr else reduce expr
+        let normalized ← reduce expr
 
         -- Check against existing concepts
         for (existingExpr, existingName) in existingNormalized do
@@ -369,19 +358,6 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
   cleaned := filterByDepth config.maxSpecializationDepth cleaned
   IO.println s!"[DEBUG] After filterByDepth: {cleaned.length} concepts"
 
-  -- Check for loose bvars before canonicalization
-  let mut safeForCanon := []
-  for c in cleaned do
-    match c with
-    | ConceptData.definition _ _ v _ _ _ =>
-      if !v.hasLooseBVars then
-        safeForCanon := safeForCanon ++ [c]
-      else
-        IO.println s!"[DEBUG] Skipping canonicalization of {getConceptName c} due to loose bvars"
-        safeForCanon := safeForCanon ++ [c]  -- Keep it but don't canonicalize
-    | _ => safeForCanon := safeForCanon ++ [c]
-  cleaned := safeForCanon
-
   -- Canonicalize
   if config.canonicalizeConcepts then
     IO.println s!"[DEBUG] Starting canonicalization..."
@@ -425,10 +401,6 @@ def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
 /-- Verify a definition is type-correct -/
 def verifyDefinition (type : Expr) (value : Expr) : MetaM Bool := do
   try
-    -- Check for loose bvars first
-    if type.hasLooseBVars || value.hasLooseBVars then
-      IO.println s!"[DEBUG] verifyDefinition: skipping due to loose bvars"
-      return false
     let valueType ← inferType value
     isDefEq valueType type
   catch e =>
@@ -438,10 +410,6 @@ def verifyDefinition (type : Expr) (value : Expr) : MetaM Bool := do
 /-- Verify a theorem by checking its proof -/
 def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
   try
-    -- Check for loose bvars first
-    if statement.hasLooseBVars || proof.hasLooseBVars then
-      IO.println s!"[DEBUG] verifyTheorem: skipping due to loose bvars"
-      return false
     let proofType ← inferType proof
     isDefEq proofType statement
   catch e =>
