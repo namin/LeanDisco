@@ -1778,21 +1778,84 @@ def showConceptStats (concepts : List ConceptData) : IO Unit := do
   for (depth, count) in sorted do
     IO.println s!"  Depth {depth}: {count} concepts"
 
-/-- Run the discovery system -/
-def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
-  IO.println "=== Starting Eurisko Discovery System ==="
+/-- Get standard heuristics as a list -/
+def getStandardHeuristics : List (String × HeuristicFn) := [
+  ("specialization", specializationHeuristic),
+  ("application", applicationHeuristic),
+  ("lemma_application", lemmaApplicationHeuristic),
+  ("pattern_recognition", patternRecognitionHeuristic),
+  ("conjecture_generation", conjectureGenerationHeuristic),
+  ("composition", compositionHeuristic),
+  ("pattern_guided", patternGuidedHeuristic)
+]
+
+/-- Get standard evaluators as a list -/
+def getStandardEvaluators : List (String × EvaluationFn) := [
+  ("complexity", complexityTask),
+  ("novelty", noveltyTask),
+  ("pattern_importance", patternImportanceTask)
+]
+
+/-- Base discovery runner that all others use -/
+def runDiscoveryCustom
+  (initialConcepts : List ConceptData)
+  (customHeuristics : List (String × HeuristicFn))
+  (customEvaluators : List (String × EvaluationFn))
+  (config : DiscoveryConfig)
+  (maxIterations : Nat)
+  (description : String := "Custom Discovery") : MetaM Unit := do
+
+  -- Build heuristics registry
+  let mut heuristics : HeuristicRegistry := HeuristicRegistry.empty
+
+  -- Add all heuristics (custom ones override standard if same name)
+  for (name, fn) in getStandardHeuristics ++ customHeuristics do
+    heuristics := heuristics.insert name fn
+
+  -- Build evaluators registry
+  let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
+
+  -- Add all evaluators (custom ones override standard if same name)
+  for (name, fn) in getStandardEvaluators ++ customEvaluators do
+    evaluators := evaluators.insert name fn
+
+  -- Create heuristic reference concepts
+  let heuristicRefs := customHeuristics.map fun (name, _) =>
+    ConceptData.heuristicRef name s!"Custom heuristic: {name}"
+      { name := name
+        created := 0
+        parent := none
+        interestingness := 1.0
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "initial" }
+
+  -- Create knowledge base
+  let kb : KnowledgeBase := {
+    concepts := initialConcepts ++ heuristicRefs
+    recentConcepts := initialConcepts
+    heuristics := heuristics
+    evaluators := evaluators
+    config := config
+    iteration := 0
+    history := []
+    cache := {}
+    failedProofs := []
+  }
+
+  IO.println s!"=== Starting {description} ==="
   IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
   IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
-  IO.println s!"Mining mode: {if useMining then "ON" else "OFF"}"
-  IO.println "Initializing with mathematical seed concepts..."
+  IO.println s!"Initial concepts: {initialConcepts.length}"
+  if customHeuristics.length > 0 then
+    IO.println s!"Custom heuristics: {customHeuristics.map (·.1)}"
+  showConceptStats initialConcepts
 
-  let kb ← initializeSystem config useMining
-
-  IO.println s!"\nInitial concepts ({kb.concepts.length}):"
-  showConceptStats kb.concepts
-
+  -- Run discovery loop
   let finalKb ← discoveryLoop kb maxIterations
 
+  -- Show final results
   IO.println s!"\n=== Discovery Complete ==="
   IO.println s!"Total concepts: {finalKb.concepts.length}"
   showConceptStats finalKb.concepts
@@ -1827,5 +1890,21 @@ def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config
         IO.println s!"  {name} (PATTERN, score: {(getInterestingness c).toString})"
       | _ =>
         IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {meta.specializationDepth})"
+
+/-- Run vanilla discovery system -/
+def runDiscovery (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
+  -- Get initial concepts
+  let basicSeed ← seedConcepts
+  let initialConcepts ← if useMining then do
+    let mined ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add"] ["Mathlib.Algebra.Group", "Mathlib.Algebra.Ring"]
+    let cleaned ← cleanupConcepts config basicSeed mined
+    pure (basicSeed ++ cleaned.take 300)
+  else
+    pure basicSeed
+
+  -- Run using the custom runner with no custom heuristics
+  let description := s!"Lean Discovery System (mining: {if useMining then "ON" else "OFF"})"
+  runDiscoveryCustom initialConcepts [] [] config maxIterations description
+
 
 end LeanDisco

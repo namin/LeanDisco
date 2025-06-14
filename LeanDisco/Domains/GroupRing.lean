@@ -628,4 +628,23 @@ def groupRingHeuristics : List (String × HeuristicFn) := [
   ("group_ring_duality", dualityHeuristic)
 ]
 
+/-- Run discovery with group/ring theory focus -/
+def runGroupRingDiscovery
+    (grConfig : GroupRingConfig := {})
+    (discConfig : DiscoveryConfig := {})
+    (maxIterations : Nat := 20) : MetaM Unit := do
+
+  -- Mine domain-specific concepts
+  let domainConcepts ← mineGroupRingConcepts grConfig
+  let seedConcepts ← LeanDisco.seedConcepts
+  let allInitialConcepts := seedConcepts ++ domainConcepts
+
+  -- Get domain-specific heuristics
+  let customHeuristics := groupRingHeuristics
+
+  -- Run using the base runner
+  let description := s!"Group/Ring Theory Discovery (group: {grConfig.includeBasicGroupTheory}, ring: {grConfig.includeBasicRingTheory})"
+  runDiscoveryCustom allInitialConcepts customHeuristics [] discConfig maxIterations description
+
+
 end LeanDisco.Domains.GroupRing
