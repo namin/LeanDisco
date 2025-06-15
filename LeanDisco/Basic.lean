@@ -305,12 +305,18 @@ def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List
   for c in newConcepts do
     if let some expr := getConceptExpr c then
       let mut isDuplicate := false
-
+      let mut duplicateName := false
       try
         let normalized ← reduce expr
 
         -- Check against existing concepts
         for (existingExpr, existingName) in existingNormalized do
+          if getConceptName c = existingName then
+            if duplicateName then
+              IO.println s!"[DEBUG] Duplicate name found: {getConceptName c} duplicates {existingName}"
+            else
+              duplicateName := true
+              continue
           if ← exprsEqual normalized existingExpr then
             isDuplicate := true
             duplicateCount := duplicateCount + 1
