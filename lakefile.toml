@@ -5,6 +5,9 @@ defaultTargets = ["leandisco"]
 [[lean_lib]]
 name = "LeanDisco"
 
+[[lean_lib]]
+name = "TestInfiniteNumbers"
+
 [[lean_exe]]
 name = "leandisco"
 root = "Main"

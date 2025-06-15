@@ -285,58 +285,69 @@ def mkSafeForall (n : Name) (type : Expr) (mkBody : Expr → MetaM Expr)
   let body ← mkBody x
   mkForallFVars #[x] body
 
-/-- Enhanced deduplication that checks semantic equivalence more thoroughly -/
-def deduplicateAgainstExisting (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
+/-- Context-aware deduplication that considers meaningful variations -/
+def deduplicateWithWeakerNormalization (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut result : List ConceptData := []
   let mut duplicateCount := 0
+  let mut keepCount := 0
 
-  -- Build normalized expression cache from existing concepts
-  let mut existingNormalized : List (Expr × String) := []
+  -- Build expression cache with weaker normalization
+  let mut existingCache : List (Expr × Expr × String) := []
   for c in existing do
     if let some expr := getConceptExpr c then
       try
-        let normalized ← reduce expr
-        existingNormalized := (normalized, getConceptName c) :: existingNormalized
+        -- Try multiple levels of comparison
+        let syntactic := expr
+        let weakNorm ← whnf expr  -- Weaker than full reduce
+        existingCache := (syntactic, weakNorm, getConceptName c) :: existingCache
       catch _ =>
-        -- If normalization fails, use the original expression
-        existingNormalized := (expr, getConceptName c) :: existingNormalized
+        existingCache := (expr, expr, getConceptName c) :: existingCache
 
   -- Check each new concept
   for c in newConcepts do
     if let some expr := getConceptExpr c then
-      let mut isDuplicate := false
-      let mut duplicateName := false
+      let cName := getConceptName c
+      let mut shouldKeep := true
+      let mut keepReason := "new"
+      
       try
-        let normalized ← reduce expr
+        let syntactic := expr
+        let weakNorm ← whnf expr
 
-        -- Check against existing concepts
-        for (existingExpr, existingName) in existingNormalized do
-          if getConceptName c = existingName then
-            if duplicateName then
-              IO.println s!"[DEBUG] Duplicate name found: {getConceptName c} duplicates {existingName}"
-            else
-              duplicateName := true
-              continue
-          if ← exprsEqual normalized existingExpr then
-            isDuplicate := true
-            duplicateCount := duplicateCount + 1
-            IO.println s!"[DEBUG] Duplicate found: {getConceptName c} duplicates {existingName}"
+        -- Check against existing concepts with two comparison levels
+        for (existingSyntactic, existingWeak, existingName) in existingCache do
+          
+          -- Level 1: Syntactic equality (strictest)
+          if syntactic == existingSyntactic then
+            shouldKeep := false
+            keepReason := "syntactic_duplicate"
+            break
+            
+          -- Level 2: Weak normalization equality (moderate)
+          if ← exprsEqual weakNorm existingWeak then
+            shouldKeep := false
+            keepReason := "weak_norm_duplicate"
             break
 
-        if !isDuplicate then
+        if shouldKeep then
           result := c :: result
-          -- Add to our normalized set for checking within this batch
-          existingNormalized := (normalized, getConceptName c) :: existingNormalized
+          keepCount := keepCount + 1
+          -- Add to cache for intra-batch checking
+          existingCache := (syntactic, weakNorm, cName) :: existingCache
+        else
+          duplicateCount := duplicateCount + 1
+          IO.println s!"[DEDUP] Rejecting {cName}: {keepReason}"
+          
       catch _ =>
-        -- If anything fails during deduplication, keep the concept
+        -- Keep concepts where normalization fails
         result := c :: result
+        keepCount := keepCount + 1
     else
-      -- Keep non-expression concepts (heuristics, tasks, patterns)
+      -- Keep non-expression concepts (patterns, heuristics, tasks)
       result := c :: result
+      keepCount := keepCount + 1
 
-  if duplicateCount > 0 then
-    IO.println s!"[DEBUG] Removed {duplicateCount} duplicates out of {newConcepts.length} new concepts"
-
+  IO.println s!"[DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates"
   return result.reverse
 
 /-- Filter concepts by specialization depth -/
@@ -349,32 +360,32 @@ def filterInternalTerms (concepts : List ConceptData) : List ConceptData :=
   concepts.filter fun c =>
     !isInternalProofTerm (getConceptName c)
 
-/-- Apply all configured filters and cleanup -/
-def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
+/-- Apply all configured filters and cleanup with adaptive deduplication -/
+def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (newConcepts : List ConceptData) (iteration : Nat) : MetaM (List ConceptData) := do
   let mut cleaned := newConcepts
 
-  IO.println s!"[DEBUG] cleanupConcepts: starting with {cleaned.length} concepts"
+  IO.println s!"[CLEANUP] Starting iteration {iteration} with {cleaned.length} concepts"
 
   -- Filter internal proof terms
   if config.filterInternalProofs then
     cleaned := filterInternalTerms cleaned
-    IO.println s!"[DEBUG] After filterInternalTerms: {cleaned.length} concepts"
+    IO.println s!"[CLEANUP] After filterInternalTerms: {cleaned.length} concepts"
 
   -- Filter by depth
   cleaned := filterByDepth config.maxSpecializationDepth cleaned
-  IO.println s!"[DEBUG] After filterByDepth: {cleaned.length} concepts"
+  IO.println s!"[CLEANUP] After filterByDepth: {cleaned.length} concepts"
 
   -- Canonicalize
   if config.canonicalizeConcepts then
-    IO.println s!"[DEBUG] Starting canonicalization..."
+    IO.println s!"[CLEANUP] Starting canonicalization..."
     cleaned ← cleaned.mapM canonicalizeConcept
-    IO.println s!"[DEBUG] After canonicalizeConcepts: {cleaned.length} concepts"
+    IO.println s!"[CLEANUP] After canonicalizeConcepts: {cleaned.length} concepts"
 
-  -- Deduplicate against existing concepts
+  -- WEAKER NORMALIZATION DEDUPLICATION instead of aggressive deduplication
   if config.deduplicateConcepts then
-    IO.println s!"[DEBUG] Starting deduplication..."
-    cleaned ← deduplicateAgainstExisting existing cleaned
-    IO.println s!"[DEBUG] After deduplication: {cleaned.length} concepts"
+    IO.println s!"[CLEANUP] Starting weaker normalization deduplication..."
+    cleaned ← deduplicateWithWeakerNormalization existing cleaned
+    IO.println s!"[CLEANUP] After weaker deduplication: {cleaned.length} concepts"
 
   -- Special deduplication for patterns - check by name only
   let cleanedPatterns := cleaned.filter fun c => match c with
@@ -385,7 +396,7 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
         | _ => false
     | _ => true
 
-  IO.println s!"[DEBUG] cleanupConcepts: returning {cleanedPatterns.length} concepts"
+  IO.println s!"[CLEANUP] Returning {cleanedPatterns.length} concepts"
   return cleanedPatterns
 
 /-- Update concept's interestingness score -/
@@ -733,7 +744,7 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
 
         -- Clean up new concepts against ALL existing concepts
         IO.println s!"[DEBUG] Starting cleanup..."
-        let cleanedConcepts ← cleanupConcepts kb.config kb.concepts newConcepts
+        let cleanedConcepts ← cleanupConcepts kb.config kb.concepts newConcepts kb.iteration
 
         IO.println s!"[DEBUG] After cleanup: {cleanedConcepts.length} concepts"
 
@@ -1526,6 +1537,90 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
   IO.println s!"[DEBUG] compositionHeuristic: returning {newConcepts.length} concepts"
   return newConcepts
 
+/-- Stochastic exploration heuristic - creates random variations to break cycles -/
+def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts : List ConceptData := []
+  
+  -- Get a pseudo-random seed based on the number of concepts
+  let seed := concepts.length % 17 + 3
+  
+  -- Find diverse concepts to experiment with
+  let experimentCandidates := concepts.filter fun c => match c with
+    | ConceptData.definition n _ _ _ _ m => 
+      n.length % 5 == seed % 5 && m.specializationDepth <= 2 && m.generationMethod != "stochastic_exploration"
+    | ConceptData.theorem n _ _ _ m => 
+      n.length % 7 == (seed + 2) % 7 && m.specializationDepth <= 1
+    | _ => false
+  
+  IO.println s!"[STOCHASTIC] Found {experimentCandidates.length} exploration candidates"
+  
+  -- Create random variations
+  for candidate in experimentCandidates.take 3 do
+    let baseName := getConceptName candidate
+    let meta := getConceptMetadata candidate
+    
+    -- Create a "twisted" version with different naming
+    let twistedName := s!"twist_{seed}_{baseName}"
+    
+    if !concepts.any (fun c => getConceptName c == twistedName) then
+      match candidate with
+      | ConceptData.definition _ t v cv deps _ =>
+        let newMeta := { meta with
+          name := twistedName
+          parent := some baseName
+          interestingness := 0.6 + (seed % 4).toFloat / 10.0  -- Slight randomness
+          specializationDepth := meta.specializationDepth + 1
+          generationMethod := "stochastic_exploration" }
+        
+        newConcepts := newConcepts ++ [
+          ConceptData.definition twistedName t v cv deps newMeta
+        ]
+        
+      | ConceptData.theorem _ s p deps _ =>
+        let newMeta := { meta with
+          name := twistedName
+          parent := some baseName
+          interestingness := 0.7 + (seed % 3).toFloat / 10.0
+          specializationDepth := meta.specializationDepth + 1
+          generationMethod := "stochastic_exploration" }
+        
+        newConcepts := newConcepts ++ [
+          ConceptData.theorem twistedName s p deps newMeta
+        ]
+      | _ => pure ()
+  
+  -- Create some "bridging" concepts that connect distant concepts
+  let definitions := concepts.filterMap fun c => match c with
+    | ConceptData.definition n t v _ _ m => 
+      if m.specializationDepth == 0 && n.length % 4 == (seed + 1) % 4 then
+        some (n, t, v)
+      else none
+    | _ => none
+  
+  if definitions.length >= 2 then
+    let (n1, t1, v1) := definitions[0]!
+    let (n2, t2, v2) := definitions[1]!
+    
+    let bridgeName := s!"bridge_{n1}_{n2}"
+    
+    if !concepts.any (fun c => getConceptName c == bridgeName) then
+      -- Create a simple bridging concept (placeholder - uses first concept's structure)
+      newConcepts := newConcepts ++ [
+        ConceptData.definition bridgeName t1 v1 none [n1, n2] {
+          name := bridgeName
+          created := 0
+          parent := some n1
+          interestingness := 0.65
+          useCount := 0
+          successCount := 0
+          specializationDepth := 1
+          generationMethod := "stochastic_bridging"
+        }
+      ]
+  
+  IO.println s!"[STOCHASTIC] Generated {newConcepts.length} exploration concepts"
+  return newConcepts
+
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
   if let some concept := concepts.getLast? then
@@ -1629,7 +1724,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   if useMining then
     let minedConcepts ← mineEnvironment ["Nat.zero", "Nat.succ", "Nat.add", "Nat.sub", "Nat.mul"] ["Mathlib.Algebra.Group", "Mathlib.Algebra.Ring"]
     -- Clean up mined concepts against existing
-    let cleanedMined ← cleanupConcepts config initialConcepts minedConcepts
+    let cleanedMined ← cleanupConcepts config initialConcepts minedConcepts 0
     initialConcepts := initialConcepts ++ cleanedMined.take 300
 
   -- Create heuristic references
@@ -1668,6 +1763,11 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Use discovered patterns to guide generation"
     { basicMeta with name := "pattern_guided" }
 
+  let stochasticHeuristicRef := ConceptData.heuristicRef
+    "stochastic_exploration"
+    "Create random variations to break discovery cycles"
+    { basicMeta with name := "stochastic_exploration" }
+
   -- Create task references
   let complexityTaskRef := ConceptData.taskRef
     "complexity"
@@ -1693,6 +1793,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   heuristics := heuristics.insert "conjecture_generation" conjectureGenerationHeuristic
   heuristics := heuristics.insert "composition" compositionHeuristic
   heuristics := heuristics.insert "pattern_guided" patternGuidedHeuristic
+  heuristics := heuristics.insert "stochastic_exploration" stochasticExplorationHeuristic
 
   let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
   evaluators := evaluators.insert "complexity" complexityTask
@@ -1702,7 +1803,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
       patternHeuristicRef, conjectureHeuristicRef, compositionHeuristicRef,
-      patternGuidedHeuristicRef, complexityTaskRef, noveltyTaskRef, patternTaskRef
+      patternGuidedHeuristicRef, stochasticHeuristicRef, complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
   return {
     concepts := allConcepts
