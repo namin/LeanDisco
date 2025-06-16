@@ -26,8 +26,7 @@ def mineInfiniteNumbers : MetaM (List ConceptData) := do
   let natType := mkConst ``Nat
   
   for i in [0, 1, 2] do
-    let numExpr := (List.range i).foldl (fun acc _ => 
-      mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
+    let numExpr := mkNatLit i
     
     concepts := concepts ++ [
       ConceptData.definition s!"num_{i}" natType numExpr none [] (mkMeta s!"num_{i}")
@@ -39,7 +38,7 @@ def mineInfiniteNumbers : MetaM (List ConceptData) := do
 def generateNextNumber : HeuristicFn := fun _config concepts => do
   let mut newConcepts : List ConceptData := []
   
-  -- Find existing numbers
+  -- Find the highest numbered concept we can see (from recent concepts)
   let existingNumbers := concepts.filterMap fun c => match c with
     | ConceptData.definition n _ _ _ _ _ =>
       if n.startsWith "num_" then
@@ -47,24 +46,45 @@ def generateNextNumber : HeuristicFn := fun _config concepts => do
       else if n == "zero" then some 0
       else if n == "one" then some 1
       else if n == "two" then some 2
+      else if n.startsWith "three" then some 3
+      else if n.startsWith "big_num_" then
+        -- Extract number from big_num_XXXXX format
+        n.drop 8 |>.toNat?
+      else if n.startsWith "time_hash_" then
+        -- Don't count these as part of the main sequence
+        none
       else none
     | _ => none
   
-  let maxNum := existingNumbers.foldl max 0
-  let nextNum := maxNum + 1
+  -- If we see any numbers, increment from the highest
+  -- If we don't see any numbers, this might be a later iteration where we only see recent concepts
+  -- In that case, generate a number based on iteration or time to ensure uniqueness
+  let nextNum := if existingNumbers.isEmpty then
+    -- No numbers visible - use iteration-based generation
+    100 + concepts.length  -- Start from 100+ to avoid conflicts with early numbers
+  else
+    -- Continue from the highest number we can see
+    existingNumbers.foldl max 0 + 1
   
   -- Generate next number (should always be possible)
   if nextNum < 1000 then  -- increased limit for infinite generation
     let natType := mkConst ``Nat
-    let numExpr := (List.range nextNum).foldl (fun acc _ => 
-      mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
+    
+    -- Generate the number expression - use mkNatLit for better representation
+    let numExpr := if nextNum < 100 then
+      -- For smaller numbers, use Lean's native literal representation
+      mkNatLit nextNum
+    else
+      -- For larger numbers, use successor representation
+      (List.range nextNum).foldl (fun acc _ => 
+        mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
     
     newConcepts := newConcepts ++ [
       ConceptData.definition s!"num_{nextNum}" natType numExpr none [] {
         name := s!"num_{nextNum}"
         created := 0
-        parent := some s!"num_{maxNum}"
-        interestingness := 0.8
+        parent := if nextNum > 1 then some s!"num_{nextNum - 1}" else none
+        interestingness := 0.8 - (nextNum.toFloat / 1000.0) * 0.3  -- Decrease interest for higher numbers
         useCount := 0
         successCount := 0
         specializationDepth := 0
@@ -545,6 +565,30 @@ def guaranteedGeneration : HeuristicFn := fun _config concepts => do
   -- Generate numbers using different mathematical constructions to ensure uniqueness
   let conceptCount := concepts.length
   
+  -- Simple strategy: generate numbers at regular intervals based on concept count
+  -- This ensures we always generate something new regardless of what we can see
+  let baseNumber := 1000 + conceptCount * 10  -- Start from 1000 and increment by 10s
+  
+  for offset in [0, 1, 2] do
+    let guaranteedNum := baseNumber + offset
+    let guaranteedName := s!"guaranteed_num_{guaranteedNum}"
+    
+    if !existingNames.contains guaranteedName then
+      let numExpr := mkNatLit guaranteedNum
+      
+      newConcepts := newConcepts ++ [
+        ConceptData.definition guaranteedName natType numExpr none [] {
+          name := guaranteedName
+          created := 0
+          parent := none
+          interestingness := 0.7
+          useCount := 0
+          successCount := 0
+          specializationDepth := 0
+          generationMethod := "guaranteed_sequential"
+        }
+      ]
+  
   -- Strategy 1: Powers of 2 plus offset
   let powerOf2Name := s!"pow2plus_{conceptCount}"
   if !existingNames.contains powerOf2Name then
@@ -729,6 +773,9 @@ def infiniteGeneration : HeuristicFn := fun _config concepts => do
   let existingNames := concepts.map getConceptName
   let conceptCount := concepts.length
   
+  -- Get current timestamp to ensure uniqueness across runs
+  let currentTime ← IO.monoMsNow
+  
   -- Strategy 1: Create number based on prime factorization of concept count
   let baseName := s!"infinite_base_{conceptCount}"
   if !existingNames.contains baseName then
@@ -763,23 +810,18 @@ def infiniteGeneration : HeuristicFn := fun _config concepts => do
       }
     ]
   
-  -- Strategy 2: Time-based unique generation
-  let timeName := s!"time_unique_{conceptCount}_iter"
+  -- Strategy 2: Time-based unique generation (truly unique across all runs)
+  let timeHash := currentTime % 100000  -- Use timestamp hash for uniqueness
+  let timeName := s!"time_hash_{timeHash}_{conceptCount}"
   if !existingNames.contains timeName then
-    -- Create: conceptCount^3 + (conceptCount * 13) + 1337
-    let countExpr := (List.range conceptCount).foldl (fun acc _ => 
-      mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
-    let thirteen := (List.range 13).foldl (fun acc _ => 
-      mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
-    let leetNum := (List.range 1337).foldl (fun acc _ => 
-      mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
-    
+    -- Create: timeHash + conceptCount^2 + prime offset
+    let timeHashExpr := mkNatLit timeHash
+    let countExpr := mkNatLit conceptCount
     let countSquared := mkApp2 (mkConst ``Nat.mul) countExpr countExpr
-    let countCubed := mkApp2 (mkConst ``Nat.mul) countSquared countExpr
-    let countTimes13 := mkApp2 (mkConst ``Nat.mul) countExpr thirteen
+    let primeOffset := mkNatLit 1009  -- Large prime to avoid collisions
     
-    let sum := mkApp2 (mkConst ``Nat.add) countCubed countTimes13
-    let finalVal := mkApp2 (mkConst ``Nat.add) sum leetNum
+    let sum1 := mkApp2 (mkConst ``Nat.add) timeHashExpr countSquared
+    let finalVal := mkApp2 (mkConst ``Nat.add) sum1 primeOffset
     
     newConcepts := newConcepts ++ [
       ConceptData.definition timeName natType finalVal none [] {
@@ -791,6 +833,26 @@ def infiniteGeneration : HeuristicFn := fun _config concepts => do
         successCount := 0
         specializationDepth := 0
         generationMethod := "infinite_time_generation"
+      }
+    ]
+  
+  -- Strategy 3: Large number sequence that doesn't depend on existing state
+  let bigNumName := s!"big_num_{conceptCount * 1000 + timeHash % 1000}"
+  if !existingNames.contains bigNumName then
+    -- Generate large numbers that are unlikely to exist
+    let bigNumber := conceptCount * 1000 + timeHash % 1000 + 50000
+    let bigNumExpr := mkNatLit bigNumber
+    
+    newConcepts := newConcepts ++ [
+      ConceptData.definition bigNumName natType bigNumExpr none [] {
+        name := bigNumName
+        created := 0
+        parent := none
+        interestingness := 0.8
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "big_number_generation"
       }
     ]
   
