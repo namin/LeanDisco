@@ -1,0 +1,723 @@
+ℹ [310/616] Replayed Main
+info: Main.lean:14:0: [GroupRing] Mined 14 concepts
+=== Starting Group/Ring Theory Discovery (group: true, ring: true)Discovery System ===
+Config: maxDepth=3, maxPerIter=50
+Features: conjectures=true, patterns=true
+Mining mode: ON
+Initializing with mathematical seed concepts...
+
+Initial concepts (359):
+
+Definitions: 127
+Theorems: 211
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 359 concepts
+
+--- Iteration 1 ---
+Building on 349 recent discoveries:
+  - zero
+  - succ
+  - one
+  - two
+  - add
+[DEBUG] Focusing on 48 concepts (from 349 recent, 359 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 4 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 8)
+[RingCharacteristics] Generated 17 ring characteristic concepts (beyond 1)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+55 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_3
+
+🔮 Conjectures (17):
+  - succ_comp_add1_eq_0
+    Evidence: 0.368750
+  - succ_comp_add1_eq_2
+    Evidence: 0.432143
+  - succ_comp_add2_eq_0
+    Evidence: 0.362500
+  - succ_comp_add2_eq_1
+    Evidence: 0.266921
+  - succ_comp_add2_eq_2
+    Evidence: 0.425000
+  ... and 12 more
+
+✓ Proven Theorems (2):
+  - nat_add_one_spec_zero
+    Method: specialization
+  - add_comm_spec_two
+    Method: specialization
+
+🔍 Patterns (2):
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Examples: [zero, one, two]
+  - Nat_is_AddMonoid: Natural numbers form an additive monoid
+    Examples: [nat_add_zero, nat_zero_add, nat_add_assoc]
+
+🔧 Function Applications (3):
+  - succ_applied_to_two
+  - add_applied_to_zero
+  - add2_applied_to_two
+
+🔗 Function Compositions (4):
+  - succ_compose_add1
+  - succ_compose_add2
+  - add1_compose_add2
+
+📊 Discovery Summary:
+  specialization: 2 concepts
+  application: 3 concepts
+  pattern_recognition: 1 concepts
+  number_generation: 1 concepts
+  composition: 4 concepts
+  ✓ Proved conjecture: add_comm_zero_one
+
+--- Iteration 2 ---
+Building on 56 recent discoveries:
+  - num_3
+  - nat_add_one_spec_zero
+  - add_comm_spec_two
+  - succ_applied_to_two
+  - add_applied_to_zero
+[DEBUG] Focusing on 50 concepts (from 56 recent, 414 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 9 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 0 polymorphic theorems
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+42 new concepts discovered this iteration
+
+✓ Proven Theorems (29):
+  - nat_add_zero_spec_char_7
+    Method: specialization
+  - nat_add_zero_spec_char_5
+    Method: specialization
+  - nat_add_zero_spec_char_13
+    Method: specialization
+  - nat_add_zero_spec_char_11
+    Method: specialization
+  - nat_add_assoc_spec_char_7
+    Method: specialization
+
+🔧 Function Applications (3):
+  - add_applied_to_char_7
+  - add_applied_to_char_5
+  - add_applied_to_char_13
+
+📊 Discovery Summary:
+  specialization: 29 concepts
+  application: 3 concepts
+
+--- Iteration 3 ---
+Building on 42 recent discoveries:
+  - nat_add_zero_spec_char_7
+  - nat_add_zero_spec_char_5
+  - nat_add_zero_spec_char_13
+  - nat_add_zero_spec_char_11
+  - nat_add_assoc_spec_char_7
+[DEBUG] Focusing on 50 concepts (from 42 recent, 456 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 18)
+[RingCharacteristics] Generated 12 ring characteristic concepts (beyond 31)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+20 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_4
+
+✓ Proven Theorems (5):
+  - nat_add_zero_spec_char_17
+    Method: specialization
+  - nat_add_zero_spec_char_23
+    Method: specialization
+  - nat_add_zero_spec_char_19
+    Method: specialization
+  - nat_add_zero_spec_group_order_16
+    Method: specialization
+  - nat_add_zero_spec_group_order_18
+    Method: specialization
+
+🔧 Function Applications (7):
+  - add2_applied_to_char_23
+  - add2_applied_to_char_19
+  - succ_applied_to_char_23
+
+📊 Discovery Summary:
+  specialization: 5 concepts
+  application: 7 concepts
+  number_generation: 1 concepts
+
+--- Iteration 4 ---
+Building on 20 recent discoveries:
+  - num_4
+  - nat_add_zero_spec_char_17
+  - nat_add_zero_spec_char_23
+  - nat_add_zero_spec_char_19
+  - nat_add_zero_spec_group_order_16
+[DEBUG] Focusing on 50 concepts (from 20 recent, 476 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 21)
+[RingCharacteristics] Generated 0 ring characteristic concepts (beyond 47)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+20 new concepts discovered this iteration
+
+✓ Proven Theorems (10):
+  - add_comm_spec_char_37
+    Method: specialization
+  - add_comm_spec_char_47
+    Method: specialization
+  - add_comm_spec_char_41
+    Method: specialization
+  - add_comm_spec_group_order_20
+    Method: specialization
+  - add_comm_spec_group_order_21
+    Method: specialization
+
+🔍 Patterns (2):
+  - succ_iteration_pattern: Repeated application of succ
+    Examples: [succ_applied_to_char_19, succ_applied_to_char_23]
+  - add2_iteration_pattern: Repeated application of add2
+    Examples: [add2_applied_to_char_19, add2_applied_to_char_23]
+
+🔧 Function Applications (7):
+  - add1_applied_to_char_37
+  - add1_applied_to_char_47
+  - add2_applied_to_char_37
+
+📊 Discovery Summary:
+  specialization: 10 concepts
+  application: 7 concepts
+  pattern_recognition: 2 concepts
+
+--- Iteration 5 ---
+Building on 20 recent discoveries:
+  - add_comm_spec_char_37
+  - add_comm_spec_char_47
+  - add_comm_spec_char_41
+  - add_comm_spec_group_order_20
+  - add_comm_spec_group_order_21
+[DEBUG] Focusing on 50 concepts (from 20 recent, 496 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 13 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 26)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+7 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_5
+
+✓ Proven Theorems (2):
+  - add_comm_spec_group_order_26
+    Method: specialization
+  - nat_add_zero_spec_group_order_26
+    Method: specialization
+
+🔍 Patterns (1):
+  - add1_iteration_pattern: Repeated application of add1
+    Examples: [add1_applied_to_char_37, add1_applied_to_char_47]
+
+🔧 Function Applications (2):
+  - add_applied_to_group_order_26
+  - add1_applied_to_group_order_26
+
+📊 Discovery Summary:
+  specialization: 2 concepts
+  application: 2 concepts
+  pattern_recognition: 1 concepts
+  number_generation: 1 concepts
+
+--- Iteration 6 ---
+Building on 7 recent discoveries:
+  - num_5
+  - add_comm_spec_group_order_26
+  - nat_add_zero_spec_group_order_26
+  - add_applied_to_group_order_26
+  - add1_applied_to_group_order_26
+[DEBUG] Focusing on 50 concepts (from 7 recent, 503 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 27)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+4 new concepts discovered this iteration
+
+✓ Proven Theorems (2):
+  - add_comm_spec_group_order_27
+    Method: specialization
+  - nat_add_zero_spec_group_order_27
+    Method: specialization
+
+🔧 Function Applications (1):
+  - add_applied_to_group_order_27
+
+📊 Discovery Summary:
+  specialization: 2 concepts
+  application: 1 concepts
+
+--- Iteration 7 ---
+Building on 4 recent discoveries:
+  - add_comm_spec_group_order_27
+  - nat_add_zero_spec_group_order_27
+  - add_applied_to_group_order_27
+  - group_order_32
+[DEBUG] Focusing on 50 concepts (from 4 recent, 507 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 15 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 32)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+9 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_6
+
+✓ Proven Theorems (2):
+  - add_comm_spec_group_order_32
+    Method: specialization
+  - nat_add_zero_spec_group_order_32
+    Method: specialization
+
+🔧 Function Applications (3):
+  - add_applied_to_group_order_32
+  - add1_applied_to_group_order_32
+  - add2_applied_to_group_order_32
+
+📊 Discovery Summary:
+  specialization: 2 concepts
+  application: 3 concepts
+  number_generation: 1 concepts
+
+--- Iteration 8 ---
+Building on 9 recent discoveries:
+  - num_6
+  - add_comm_spec_group_order_32
+  - nat_add_zero_spec_group_order_32
+  - add_applied_to_group_order_32
+  - add1_applied_to_group_order_32
+[DEBUG] Focusing on 50 concepts (from 9 recent, 516 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 35)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+9 new concepts discovered this iteration
+
+✓ Proven Theorems (6):
+  - add_comm_spec_group_order_35
+    Method: specialization
+  - add_comm_spec_group_order_34
+    Method: specialization
+  - add_comm_spec_group_order_33
+    Method: specialization
+  - nat_add_zero_spec_group_order_35
+    Method: specialization
+  - nat_add_zero_spec_group_order_34
+    Method: specialization
+
+🔧 Function Applications (3):
+  - add_applied_to_group_order_35
+  - add_applied_to_group_order_34
+  - add_applied_to_group_order_33
+
+📊 Discovery Summary:
+  specialization: 6 concepts
+  application: 3 concepts
+
+--- Iteration 9 ---
+Building on 9 recent discoveries:
+  - add_comm_spec_group_order_35
+  - add_comm_spec_group_order_34
+  - add_comm_spec_group_order_33
+  - nat_add_zero_spec_group_order_35
+  - nat_add_zero_spec_group_order_34
+[DEBUG] Focusing on 50 concepts (from 9 recent, 525 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_7
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 10 ---
+Building on 1 recent discoveries:
+  - num_7
+[DEBUG] Focusing on 50 concepts (from 1 recent, 526 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+No new concepts discovered this iteration
+
+--- Iteration 11 ---
+[DEBUG] Focusing on 50 concepts (from 0 recent, 526 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_8
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 12 ---
+Building on 1 recent discoveries:
+  - num_8
+[DEBUG] Focusing on 50 concepts (from 1 recent, 527 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+No new concepts discovered this iteration
+
+--- Iteration 13 ---
+[DEBUG] Focusing on 50 concepts (from 0 recent, 527 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_9
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+--- Iteration 14 ---
+Building on 1 recent discoveries:
+  - num_9
+[DEBUG] Focusing on 50 concepts (from 1 recent, 528 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+No new concepts discovered this iteration
+
+--- Iteration 15 ---
+[DEBUG] Focusing on 50 concepts (from 0 recent, 528 total)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[STOCHASTIC] Found 14 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 0)
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[Conjectures] Generated 0 conjectures
+1 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_10
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+=== Discovery Complete ===
+Total concepts: 529
+
+Definitions: 217
+Theorems: 270
+Conjectures: 16
+Patterns: 5
+
+Depth distribution:
+  Depth 0: 407 concepts
+  Depth 1: 122 concepts
+
+Discovered Patterns:
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two, zero, one, two]
+  - Nat_is_AddMonoid: Natural numbers form an additive monoid
+    Instances: [nat_add_zero, nat_zero_add, nat_add_assoc]
+  - succ_iteration_pattern: Repeated application of succ
+    Instances: [succ_applied_to_char_19, succ_applied_to_char_23]
+  - add2_iteration_pattern: Repeated application of add2
+    Instances: [add2_applied_to_char_19, add2_applied_to_char_23]
+  - add1_iteration_pattern: Repeated application of add1
+    Instances: [add1_applied_to_char_37, add1_applied_to_char_47]
+
+Top discovered concepts:
+  add (score: 1.000000, depth: 0)
+  zero (score: 1.000000, depth: 0)
+  succ (score: 1.000000, depth: 0)
+  one (score: 1.000000, depth: 0)
+  two (score: 1.000000, depth: 0)
+  add (score: 1.000000, depth: 0)
+  zero_eq_zero (score: 1.000000, depth: 0)
+  add_comm (score: 1.000000, depth: 0)
+  add1 (score: 1.000000, depth: 0)
+  add2 (score: 1.000000, depth: 0)
+  zero_add_zero (score: 1.000000, depth: 0)
+  one_add_one_eq_two (score: 1.000000, depth: 0)
+  two_add_one_eq_three (score: 1.000000, depth: 0)
+  mul_one (score: 1.000000, depth: 0)
+  one_mul (score: 1.000000, depth: 0)
+  inv_inv (score: 1.000000, depth: 0)
+  Ring.mul_assoc (score: 1.000000, depth: 0)
+  Ring.one_mul (score: 1.000000, depth: 0)
+  Ring.mul_one (score: 1.000000, depth: 0)
+  nat_add_zero (score: 1.000000, depth: 0)
+Build completed successfully.
