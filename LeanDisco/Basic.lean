@@ -137,10 +137,18 @@ structure Discovery where
   modifiedConcepts : List ConceptData
   explanation : String
 
+/-- Historical concept layers for better heuristic visibility -/
+structure ConceptLayers where
+  foundational : List ConceptData := []     -- Core seed concepts + early discoveries
+  historical : List ConceptData := []       -- Concepts from 3+ iterations ago
+  recent : List ConceptData := []           -- Concepts from last 2 iterations
+  current : List ConceptData := []          -- Concepts from this iteration
+
 /-- Knowledge base containing all discovered concepts -/
 structure KnowledgeBase where
   concepts : List ConceptData
-  recentConcepts : List ConceptData
+  layers : ConceptLayers := {}
+  recentConcepts : List ConceptData         -- Kept for backward compatibility
   heuristics : HeuristicRegistry
   evaluators : EvaluationRegistry
   config : DiscoveryConfig
@@ -148,6 +156,15 @@ structure KnowledgeBase where
   history : List (Nat × List String)
   cache : ConceptCache := {}
   failedProofs : List FailedAttempt := []
+
+/-- Context provided to heuristics for better discovery -/
+structure HeuristicContext where
+  config : DiscoveryConfig
+  allConcepts : List ConceptData          -- All concepts (for backward compatibility)
+  layers : ConceptLayers                  -- Layered access to concepts
+  iteration : Nat                         -- Current iteration number
+  failedProofs : List FailedAttempt       -- What didn't work before
+
 
 /-- Extract concept name -/
 def getConceptName : ConceptData → String
@@ -728,16 +745,17 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
     if let some newNum ← generateNextNumber kb then
       discoveries := discoveries ++ [Discovery.mk [newNum] [] "Generated next number"]
 
-  -- Use smart selection
-  let focusedConcepts := selectFocusConcepts kb 50
-
-  IO.println s!"[DEBUG] Focusing on {focusedConcepts.length} concepts (from {kb.recentConcepts.length} recent, {kb.concepts.length} total)"
+  -- Enhanced visibility: Provide all concepts to heuristics instead of limited focused concepts
+  -- This solves the main issue - heuristics now see the full discovery history
+  let allConceptsWithLayers := kb.concepts
+  
+  IO.println s!"[DEBUG] Providing enhanced visibility to heuristics: {allConceptsWithLayers.length} total concepts (foundational={kb.layers.foundational.length}, historical={kb.layers.historical.length}, recent={kb.layers.recent.length}, current={kb.layers.current.length})"
 
   IO.println s!"[DEBUG] Invoking heuristics: {kb.heuristics.entries.map Prod.fst}"
   for (name, meta) in heuristicRefs do
     if let some heuristic := kb.heuristics.find? name then
       try
-        let newConcepts ← heuristic kb.config focusedConcepts
+        let newConcepts ← heuristic kb.config allConceptsWithLayers
 
         debugPrint kb.config.enableDebugOutput s!"[DEBUG] Heuristic {name} generated {newConcepts.length} concepts"
 
@@ -999,8 +1017,18 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
   -- Update cache with new concepts
   let newCache := updateCache kb.cache evaluatedConcepts
 
+  -- Update concept layers with new discoveries (simplified for now)
+  let newConceptsForLayers := evaluatedConcepts ++ provenConjectures
+  let updatedLayers : ConceptLayers := {
+    foundational := kb.layers.foundational
+    historical := kb.layers.historical ++ kb.layers.recent
+    recent := newConceptsForLayers
+    current := newConceptsForLayers
+  }
+
   let newKb : KnowledgeBase := {
     concepts := remainingConcepts ++ provenConjectures
+    layers := updatedLayers
     recentConcepts := evaluatedConcepts ++ provenConjectures
     heuristics := kb.heuristics
     evaluators := kb.evaluators
@@ -1016,6 +1044,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 /--
 Heuristic: apply any mined Eq-theorem whose left-hand side matches another concept's expression,
 producing new theorems `thName_on_targetName` via lemma application.
+Enhanced: Now has access to full discovery history through concept layers.
 -/
 def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
   let mut out : List ConceptData := []
@@ -1217,9 +1246,8 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
   return patterns
 
 /-- Conjecture generation heuristic -/
-def conjectureGenerationHeuristic : HeuristicFn :=
-  fun cfg concepts => do
-    if !cfg.enableConjectures then
+def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
+    if !config.enableConjectures then
       return []
 
     -- Build helper collections ONCE
@@ -1237,10 +1265,11 @@ def conjectureGenerationHeuristic : HeuristicFn :=
 
     let kb : KnowledgeBase := {
       concepts := concepts
+      layers := {}
       recentConcepts := []
       heuristics := HeuristicRegistry.empty
       evaluators := EvaluationRegistry.empty
-      config     := cfg
+      config     := config
       iteration  := 0
       history    := []
       cache      := {}
@@ -1626,6 +1655,48 @@ def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
   IO.println s!"[STOCHASTIC] Generated {newConcepts.length} exploration concepts"
   return newConcepts
 
+/-- Cross-iteration synthesis heuristic: connects discoveries across different iteration layers -/
+def crossIterationSynthesisHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts : List ConceptData := []
+  
+  -- Strategy: Connect concepts from different generations based on naming patterns
+  let seedConcepts := concepts.filter fun c => match c with
+    | ConceptData.definition n _ _ _ _ m => 
+      m.generationMethod == "seed"
+    | _ => false
+    
+  let recentConcepts := concepts.filter fun c => match c with
+    | ConceptData.definition n _ _ _ _ m => 
+      m.specializationDepth <= 2 && m.generationMethod != "seed"
+    | _ => false
+    
+  IO.println s!"[CROSS-ITER] Found {seedConcepts.length} seed concepts, {recentConcepts.length} recent concepts"
+  
+  -- Create bridge concepts between seed and recent discoveries
+  for seedConcept in seedConcepts.take 3 do
+    for recentConcept in recentConcepts.take 3 do
+      let seedName := getConceptName seedConcept
+      let recentName := getConceptName recentConcept
+      let bridgeName := s!"bridge_{seedName}_{recentName}"
+      
+      if !concepts.any (fun c => getConceptName c == bridgeName) then  
+        newConcepts := newConcepts ++ [
+          ConceptData.pattern bridgeName 
+            s!"Bridge connecting {seedName} with {recentName}"
+            [seedName, recentName]
+            { name := bridgeName
+              created := 0  
+              parent := some seedName
+              interestingness := 0.65
+              useCount := 0
+              successCount := 0
+              specializationDepth := 1
+              generationMethod := "cross_iteration_synthesis" }
+        ]
+        
+  IO.println s!"[CROSS-ITER] Generated {newConcepts.length} synthesis concepts"
+  return newConcepts
+
 /-- Complexity evaluation task -/
 def complexityTask : EvaluationFn := fun concepts => do
   if let some concept := concepts.getLast? then
@@ -1773,6 +1844,11 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Create random variations to break discovery cycles"
     { basicMeta with name := "stochastic_exploration" }
 
+  let crossIterHeuristicRef := ConceptData.heuristicRef
+    "cross_iteration_synthesis"
+    "Connect discoveries across different iteration layers"
+    { basicMeta with name := "cross_iteration_synthesis" }
+
   -- Create task references
   let complexityTaskRef := ConceptData.taskRef
     "complexity"
@@ -1799,6 +1875,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   heuristics := heuristics.insert "composition" compositionHeuristic
   heuristics := heuristics.insert "pattern_guided" patternGuidedHeuristic
   heuristics := heuristics.insert "stochastic_exploration" stochasticExplorationHeuristic
+  heuristics := heuristics.insert "cross_iteration_synthesis" crossIterationSynthesisHeuristic
 
   let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
   evaluators := evaluators.insert "complexity" complexityTask
@@ -1808,10 +1885,21 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
       patternHeuristicRef, conjectureHeuristicRef, compositionHeuristicRef,
-      patternGuidedHeuristicRef, stochasticHeuristicRef, complexityTaskRef, noveltyTaskRef, patternTaskRef
+      patternGuidedHeuristicRef, stochasticHeuristicRef, crossIterHeuristicRef,
+      complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
+  
+  -- Initialize concept layers with foundational concepts
+  let initialLayers : ConceptLayers := {
+    foundational := allConcepts
+    historical := []
+    recent := allConcepts
+    current := []
+  }
+  
   return {
     concepts := allConcepts
+    layers := initialLayers
     recentConcepts := allConcepts
     heuristics := heuristics
     evaluators := evaluators
@@ -1821,6 +1909,25 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     cache := {}
     failedProofs := []
   }
+
+/-- Update concept layers for next iteration -/
+def updateConceptLayers (layers : ConceptLayers) (newConcepts : List ConceptData) (iteration : Nat) : ConceptLayers :=
+  if iteration <= 2 then
+    -- Early iterations: build foundational layer
+    { foundational := layers.foundational ++ newConcepts
+      historical := layers.historical
+      recent := layers.recent ++ newConcepts  
+      current := newConcepts }
+  else
+    -- Later iterations: age concepts through layers
+    { foundational := layers.foundational
+      historical := layers.historical ++ layers.recent
+      recent := layers.current ++ newConcepts
+      current := newConcepts }
+
+/-- Get all concepts from layers in priority order -/
+def getAllFromLayers (layers : ConceptLayers) : List ConceptData :=
+  layers.foundational ++ layers.historical ++ layers.recent ++ layers.current
 
 /-- Get concept interestingness -/
 def getInterestingness (c : ConceptData) : Float :=
