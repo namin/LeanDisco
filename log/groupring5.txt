@@ -1,0 +1,973 @@
+[GroupRing] Mined 14 concepts
+=== Starting Group/Ring Theory Discovery (group: true, ring: true)Discovery System ===
+Config: maxDepth=3, maxPerIter=50
+Features: conjectures=true, patterns=true
+Mining mode: ON
+Initializing with mathematical seed concepts...
+[DEDUP] Kept 2913, rejected 2 from 2915 candidates
+
+Initial concepts (362):
+
+Definitions: 127
+Theorems: 211
+Conjectures: 0
+Patterns: 0
+
+Depth distribution:
+  Depth 0: 362 concepts
+
+--- Iteration 1 ---
+Building on 352 recent discoveries:
+  - zero
+  - succ
+  - one
+  - two
+  - add
+[DEBUG] Providing enhanced visibility to heuristics: 362 total concepts (foundational=0, historical=0, recent=0, current=0)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, concept_freshness, historical_memory, cross_iteration_synthesis, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[HEURISTIC] specialization generated 155 raw concepts
+[DEDUP] Kept 155, rejected 0 from 155 candidates
+[CLEANUP] specialization: 155 → 155 concepts after cleanup
+[VERIFY] specialization: 155 → 155 concepts after verification
+[SUCCESS] specialization contributed 50 concepts to discoveries
+[APPLICATION] Found 118 seed functions, 127 potential arguments
+[HEURISTIC] application generated 45 raw concepts
+[DEDUP] Kept 45, rejected 0 from 45 candidates
+[CLEANUP] application: 45 → 45 concepts after cleanup
+[VERIFY] application: 45 → 45 concepts after verification
+[SUCCESS] application contributed 45 concepts to discoveries
+[HEURISTIC] lemma_application generated 12 raw concepts
+[DEDUP] Kept 4, rejected 8 from 12 candidates
+[CLEANUP] lemma_application: 12 → 4 concepts after cleanup
+[VERIFY] lemma_application: 4 → 4 concepts after verification
+[SUCCESS] lemma_application contributed 4 concepts to discoveries
+[HEURISTIC] pattern_recognition generated 1 raw concepts
+  - natural_number_sequence (pattern_recognition)
+[DEDUP] Kept 1, rejected 0 from 1 candidates
+[CLEANUP] pattern_recognition: 1 → 1 concepts after cleanup
+[VERIFY] pattern_recognition: 1 → 1 concepts after verification
+[SUCCESS] pattern_recognition contributed 1 concepts to discoveries
+[HEURISTIC] conjecture_generation generated 181 raw concepts
+[DEDUP] Kept 181, rejected 0 from 181 candidates
+[CLEANUP] conjecture_generation: 181 → 181 concepts after cleanup
+[VERIFY] conjecture_generation: 181 → 181 concepts after verification
+[SUCCESS] conjecture_generation contributed 50 concepts to discoveries
+[HEURISTIC] composition generated 24 raw concepts
+[DEDUP] Kept 24, rejected 0 from 24 candidates
+[CLEANUP] composition: 24 → 24 concepts after cleanup
+[VERIFY] composition: 24 → 24 concepts after verification
+[SUCCESS] composition contributed 24 concepts to discoveries
+[HEURISTIC] pattern_guided generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[STOCHASTIC] Found 51 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[HEURISTIC] stochastic_exploration generated 4 raw concepts
+  - twist_8_one (stochastic_exploration)
+  - twist_8_two (stochastic_exploration)
+  - twist_8_add (stochastic_exploration)
+  - bridge_IsRightCancelMulZero.noConfusionType.withCtorType_IsDomain.noConfusionType.withCtor (stochastic_bridging)
+[DEDUP] Kept 2, rejected 2 from 4 candidates
+[CLEANUP] stochastic_exploration: 4 → 2 concepts after cleanup
+[VERIFY] stochastic_exploration: 2 → 2 concepts after verification
+[SUCCESS] stochastic_exploration contributed 2 concepts to discoveries
+[CROSS-ITER] Generated 3 synthesis concepts (successful: 0, foundational: 127, recent theorems: 24)
+[HEURISTIC] cross_iteration_synthesis generated 3 raw concepts
+  - variation_zero_eq_zero (cross_iteration_synthesis)
+  - variation_add_comm (cross_iteration_synthesis)
+  - variation_zero_add_zero (cross_iteration_synthesis)
+[DEDUP] Kept 3, rejected 0 from 3 candidates
+[CLEANUP] cross_iteration_synthesis: 3 → 3 concepts after cleanup
+[VERIFY] cross_iteration_synthesis: 3 → 3 concepts after verification
+[SUCCESS] cross_iteration_synthesis contributed 3 concepts to discoveries
+[MEMORY] Found 0 missing dependencies to explore
+[MEMORY] Generated 0 memory-guided concepts
+[HEURISTIC] historical_memory generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[FRESHNESS] Generated 0 freshness concepts (successful defs: 0, early: 0, recent: 0, abandoned: 0)
+[HEURISTIC] concept_freshness generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[GroupOrders] Generated 15 group order concepts (continuing from 8)
+[HEURISTIC] generate_group_orders generated 15 raw concepts
+[DEDUP] Kept 15, rejected 0 from 15 candidates
+[CLEANUP] generate_group_orders: 15 → 15 concepts after cleanup
+[VERIFY] generate_group_orders: 15 → 15 concepts after verification
+[SUCCESS] generate_group_orders contributed 15 concepts to discoveries
+[RingCharacteristics] Generated 17 ring characteristic concepts (beyond 1)
+[HEURISTIC] generate_ring_characteristics generated 17 raw concepts
+[DEDUP] Kept 17, rejected 0 from 17 candidates
+[CLEANUP] generate_ring_characteristics: 17 → 17 concepts after cleanup
+[VERIFY] generate_ring_characteristics: 17 → 17 concepts after verification
+[SUCCESS] generate_ring_characteristics contributed 17 concepts to discoveries
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 3)
+[HEURISTIC] generate_algebraic_combinations generated 25 raw concepts
+[DEDUP] Kept 25, rejected 0 from 25 candidates
+[CLEANUP] generate_algebraic_combinations: 25 → 25 concepts after cleanup
+[VERIFY] generate_algebraic_combinations: 25 → 25 concepts after verification
+[SUCCESS] generate_algebraic_combinations contributed 25 concepts to discoveries
+[HEURISTIC] concrete_instance generated 2 raw concepts
+  - nat_mul (concrete_instance)
+  - nat_one (concrete_instance)
+[DEDUP] Kept 2, rejected 0 from 2 candidates
+[CLEANUP] concrete_instance: 2 → 2 concepts after cleanup
+[VERIFY] concrete_instance: 2 → 2 concepts after verification
+[SUCCESS] concrete_instance contributed 2 concepts to discoveries
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[HEURISTIC] debug_typeclass_spec generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[HEURISTIC] apply_specialized generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Conjectures] Generated 0 conjectures
+[HEURISTIC] improved_algebraic_conj generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[HEURISTIC] structure_instance generated 1 raw concepts
+  - Nat_is_AddMonoid (structure_recognition)
+[DEDUP] Kept 1, rejected 0 from 1 candidates
+[CLEANUP] structure_instance: 1 → 1 concepts after cleanup
+[VERIFY] structure_instance: 1 → 1 concepts after verification
+[SUCCESS] structure_instance contributed 1 concepts to discoveries
+[HEURISTIC] algebraic_pattern generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[HEURISTIC] group_ring_duality generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+240 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_3
+
+🔮 Conjectures (50):
+  - succ_comp_add1_eq_0
+    Evidence: 0.368750
+  - succ_comp_add1_eq_1
+    Evidence: 0.274831
+  - succ_comp_add1_eq_2
+    Evidence: 0.432143
+  - succ_comp_add1_eq_3
+    Evidence: 0.368750
+  - succ_comp_add2_eq_0
+    Evidence: 0.362500
+  ... and 45 more
+
+✓ Proven Theorems (54):
+  - add_comm_spec_zero
+    Method: specialization
+  - add_comm_spec_one
+    Method: specialization
+  - add_comm_spec_two
+    Method: specialization
+  - add_comm_spec_zero
+    Method: specialization
+  - add_comm_spec_one
+    Method: specialization
+
+🔍 Patterns (5):
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Examples: [zero, one, two]
+  - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
+    Examples: [zero_eq_zero]
+  - variation_add_comm: Variation pattern based on theorem add_comm
+    Examples: [add_comm]
+  - variation_zero_add_zero: Variation pattern based on theorem zero_add_zero
+    Examples: [zero_add_zero]
+  - Nat_is_AddMonoid: Natural numbers form an additive monoid
+    Examples: [nat_add_zero, nat_zero_add, nat_add_assoc]
+
+🔧 Function Applications (45):
+  - succ_applied_to_zero
+  - succ_applied_to_one
+  - succ_applied_to_two
+
+🔗 Function Compositions (24):
+  - succ_compose_add1
+  - succ_compose_add2
+  - succ_compose_add1
+
+📊 Discovery Summary:
+  specialization: 50 concepts
+  application: 45 concepts
+  pattern_recognition: 1 concepts
+  lemma_application: 4 concepts
+  number_generation: 1 concepts
+  composition: 24 concepts
+
+--- Iteration 2 ---
+Building on 240 recent discoveries:
+  - num_3
+  - add_comm_spec_zero
+  - add_comm_spec_one
+  - add_comm_spec_two
+  - add_comm_spec_zero
+[DEBUG] Providing enhanced visibility to heuristics: 602 total concepts (foundational=0, historical=0, recent=240, current=240)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, concept_freshness, historical_memory, cross_iteration_synthesis, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[HEURISTIC] specialization generated 155 raw concepts
+[DEDUP] Kept 105, rejected 50 from 155 candidates
+[CLEANUP] specialization: 155 → 105 concepts after cleanup
+[VERIFY] specialization: 105 → 105 concepts after verification
+[SUCCESS] specialization contributed 50 concepts to discoveries
+[APPLICATION] Found 118 seed functions, 258 potential arguments
+[HEURISTIC] application generated 45 raw concepts
+[DEDUP] Kept 6, rejected 39 from 45 candidates
+[CLEANUP] application: 45 → 6 concepts after cleanup
+[VERIFY] application: 6 → 6 concepts after verification
+[SUCCESS] application contributed 6 concepts to discoveries
+[HEURISTIC] lemma_application generated 556 raw concepts
+[DEDUP] Kept 516, rejected 40 from 556 candidates
+[CLEANUP] lemma_application: 556 → 516 concepts after cleanup
+[VERIFY] lemma_application: 516 → 516 concepts after verification
+[SUCCESS] lemma_application contributed 50 concepts to discoveries
+[HEURISTIC] pattern_recognition generated 6 raw concepts
+[DEDUP] Kept 5, rejected 1 from 6 candidates
+[CLEANUP] pattern_recognition: 6 → 5 concepts after cleanup
+[VERIFY] pattern_recognition: 5 → 5 concepts after verification
+[SUCCESS] pattern_recognition contributed 5 concepts to discoveries
+[HEURISTIC] conjecture_generation generated 853 raw concepts
+[DEDUP] Kept 741, rejected 112 from 853 candidates
+[CLEANUP] conjecture_generation: 853 → 741 concepts after cleanup
+[VERIFY] conjecture_generation: 741 → 741 concepts after verification
+[SUCCESS] conjecture_generation contributed 50 concepts to discoveries
+[HEURISTIC] composition generated 768 raw concepts
+[DEDUP] Kept 768, rejected 0 from 768 candidates
+[CLEANUP] composition: 768 → 768 concepts after cleanup
+[VERIFY] composition: 768 → 768 concepts after verification
+[SUCCESS] composition contributed 50 concepts to discoveries
+[HEURISTIC] pattern_guided generated 2 raw concepts
+  - num_3 (pattern_extension)
+  - num_4 (pattern_extension)
+[DEDUP] Kept 0, rejected 2 from 2 candidates
+[CLEANUP] pattern_guided: 2 → 0 concepts after cleanup
+  [WARNING] All concepts from pattern_guided were filtered out!
+[STOCHASTIC] Found 93 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[HEURISTIC] stochastic_exploration generated 4 raw concepts
+  - twist_10_zero_eq_zero (stochastic_exploration)
+  - twist_10_Ring.one_mul (stochastic_exploration)
+  - twist_10_Ring.mul_one (stochastic_exploration)
+  - bridge_one_two (stochastic_bridging)
+[DEDUP] Kept 0, rejected 4 from 4 candidates
+[CLEANUP] stochastic_exploration: 4 → 0 concepts after cleanup
+  [WARNING] All concepts from stochastic_exploration were filtered out!
+[CROSS-ITER] Generated 3 synthesis concepts (successful: 0, foundational: 127, recent theorems: 78)
+[HEURISTIC] cross_iteration_synthesis generated 3 raw concepts
+  - meta_pattern_application_successful (meta_pattern_recognition)
+  - meta_pattern_composition_successful (meta_pattern_recognition)
+  - meta_pattern_specialization_successful (meta_pattern_recognition)
+[DEDUP] Kept 3, rejected 0 from 3 candidates
+[CLEANUP] cross_iteration_synthesis: 3 → 3 concepts after cleanup
+[VERIFY] cross_iteration_synthesis: 3 → 3 concepts after verification
+[SUCCESS] cross_iteration_synthesis contributed 3 concepts to discoveries
+[MEMORY] Found 0 missing dependencies to explore
+[MEMORY] Generated 0 memory-guided concepts
+[HEURISTIC] historical_memory generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[FRESHNESS] Generated 2 freshness concepts (successful defs: 0, early: 0, recent: 0, abandoned: 5)
+[HEURISTIC] concept_freshness generated 2 raw concepts
+  - revived_natural_number_sequence (freshness_revival)
+  - revived_variation_zero_eq_zero (freshness_revival)
+[DEDUP] Kept 2, rejected 0 from 2 candidates
+[CLEANUP] concept_freshness: 2 → 2 concepts after cleanup
+[VERIFY] concept_freshness: 2 → 2 concepts after verification
+[SUCCESS] concept_freshness contributed 2 concepts to discoveries
+[GroupOrders] Generated 15 group order concepts (continuing from 13)
+[HEURISTIC] generate_group_orders generated 15 raw concepts
+[DEDUP] Kept 5, rejected 10 from 15 candidates
+[CLEANUP] generate_group_orders: 15 → 5 concepts after cleanup
+[VERIFY] generate_group_orders: 5 → 5 concepts after verification
+[SUCCESS] generate_group_orders contributed 5 concepts to discoveries
+[RingCharacteristics] Generated 15 ring characteristic concepts (beyond 13)
+[HEURISTIC] generate_ring_characteristics generated 15 raw concepts
+[DEDUP] Kept 15, rejected 0 from 15 candidates
+[CLEANUP] generate_ring_characteristics: 15 → 15 concepts after cleanup
+[VERIFY] generate_ring_characteristics: 15 → 15 concepts after verification
+[SUCCESS] generate_ring_characteristics contributed 15 concepts to discoveries
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 6)
+[HEURISTIC] generate_algebraic_combinations generated 25 raw concepts
+[DEDUP] Kept 11, rejected 14 from 25 candidates
+[CLEANUP] generate_algebraic_combinations: 25 → 11 concepts after cleanup
+[VERIFY] generate_algebraic_combinations: 11 → 11 concepts after verification
+[SUCCESS] generate_algebraic_combinations contributed 11 concepts to discoveries
+[HEURISTIC] concrete_instance generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Creating: mul_one_on_Nat
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Creating: one_mul_on_Nat
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 2 specialized theorems
+[HEURISTIC] debug_typeclass_spec generated 2 raw concepts
+  - mul_one_on_Nat (typeclass_specialization)
+  - one_mul_on_Nat (typeclass_specialization)
+[DEDUP] Kept 2, rejected 0 from 2 candidates
+[CLEANUP] debug_typeclass_spec: 2 → 2 concepts after cleanup
+[VERIFY] debug_typeclass_spec: 2 → 2 concepts after verification
+[SUCCESS] debug_typeclass_spec contributed 2 concepts to discoveries
+[Apply Spec] Found 0 specialized theorems to apply
+[Apply Spec] Generated 0 theorem applications
+[HEURISTIC] apply_specialized generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Conjectures] Generated 0 conjectures
+[HEURISTIC] improved_algebraic_conj generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[HEURISTIC] structure_instance generated 1 raw concepts
+  - Nat_is_AddMonoid (structure_recognition)
+[DEDUP] Kept 0, rejected 1 from 1 candidates
+[CLEANUP] structure_instance: 1 → 0 concepts after cleanup
+  [WARNING] All concepts from structure_instance were filtered out!
+[HEURISTIC] algebraic_pattern generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[HEURISTIC] group_ring_duality generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+249 new concepts discovered this iteration
+
+🔮 Conjectures (50):
+  - add2_comp_succ_eq_0
+    Evidence: 0.360671
+  - add2_comp_succ_eq_1
+    Evidence: 0.456250
+  - add2_comp_succ_eq_2
+    Evidence: 0.425000
+  - add2_comp_succ_eq_3
+    Evidence: 0.456250
+  - add2_comp_add1_eq_0
+    Evidence: 0.331250
+  ... and 45 more
+
+✓ Proven Theorems (102):
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_one
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_two
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+    Method: specialization
+  - Nat.mul_self_sub_mul_self_eq_spec_one
+    Method: specialization
+
+🔍 Patterns (10):
+  - succ_iteration_pattern: Repeated application of succ
+    Examples: [succ_applied_to_zero, succ_applied_to_one, succ_applied_to_two]
+  - add_iteration_pattern: Repeated application of add
+    Examples: [add_applied_to_zero, add_applied_to_one, add_applied_to_two]
+  - add1_iteration_pattern: Repeated application of add1
+    Examples: [add1_applied_to_zero, add1_applied_to_one, add1_applied_to_two]
+  - add2_iteration_pattern: Repeated application of add2
+    Examples: [add2_applied_to_zero, add2_applied_to_one, add2_applied_to_two]
+  - Nat.sub_iteration_pattern: Repeated application of Nat.sub
+    Examples: [Nat.sub_applied_to_zero, Nat.sub_applied_to_one, Nat.sub_applied_to_two]
+  - meta_pattern_application_successful: Meta-pattern: application has been successful (45 concepts)
+    Examples: [application_examples]
+  - meta_pattern_composition_successful: Meta-pattern: composition has been successful (24 concepts)
+    Examples: [composition_examples]
+  - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (50 concepts)
+    Examples: [specialization_examples]
+  - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Examples: [zero, one, two]
+  - revived_variation_zero_eq_zero: Revived: Variation pattern based on theorem zero_eq_zero
+    Examples: [zero_eq_zero]
+
+🔧 Function Applications (6):
+  - add_applied_to_num_3
+  - add_applied_to_succ_applied_to_two
+  - add_applied_to_num_3
+
+🔗 Function Compositions (50):
+  - succ_compose_succ_compose_add1
+  - succ_compose_succ_compose_add2
+  - succ_compose_succ_compose_add1
+
+📊 Discovery Summary:
+  specialization: 50 concepts
+  application: 6 concepts
+  pattern_recognition: 5 concepts
+  lemma_application: 50 concepts
+  composition: 50 concepts
+
+--- Iteration 3 ---
+Building on 249 recent discoveries:
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+  - Nat.mul_self_sub_mul_self_eq_spec_one
+  - Nat.mul_self_sub_mul_self_eq_spec_two
+  - Nat.mul_self_sub_mul_self_eq_spec_zero
+  - Nat.mul_self_sub_mul_self_eq_spec_one
+[DEBUG] Providing enhanced visibility to heuristics: 851 total concepts (foundational=0, historical=240, recent=249, current=249)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, concept_freshness, historical_memory, cross_iteration_synthesis, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[HEURISTIC] specialization generated 165 raw concepts
+[DEDUP] Kept 65, rejected 100 from 165 candidates
+[CLEANUP] specialization: 165 → 65 concepts after cleanup
+[VERIFY] specialization: 65 → 65 concepts after verification
+[SUCCESS] specialization contributed 50 concepts to discoveries
+[APPLICATION] Found 118 seed functions, 292 potential arguments
+[HEURISTIC] application generated 45 raw concepts
+[DEDUP] Kept 0, rejected 45 from 45 candidates
+[CLEANUP] application: 45 → 0 concepts after cleanup
+  [WARNING] All concepts from application were filtered out!
+[HEURISTIC] lemma_application generated 1362 raw concepts
+[DEDUP] Kept 241, rejected 1121 from 1362 candidates
+[CLEANUP] lemma_application: 1362 → 241 concepts after cleanup
+[VERIFY] lemma_application: 241 → 241 concepts after verification
+[SUCCESS] lemma_application contributed 50 concepts to discoveries
+[HEURISTIC] pattern_recognition generated 6 raw concepts
+[DEDUP] Kept 0, rejected 6 from 6 candidates
+[CLEANUP] pattern_recognition: 6 → 0 concepts after cleanup
+  [WARNING] All concepts from pattern_recognition were filtered out!
+[HEURISTIC] conjecture_generation generated 3153 raw concepts
+[DEDUP] Kept 2985, rejected 168 from 3153 candidates
+[CLEANUP] conjecture_generation: 3153 → 2985 concepts after cleanup
+[VERIFY] conjecture_generation: 2985 → 2985 concepts after verification
+[SUCCESS] conjecture_generation contributed 50 concepts to discoveries
+[HEURISTIC] composition generated 576 raw concepts
+[DEDUP] Kept 520, rejected 56 from 576 candidates
+[CLEANUP] composition: 576 → 520 concepts after cleanup
+[VERIFY] composition: 520 → 520 concepts after verification
+[SUCCESS] composition contributed 50 concepts to discoveries
+[HEURISTIC] pattern_guided generated 7 raw concepts
+[DEDUP] Kept 2, rejected 5 from 7 candidates
+[CLEANUP] pattern_guided: 7 → 2 concepts after cleanup
+[VERIFY] pattern_guided: 2 → 2 concepts after verification
+[SUCCESS] pattern_guided contributed 2 concepts to discoveries
+[STOCHASTIC] Found 123 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[HEURISTIC] stochastic_exploration generated 4 raw concepts
+  - twist_4_zero (stochastic_exploration)
+  - twist_4_succ (stochastic_exploration)
+  - twist_4_add1 (stochastic_exploration)
+  - bridge_IsRightCancelMulZero.noConfusionType.withCtorType_IsDomain.noConfusionType.withCtor (stochastic_bridging)
+[DEDUP] Kept 1, rejected 3 from 4 candidates
+[CLEANUP] stochastic_exploration: 4 → 1 concepts after cleanup
+[VERIFY] stochastic_exploration: 1 → 1 concepts after verification
+[SUCCESS] stochastic_exploration contributed 1 concepts to discoveries
+[CROSS-ITER] Generated 0 synthesis concepts (successful: 0, foundational: 127, recent theorems: 180)
+[HEURISTIC] cross_iteration_synthesis generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[MEMORY] Found 0 missing dependencies to explore
+[MEMORY] Generated 0 memory-guided concepts
+[HEURISTIC] historical_memory generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[FRESHNESS] Generated 0 freshness concepts (successful defs: 0, early: 0, recent: 0, abandoned: 13)
+[HEURISTIC] concept_freshness generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[GroupOrders] Generated 15 group order concepts (continuing from 18)
+[HEURISTIC] generate_group_orders generated 15 raw concepts
+[DEDUP] Kept 2, rejected 13 from 15 candidates
+[CLEANUP] generate_group_orders: 15 → 2 concepts after cleanup
+[VERIFY] generate_group_orders: 2 → 2 concepts after verification
+[SUCCESS] generate_group_orders contributed 2 concepts to discoveries
+[RingCharacteristics] Generated 12 ring characteristic concepts (beyond 31)
+[HEURISTIC] generate_ring_characteristics generated 12 raw concepts
+[DEDUP] Kept 12, rejected 0 from 12 candidates
+[CLEANUP] generate_ring_characteristics: 12 → 12 concepts after cleanup
+[VERIFY] generate_ring_characteristics: 12 → 12 concepts after verification
+[SUCCESS] generate_ring_characteristics contributed 12 concepts to discoveries
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 8)
+[HEURISTIC] generate_algebraic_combinations generated 25 raw concepts
+[DEDUP] Kept 11, rejected 14 from 25 candidates
+[CLEANUP] generate_algebraic_combinations: 25 → 11 concepts after cleanup
+[VERIFY] generate_algebraic_combinations: 11 → 11 concepts after verification
+[SUCCESS] generate_algebraic_combinations contributed 11 concepts to discoveries
+[HEURISTIC] concrete_instance generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[HEURISTIC] debug_typeclass_spec generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Apply Spec] Found 2 specialized theorems to apply
+[Apply Spec] Processing theorem: mul_one_on_Nat
+[Apply Spec] Creating instance: mul_one_on_Nat_zero
+[Apply Spec] Creating instance: mul_one_on_Nat_one
+[Apply Spec] Creating instance: mul_one_on_Nat_two
+[Apply Spec] Processing theorem: one_mul_on_Nat
+[Apply Spec] Creating instance: one_mul_on_Nat_zero
+[Apply Spec] Creating instance: one_mul_on_Nat_one
+[Apply Spec] Creating instance: one_mul_on_Nat_two
+[Apply Spec] Generated 6 theorem applications
+[HEURISTIC] apply_specialized generated 6 raw concepts
+[DEDUP] Kept 6, rejected 0 from 6 candidates
+[CLEANUP] apply_specialized: 6 → 6 concepts after cleanup
+[VERIFY] apply_specialized: 6 → 6 concepts after verification
+[SUCCESS] apply_specialized contributed 6 concepts to discoveries
+[Conjectures] Generating multiplication conjectures...
+[Conjectures] Generated 2 conjectures
+[HEURISTIC] improved_algebraic_conj generated 2 raw concepts
+  - nat_mul_zero_conjecture (algebraic_conjecture)
+  - nat_mul_comm_conjecture (algebraic_conjecture)
+[DEDUP] Kept 2, rejected 0 from 2 candidates
+[CLEANUP] improved_algebraic_conj: 2 → 2 concepts after cleanup
+[VERIFY] improved_algebraic_conj: 2 → 2 concepts after verification
+[SUCCESS] improved_algebraic_conj contributed 2 concepts to discoveries
+[HEURISTIC] structure_instance generated 1 raw concepts
+  - Nat_is_AddMonoid (structure_recognition)
+[DEDUP] Kept 0, rejected 1 from 1 candidates
+[CLEANUP] structure_instance: 1 → 0 concepts after cleanup
+  [WARNING] All concepts from structure_instance were filtered out!
+[HEURISTIC] algebraic_pattern generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Duality] Suggesting dual: mul_one_on_Nat → add_one_on_Nat
+[Duality] Suggesting dual: mul_one_on_Nat → mul_zero_on_Nat
+[Duality] Suggesting dual: one_mul_on_Nat → one_add_on_Nat
+[Duality] Suggesting dual: one_mul_on_Nat → zero_mul_on_Nat
+[HEURISTIC] group_ring_duality generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+237 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_4
+
+🔮 Conjectures (52):
+  - nat_mul_comp_succ_eq_0
+    Evidence: 0.417935
+  - nat_mul_comp_succ_eq_1
+    Evidence: 0.492935
+  - nat_mul_comp_succ_eq_2
+    Evidence: 0.467857
+  - nat_mul_comp_succ_eq_3
+    Evidence: 0.492935
+  - nat_mul_comp_add1_eq_0
+    Evidence: 0.368750
+  ... and 47 more
+
+✓ Proven Theorems (106):
+  - Nat.succ_min_succ_spec_zero
+    Method: specialization
+  - Nat.succ_min_succ_spec_one
+    Method: specialization
+  - Nat.succ_min_succ_spec_two
+    Method: specialization
+  - Nat.succ_min_succ_spec_zero
+    Method: specialization
+  - Nat.succ_min_succ_spec_one
+    Method: specialization
+
+🔗 Function Compositions (50):
+  - add2_compose_add1_compose_add2
+  - add2_compose_add1_compose_add2
+  - add2_compose_add2_compose_add1
+
+📊 Discovery Summary:
+  specialization: 50 concepts
+  lemma_application: 50 concepts
+  number_generation: 1 concepts
+  composition: 50 concepts
+  pattern_extension: 2 concepts
+
+--- Iteration 4 ---
+Building on 237 recent discoveries:
+  - num_4
+  - Nat.succ_min_succ_spec_zero
+  - Nat.succ_min_succ_spec_one
+  - Nat.succ_min_succ_spec_two
+  - Nat.succ_min_succ_spec_zero
+[DEBUG] Providing enhanced visibility to heuristics: 1088 total concepts (foundational=0, historical=489, recent=237, current=237)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, concept_freshness, historical_memory, cross_iteration_synthesis, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[HEURISTIC] specialization generated 165 raw concepts
+[DEDUP] Kept 5, rejected 160 from 165 candidates
+[CLEANUP] specialization: 165 → 5 concepts after cleanup
+[VERIFY] specialization: 5 → 5 concepts after verification
+[SUCCESS] specialization contributed 5 concepts to discoveries
+[APPLICATION] Found 118 seed functions, 321 potential arguments
+[HEURISTIC] application generated 45 raw concepts
+[DEDUP] Kept 0, rejected 45 from 45 candidates
+[CLEANUP] application: 45 → 0 concepts after cleanup
+  [WARNING] All concepts from application were filtered out!
+[HEURISTIC] lemma_application generated 2635 raw concepts
+[DEDUP] Kept 130, rejected 2505 from 2635 candidates
+[CLEANUP] lemma_application: 2635 → 130 concepts after cleanup
+[VERIFY] lemma_application: 130 → 130 concepts after verification
+[SUCCESS] lemma_application contributed 50 concepts to discoveries
+[HEURISTIC] pattern_recognition generated 6 raw concepts
+[DEDUP] Kept 0, rejected 6 from 6 candidates
+[CLEANUP] pattern_recognition: 6 → 0 concepts after cleanup
+  [WARNING] All concepts from pattern_recognition were filtered out!
+[HEURISTIC] conjecture_generation generated 5564 raw concepts
+[DEDUP] Kept 5252, rejected 312 from 5564 candidates
+[CLEANUP] conjecture_generation: 5564 → 5252 concepts after cleanup
+[VERIFY] conjecture_generation: 5252 → 5252 concepts after verification
+[SUCCESS] conjecture_generation contributed 50 concepts to discoveries
+[HEURISTIC] composition generated 452 raw concepts
+[DEDUP] Kept 120, rejected 332 from 452 candidates
+[CLEANUP] composition: 452 → 120 concepts after cleanup
+[VERIFY] composition: 120 → 120 concepts after verification
+[SUCCESS] composition contributed 50 concepts to discoveries
+[HEURISTIC] pattern_guided generated 7 raw concepts
+[DEDUP] Kept 0, rejected 7 from 7 candidates
+[CLEANUP] pattern_guided: 7 → 0 concepts after cleanup
+  [WARNING] All concepts from pattern_guided were filtered out!
+[STOCHASTIC] Found 169 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[HEURISTIC] stochastic_exploration generated 4 raw concepts
+  - twist_3_one (stochastic_exploration)
+  - twist_3_two (stochastic_exploration)
+  - twist_3_add (stochastic_exploration)
+  - bridge_zero_succ (stochastic_bridging)
+[DEDUP] Kept 0, rejected 4 from 4 candidates
+[CLEANUP] stochastic_exploration: 4 → 0 concepts after cleanup
+  [WARNING] All concepts from stochastic_exploration were filtered out!
+[CROSS-ITER] Generated 0 synthesis concepts (successful: 0, foundational: 127, recent theorems: 280)
+[HEURISTIC] cross_iteration_synthesis generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[MEMORY] Found 0 missing dependencies to explore
+[MEMORY] Generated 0 memory-guided concepts
+[HEURISTIC] historical_memory generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[FRESHNESS] Generated 0 freshness concepts (successful defs: 0, early: 0, recent: 0, abandoned: 13)
+[HEURISTIC] concept_freshness generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[GroupOrders] Generated 15 group order concepts (continuing from 21)
+[HEURISTIC] generate_group_orders generated 15 raw concepts
+[DEDUP] Kept 3, rejected 12 from 15 candidates
+[CLEANUP] generate_group_orders: 15 → 3 concepts after cleanup
+[VERIFY] generate_group_orders: 3 → 3 concepts after verification
+[SUCCESS] generate_group_orders contributed 3 concepts to discoveries
+[RingCharacteristics] Generated 0 ring characteristic concepts (beyond 47)
+[HEURISTIC] generate_ring_characteristics generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 10)
+[HEURISTIC] generate_algebraic_combinations generated 25 raw concepts
+[DEDUP] Kept 5, rejected 20 from 25 candidates
+[CLEANUP] generate_algebraic_combinations: 25 → 5 concepts after cleanup
+[VERIFY] generate_algebraic_combinations: 5 → 5 concepts after verification
+[SUCCESS] generate_algebraic_combinations contributed 5 concepts to discoveries
+[HEURISTIC] concrete_instance generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[HEURISTIC] debug_typeclass_spec generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Apply Spec] Found 2 specialized theorems to apply
+[Apply Spec] Processing theorem: mul_one_on_Nat
+[Apply Spec] Processing theorem: one_mul_on_Nat
+[Apply Spec] Generated 0 theorem applications
+[HEURISTIC] apply_specialized generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Conjectures] Generating multiplication conjectures...
+[Conjectures] Generated 2 conjectures
+[HEURISTIC] improved_algebraic_conj generated 2 raw concepts
+  - nat_mul_zero_conjecture (algebraic_conjecture)
+  - nat_mul_comm_conjecture (algebraic_conjecture)
+[DEDUP] Kept 0, rejected 2 from 2 candidates
+[CLEANUP] improved_algebraic_conj: 2 → 0 concepts after cleanup
+  [WARNING] All concepts from improved_algebraic_conj were filtered out!
+[HEURISTIC] structure_instance generated 1 raw concepts
+  - Nat_is_AddMonoid (structure_recognition)
+[DEDUP] Kept 0, rejected 1 from 1 candidates
+[CLEANUP] structure_instance: 1 → 0 concepts after cleanup
+  [WARNING] All concepts from structure_instance were filtered out!
+[HEURISTIC] algebraic_pattern generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Duality] Suggesting dual: mul_one_on_Nat → add_one_on_Nat
+[Duality] Suggesting dual: mul_one_on_Nat → mul_zero_on_Nat
+[Duality] Suggesting dual: one_mul_on_Nat → one_add_on_Nat
+[Duality] Suggesting dual: one_mul_on_Nat → zero_mul_on_Nat
+[HEURISTIC] group_ring_duality generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+163 new concepts discovered this iteration
+
+🔮 Conjectures (50):
+  - succ_compose_succ_compose_add1_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.341921
+  - succ_compose_succ_compose_add2_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.341921
+  - succ_compose_succ_compose_add1_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.341921
+  - succ_compose_succ_compose_add2_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.341921
+  - succ_compose_add1_compose_succ_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.341921
+  ... and 45 more
+
+✓ Proven Theorems (55):
+  - Nat.sub_eq_spec_zero
+    Method: specialization
+  - Nat.sub_eq_spec_one
+    Method: specialization
+  - Nat.sub_eq_spec_two
+    Method: specialization
+  - Nat.sub_eq_spec_zero
+    Method: specialization
+  - Nat.sub_eq_spec_one
+    Method: specialization
+
+🔗 Function Compositions (50):
+  - add1_compose_twist_4_add1
+  - add1_compose_twist_4_add1
+  - add1_compose_add2_compose_add2
+
+📊 Discovery Summary:
+  specialization: 5 concepts
+  lemma_application: 50 concepts
+  composition: 50 concepts
+
+--- Iteration 5 ---
+Building on 163 recent discoveries:
+  - Nat.sub_eq_spec_zero
+  - Nat.sub_eq_spec_one
+  - Nat.sub_eq_spec_two
+  - Nat.sub_eq_spec_zero
+  - Nat.sub_eq_spec_one
+[DEBUG] Providing enhanced visibility to heuristics: 1251 total concepts (foundational=0, historical=726, recent=163, current=163)
+[DEBUG] Invoking heuristics: [group_ring_duality, algebraic_pattern, structure_instance, improved_algebraic_conj, apply_specialized, debug_typeclass_spec, concrete_instance, generate_algebraic_combinations, generate_ring_characteristics, generate_group_orders, concept_freshness, historical_memory, cross_iteration_synthesis, stochastic_exploration, pattern_guided, composition, conjecture_generation, pattern_recognition, lemma_application, application, specialization]
+[HEURISTIC] specialization generated 165 raw concepts
+[DEDUP] Kept 0, rejected 165 from 165 candidates
+[CLEANUP] specialization: 165 → 0 concepts after cleanup
+  [WARNING] All concepts from specialization were filtered out!
+[APPLICATION] Found 118 seed functions, 329 potential arguments
+[HEURISTIC] application generated 45 raw concepts
+[DEDUP] Kept 0, rejected 45 from 45 candidates
+[CLEANUP] application: 45 → 0 concepts after cleanup
+  [WARNING] All concepts from application were filtered out!
+[HEURISTIC] lemma_application generated 3285 raw concepts
+[DEDUP] Kept 0, rejected 3285 from 3285 candidates
+[CLEANUP] lemma_application: 3285 → 0 concepts after cleanup
+  [WARNING] All concepts from lemma_application were filtered out!
+[HEURISTIC] pattern_recognition generated 6 raw concepts
+[DEDUP] Kept 0, rejected 6 from 6 candidates
+[CLEANUP] pattern_recognition: 6 → 0 concepts after cleanup
+  [WARNING] All concepts from pattern_recognition were filtered out!
+[HEURISTIC] conjecture_generation generated 11958 raw concepts
+[DEDUP] Kept 11446, rejected 512 from 11958 candidates
+[CLEANUP] conjecture_generation: 11958 → 11446 concepts after cleanup
+[VERIFY] conjecture_generation: 11446 → 11446 concepts after verification
+[SUCCESS] conjecture_generation contributed 50 concepts to discoveries
+[HEURISTIC] composition generated 334 raw concepts
+[DEDUP] Kept 0, rejected 334 from 334 candidates
+[CLEANUP] composition: 334 → 0 concepts after cleanup
+  [WARNING] All concepts from composition were filtered out!
+[HEURISTIC] pattern_guided generated 7 raw concepts
+[DEDUP] Kept 0, rejected 7 from 7 candidates
+[CLEANUP] pattern_guided: 7 → 0 concepts after cleanup
+  [WARNING] All concepts from pattern_guided were filtered out!
+[STOCHASTIC] Found 250 exploration candidates
+[STOCHASTIC] Generated 4 exploration concepts
+[HEURISTIC] stochastic_exploration generated 4 raw concepts
+  - twist_13_one (stochastic_exploration)
+  - twist_13_two (stochastic_exploration)
+  - twist_13_add (stochastic_exploration)
+  - bridge_HasDistribNeg.noConfusionType.withCtor_nsmulBinRec.go (stochastic_bridging)
+[DEDUP] Kept 1, rejected 3 from 4 candidates
+[CLEANUP] stochastic_exploration: 4 → 1 concepts after cleanup
+[VERIFY] stochastic_exploration: 1 → 1 concepts after verification
+[SUCCESS] stochastic_exploration contributed 1 concepts to discoveries
+[CROSS-ITER] Generated 0 synthesis concepts (successful: 0, foundational: 127, recent theorems: 335)
+[HEURISTIC] cross_iteration_synthesis generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[MEMORY] Found 4 missing dependencies to explore
+[MEMORY] Generated 4 memory-guided concepts
+[HEURISTIC] historical_memory generated 4 raw concepts
+  - inferred_algebra_object_500 (historical_memory)
+  - inferred_algebra_object_514 (historical_memory)
+  - inferred_algebra_object_528 (historical_memory)
+  - inferred_algebra_object_542 (historical_memory)
+[DEDUP] Kept 4, rejected 0 from 4 candidates
+[CLEANUP] historical_memory: 4 → 4 concepts after cleanup
+[VERIFY] historical_memory: 4 → 4 concepts after verification
+[SUCCESS] historical_memory contributed 4 concepts to discoveries
+[FRESHNESS] Generated 0 freshness concepts (successful defs: 0, early: 0, recent: 0, abandoned: 13)
+[HEURISTIC] concept_freshness generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[GroupOrders] Generated 15 group order concepts (continuing from 26)
+[HEURISTIC] generate_group_orders generated 15 raw concepts
+[DEDUP] Kept 1, rejected 14 from 15 candidates
+[CLEANUP] generate_group_orders: 15 → 1 concepts after cleanup
+[VERIFY] generate_group_orders: 1 → 1 concepts after verification
+[SUCCESS] generate_group_orders contributed 1 concepts to discoveries
+[RingCharacteristics] Generated 0 ring characteristic concepts (beyond 47)
+[HEURISTIC] generate_ring_characteristics generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[AlgebraicCombinations] Generated 25 algebraic concepts (iteration 12)
+[HEURISTIC] generate_algebraic_combinations generated 25 raw concepts
+[DEDUP] Kept 11, rejected 14 from 25 candidates
+[CLEANUP] generate_algebraic_combinations: 25 → 11 concepts after cleanup
+[VERIFY] generate_algebraic_combinations: 11 → 11 concepts after verification
+[SUCCESS] generate_algebraic_combinations contributed 11 concepts to discoveries
+[HEURISTIC] concrete_instance generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Typeclass Spec] Starting improved typeclass specialization...
+[Typeclass Spec] Found 6 polymorphic theorems
+[Typeclass Spec] Processing theorem: mul_one
+[Typeclass Spec] Processing theorem: one_mul
+[Typeclass Spec] Processing theorem: inv_inv
+[Typeclass Spec] Skipping inv_inv
+[Typeclass Spec] Processing theorem: Ring.mul_assoc
+[Typeclass Spec] Skipping Ring.mul_assoc
+[Typeclass Spec] Processing theorem: Ring.one_mul
+[Typeclass Spec] Skipping Ring.one_mul
+[Typeclass Spec] Processing theorem: Ring.mul_one
+[Typeclass Spec] Skipping Ring.mul_one
+[Typeclass Spec] Generated 0 specialized theorems
+[HEURISTIC] debug_typeclass_spec generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Apply Spec] Found 2 specialized theorems to apply
+[Apply Spec] Processing theorem: mul_one_on_Nat
+[Apply Spec] Processing theorem: one_mul_on_Nat
+[Apply Spec] Generated 0 theorem applications
+[HEURISTIC] apply_specialized generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Conjectures] Generating multiplication conjectures...
+[Conjectures] Generated 2 conjectures
+[HEURISTIC] improved_algebraic_conj generated 2 raw concepts
+  - nat_mul_zero_conjecture (algebraic_conjecture)
+  - nat_mul_comm_conjecture (algebraic_conjecture)
+[DEDUP] Kept 0, rejected 2 from 2 candidates
+[CLEANUP] improved_algebraic_conj: 2 → 0 concepts after cleanup
+  [WARNING] All concepts from improved_algebraic_conj were filtered out!
+[HEURISTIC] structure_instance generated 1 raw concepts
+  - Nat_is_AddMonoid (structure_recognition)
+[DEDUP] Kept 0, rejected 1 from 1 candidates
+[CLEANUP] structure_instance: 1 → 0 concepts after cleanup
+  [WARNING] All concepts from structure_instance were filtered out!
+[HEURISTIC] algebraic_pattern generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+[Duality] Suggesting dual: mul_one_on_Nat → add_one_on_Nat
+[Duality] Suggesting dual: mul_one_on_Nat → mul_zero_on_Nat
+[Duality] Suggesting dual: one_mul_on_Nat → one_add_on_Nat
+[Duality] Suggesting dual: one_mul_on_Nat → zero_mul_on_Nat
+[HEURISTIC] group_ring_duality generated 0 raw concepts
+[DEDUP] Kept 0, rejected 0 from 0 candidates
+68 new concepts discovered this iteration
+
+🔢 New Numbers (1):
+  - num_5
+
+🔮 Conjectures (50):
+  - add2_compose_add1_compose_add2_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.329974
+  - add2_compose_add1_compose_add2_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.329974
+  - add2_compose_add2_compose_add1_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.329974
+  - add2_compose_add2_compose_add1_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.329974
+  - add2_compose_add1_compose_add2_preserves_add_comm_spec_zero_maybe
+    Evidence: 0.329974
+  ... and 45 more
+
+🔍 Patterns (4):
+  - inferred_algebra_object_500: Inferred concept based on dependency analysis: algebra_object_500
+    Examples: [algebra_object_500]
+  - inferred_algebra_object_514: Inferred concept based on dependency analysis: algebra_object_514
+    Examples: [algebra_object_514]
+  - inferred_algebra_object_528: Inferred concept based on dependency analysis: algebra_object_528
+    Examples: [algebra_object_528]
+  - inferred_algebra_object_542: Inferred concept based on dependency analysis: algebra_object_542
+    Examples: [algebra_object_542]
+
+📊 Discovery Summary:
+  number_generation: 1 concepts
+
+=== Discovery Complete ===
+Total concepts: 1319
+
+Definitions: 496
+Theorems: 528
+Conjectures: 252
+Patterns: 19
+
+Depth distribution:
+  Depth 0: 492 concepts
+  Depth 1: 668 concepts
+  Depth 2: 159 concepts
+
+Discovered Patterns:
+  - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two, zero, one, two]
+  - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
+    Instances: [zero_eq_zero]
+  - variation_add_comm: Variation pattern based on theorem add_comm
+    Instances: [add_comm]
+  - variation_zero_add_zero: Variation pattern based on theorem zero_add_zero
+    Instances: [zero_add_zero]
+  - Nat_is_AddMonoid: Natural numbers form an additive monoid
+    Instances: [nat_add_zero, nat_zero_add, nat_add_assoc]
+  - succ_iteration_pattern: Repeated application of succ
+    Instances: [succ_applied_to_zero, succ_applied_to_one, succ_applied_to_two, succ_applied_to_zero, succ_applied_to_one, succ_applied_to_zero, succ_applied_to_one, succ_applied_to_two, succ_applied_to_zero, succ_applied_to_one]
+  - add_iteration_pattern: Repeated application of add
+    Instances: [add_applied_to_zero, add_applied_to_one, add_applied_to_two, add_applied_to_zero, add_applied_to_one, add_applied_to_zero, add_applied_to_one, add_applied_to_two, add_applied_to_zero, add_applied_to_one]
+  - add1_iteration_pattern: Repeated application of add1
+    Instances: [add1_applied_to_zero, add1_applied_to_one, add1_applied_to_two, add1_applied_to_zero, add1_applied_to_one, add1_applied_to_zero, add1_applied_to_one, add1_applied_to_two, add1_applied_to_zero, add1_applied_to_one]
+  - add2_iteration_pattern: Repeated application of add2
+    Instances: [add2_applied_to_zero, add2_applied_to_one, add2_applied_to_two, add2_applied_to_zero, add2_applied_to_one, add2_applied_to_zero, add2_applied_to_one, add2_applied_to_two, add2_applied_to_zero, add2_applied_to_one]
+  - Nat.sub_iteration_pattern: Repeated application of Nat.sub
+    Instances: [Nat.sub_applied_to_zero, Nat.sub_applied_to_one, Nat.sub_applied_to_two, Nat.sub_applied_to_zero, Nat.sub_applied_to_one]
+  - meta_pattern_application_successful: Meta-pattern: application has been successful (45 concepts)
+    Instances: [application_examples]
+  - meta_pattern_composition_successful: Meta-pattern: composition has been successful (24 concepts)
+    Instances: [composition_examples]
+  - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (50 concepts)
+    Instances: [specialization_examples]
+  - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
+    Instances: [zero, one, two, zero, one, two]
+  - revived_variation_zero_eq_zero: Revived: Variation pattern based on theorem zero_eq_zero
+    Instances: [zero_eq_zero]
+  - inferred_algebra_object_500: Inferred concept based on dependency analysis: algebra_object_500
+    Instances: [algebra_object_500]
+  - inferred_algebra_object_514: Inferred concept based on dependency analysis: algebra_object_514
+    Instances: [algebra_object_514]
+  - inferred_algebra_object_528: Inferred concept based on dependency analysis: algebra_object_528
+    Instances: [algebra_object_528]
+  - inferred_algebra_object_542: Inferred concept based on dependency analysis: algebra_object_542
+    Instances: [algebra_object_542]
+
+Top discovered concepts:
+  specialization (score: 1.000000, depth: 0)
+  zero (score: 1.000000, depth: 0)
+  succ (score: 1.000000, depth: 0)
+  one (score: 1.000000, depth: 0)
+  two (score: 1.000000, depth: 0)
+  add (score: 1.000000, depth: 0)
+  zero_eq_zero (score: 1.000000, depth: 0)
+  add_comm (score: 1.000000, depth: 0)
+  add1 (score: 1.000000, depth: 0)
+  add2 (score: 1.000000, depth: 0)
+  zero_add_zero (score: 1.000000, depth: 0)
+  one_add_one_eq_two (score: 1.000000, depth: 0)
+  two_add_one_eq_three (score: 1.000000, depth: 0)
+  mul_one (score: 1.000000, depth: 0)
+  one_mul (score: 1.000000, depth: 0)
+  inv_inv (score: 1.000000, depth: 0)
+  Ring.mul_assoc (score: 1.000000, depth: 0)
+  Ring.one_mul (score: 1.000000, depth: 0)
+  Ring.mul_one (score: 1.000000, depth: 0)
+  nat_add_zero (score: 1.000000, depth: 0)
