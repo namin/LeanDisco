@@ -31,6 +31,7 @@ structure DiscoveryConfig where
   filterInternalProofs : Bool := true
   enableConjectures : Bool := true
   enablePatternRecognition : Bool := true
+  enableDebugOutput : Bool := false
 
 /-- Metadata for tracking concept performance and history -/
 structure ConceptMetadata where
@@ -285,6 +286,10 @@ def mkSafeForall (n : Name) (type : Expr) (mkBody : Expr → MetaM Expr)
   let body ← mkBody x
   mkForallFVars #[x] body
 
+/-- Conditional debug printing -/
+def debugPrint (enabled : Bool) (msg : String) : IO Unit :=
+  if enabled then IO.println msg else pure ()
+
 /-- Context-aware deduplication that considers meaningful variations -/
 def deduplicateWithWeakerNormalization (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
   let mut result : List ConceptData := []
@@ -336,7 +341,7 @@ def deduplicateWithWeakerNormalization (existing : List ConceptData) (newConcept
           existingCache := (syntactic, weakNorm, cName) :: existingCache
         else
           duplicateCount := duplicateCount + 1
-          IO.println s!"[DEDUP] Rejecting {cName}: {keepReason}"
+          debugPrint false s!"[DEDUP] Rejecting {cName}: {keepReason}"
           
       catch _ =>
         -- Keep concepts where normalization fails
@@ -347,7 +352,7 @@ def deduplicateWithWeakerNormalization (existing : List ConceptData) (newConcept
       result := c :: result
       keepCount := keepCount + 1
 
-  IO.println s!"[DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates"
+  debugPrint false s!"[DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates"
   return result.reverse
 
 /-- Filter concepts by specialization depth -/
@@ -364,28 +369,28 @@ def filterInternalTerms (concepts : List ConceptData) : List ConceptData :=
 def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (newConcepts : List ConceptData) (iteration : Nat) : MetaM (List ConceptData) := do
   let mut cleaned := newConcepts
 
-  IO.println s!"[CLEANUP] Starting iteration {iteration} with {cleaned.length} concepts"
+  debugPrint config.enableDebugOutput s!"[CLEANUP] Starting iteration {iteration} with {cleaned.length} concepts"
 
   -- Filter internal proof terms
   if config.filterInternalProofs then
     cleaned := filterInternalTerms cleaned
-    IO.println s!"[CLEANUP] After filterInternalTerms: {cleaned.length} concepts"
+    debugPrint config.enableDebugOutput s!"[CLEANUP] After filterInternalTerms: {cleaned.length} concepts"
 
   -- Filter by depth
   cleaned := filterByDepth config.maxSpecializationDepth cleaned
-  IO.println s!"[CLEANUP] After filterByDepth: {cleaned.length} concepts"
+  debugPrint config.enableDebugOutput s!"[CLEANUP] After filterByDepth: {cleaned.length} concepts"
 
   -- Canonicalize
   if config.canonicalizeConcepts then
-    IO.println s!"[CLEANUP] Starting canonicalization..."
+    debugPrint config.enableDebugOutput s!"[CLEANUP] Starting canonicalization..."
     cleaned ← cleaned.mapM canonicalizeConcept
-    IO.println s!"[CLEANUP] After canonicalizeConcepts: {cleaned.length} concepts"
+    debugPrint config.enableDebugOutput s!"[CLEANUP] After canonicalizeConcepts: {cleaned.length} concepts"
 
   -- WEAKER NORMALIZATION DEDUPLICATION instead of aggressive deduplication
   if config.deduplicateConcepts then
-    IO.println s!"[CLEANUP] Starting weaker normalization deduplication..."
+    debugPrint config.enableDebugOutput s!"[CLEANUP] Starting weaker normalization deduplication..."
     cleaned ← deduplicateWithWeakerNormalization existing cleaned
-    IO.println s!"[CLEANUP] After weaker deduplication: {cleaned.length} concepts"
+    debugPrint config.enableDebugOutput s!"[CLEANUP] After weaker deduplication: {cleaned.length} concepts"
 
   -- Special deduplication for patterns - check by name only
   let cleanedPatterns := cleaned.filter fun c => match c with
@@ -396,7 +401,7 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
         | _ => false
     | _ => true
 
-  IO.println s!"[CLEANUP] Returning {cleanedPatterns.length} concepts"
+  debugPrint config.enableDebugOutput s!"[CLEANUP] Returning {cleanedPatterns.length} concepts"
   return cleanedPatterns
 
 /-- Update concept's interestingness score -/
@@ -421,7 +426,7 @@ def verifyDefinition (type : Expr) (value : Expr) : MetaM Bool := do
     let valueType ← inferType value
     isDefEq valueType type
   catch e =>
-    IO.println s!"[DEBUG] verifyDefinition failed"
+    debugPrint false s!"[DEBUG] verifyDefinition failed"
     return false
 
 /-- Verify a theorem by checking its proof -/
@@ -430,7 +435,7 @@ def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
     let proofType ← inferType proof
     isDefEq proofType statement
   catch e =>
-    IO.println s!"[DEBUG] verifyTheorem failed"
+    debugPrint false s!"[DEBUG] verifyTheorem failed"
     return false
 
 def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
@@ -734,19 +739,19 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
       try
         let newConcepts ← heuristic kb.config focusedConcepts
 
-        IO.println s!"[DEBUG] Heuristic {name} generated {newConcepts.length} concepts"
+        debugPrint kb.config.enableDebugOutput s!"[DEBUG] Heuristic {name} generated {newConcepts.length} concepts"
 
         -- Add more detailed debugging here
         for c in newConcepts do
           if let some expr := getConceptExpr c then
             if expr.hasLooseBVars then
-              IO.println s!"[DEBUG] WARNING: Concept {getConceptName c} from {name} has loose bvars!"
+              debugPrint kb.config.enableDebugOutput s!"[DEBUG] WARNING: Concept {getConceptName c} from {name} has loose bvars!"
 
         -- Clean up new concepts against ALL existing concepts
-        IO.println s!"[DEBUG] Starting cleanup..."
+        debugPrint kb.config.enableDebugOutput s!"[DEBUG] Starting cleanup..."
         let cleanedConcepts ← cleanupConcepts kb.config kb.concepts newConcepts kb.iteration
 
-        IO.println s!"[DEBUG] After cleanup: {cleanedConcepts.length} concepts"
+        debugPrint kb.config.enableDebugOutput s!"[DEBUG] After cleanup: {cleanedConcepts.length} concepts"
 
         -- Verify all new concepts
         let mut verifiedConcepts := []
@@ -773,9 +778,9 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
               verifiedConcepts := verifiedConcepts ++ [concept]
             | _ => verifiedConcepts := verifiedConcepts ++ [concept]
           else
-            IO.println s!"[DEBUG] Skipping verification of {getConceptName concept} due to loose bvars"
+            debugPrint kb.config.enableDebugOutput s!"[DEBUG] Skipping verification of {getConceptName concept} due to loose bvars"
 
-        IO.println s!"[DEBUG] After verification: {verifiedConcepts.length} concepts"
+        debugPrint kb.config.enableDebugOutput s!"[DEBUG] After verification: {verifiedConcepts.length} concepts"
 
         -- Limit number of concepts per heuristic
         let limitedConcepts := verifiedConcepts.take kb.config.maxConceptsPerIteration
@@ -1027,7 +1032,7 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
             if let some tgtExpr := getConceptExpr tgt then
               try
                 if ← isDefEq lhs tgtExpr then
-                  IO.println s!"[DEBUG][lemma_application] applying {thName} to {getConceptName tgt}"
+                  debugPrint false s!"[DEBUG][lemma_application] applying {thName} to {getConceptName tgt}"
                   let eqConst := mkConst ``Eq [levelOne]
                   let newStmt := mkApp3 eqConst α tgtExpr rhs
 
@@ -1040,7 +1045,7 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
                   }
                   out := out ++ [ConceptData.theorem newName newStmt newProof deps newMeta]
               catch e =>
-                IO.println s!"[DEBUG][lemma_application] isDefEq failed"
+                debugPrint false s!"[DEBUG][lemma_application] isDefEq failed"
                 pure ()
         | _ => pure ()
     | _ => pure ()
@@ -1362,7 +1367,7 @@ def conjectureGenerationHeuristic : HeuristicFn :=
                   generationMethod := "commutativity"} ]
     | _ => pure ()
 
-    IO.println s!"[DEBUG] Total conjectures generated: {conjectures.length}"
+    debugPrint false s!"[DEBUG] Total conjectures generated: {conjectures.length}"
     return conjectures
 
 /-- Specialization heuristic: create specific instances -/
@@ -1499,7 +1504,7 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
         | _ => none
     | _ => none
 
-  IO.println s!"[DEBUG] compositionHeuristic: found {natFunctions.length} Nat->Nat functions"
+  debugPrint false s!"[DEBUG] compositionHeuristic: found {natFunctions.length} Nat->Nat functions"
 
   -- Compose pairs of Nat -> Nat functions
   for (f₁, v₁, d₁, m₁) in natFunctions do
@@ -1508,7 +1513,7 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
         let compName := s!"{f₁}_compose_{f₂}"
         unless concepts.any (fun c => getConceptName c = compName) do
           try
-            IO.println s!"[DEBUG] Trying to compose {f₁} with {f₂}"
+            debugPrint false s!"[DEBUG] Trying to compose {f₁} with {f₂}"
             -- For Nat -> Nat, composition is straightforward
             let natType := mkConst ``Nat
             let compType := mkForall `x BinderInfo.default natType natType
@@ -1530,11 +1535,11 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
                 generationMethod := "composition" }
 
             newConcepts := newConcepts ++ [compDef]
-            IO.println s!"[DEBUG] Successfully composed {f₁} with {f₂}"
+            debugPrint false s!"[DEBUG] Successfully composed {f₁} with {f₂}"
           catch e =>
-            IO.println s!"[DEBUG] Failed to compose {f₁} with {f₂}"
+            debugPrint false s!"[DEBUG] Failed to compose {f₁} with {f₂}"
 
-  IO.println s!"[DEBUG] compositionHeuristic: returning {newConcepts.length} concepts"
+  debugPrint false s!"[DEBUG] compositionHeuristic: returning {newConcepts.length} concepts"
   return newConcepts
 
 /-- Stochastic exploration heuristic - creates random variations to break cycles -/
