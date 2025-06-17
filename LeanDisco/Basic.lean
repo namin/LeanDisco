@@ -1102,7 +1102,7 @@ def patternGuidedHeuristic : HeuristicFn := fun config concepts => do
       ) 0
 
       -- Generate the next few numbers in the sequence
-      for i in [maxNum + 1:min (maxNum + 3) 10] do
+      for i in [maxNum + 1:min (maxNum + 3) 15] do  -- Increased limit
         let numExpr := (List.range i).foldl (fun acc _ =>
           mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
         let newConcept := ConceptData.definition s!"num_{i}"
@@ -1659,42 +1659,156 @@ def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
 def crossIterationSynthesisHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
   
-  -- Strategy: Connect concepts from different generations based on naming patterns
-  let seedConcepts := concepts.filter fun c => match c with
+  -- Strategy 1: Identify underexplored successful patterns
+  let successfulConcepts := concepts.filter fun c => match c with
     | ConceptData.definition n _ _ _ _ m => 
-      m.generationMethod == "seed"
+      m.successCount > 0 && m.useCount < 5
+    | ConceptData.theorem n _ _ _ m =>
+      m.successCount > 0 && m.useCount < 3  
     | _ => false
     
-  let recentConcepts := concepts.filter fun c => match c with
+  let foundationalConcepts := concepts.filter fun c => match c with
     | ConceptData.definition n _ _ _ _ m => 
-      m.specializationDepth <= 2 && m.generationMethod != "seed"
+      m.generationMethod == "seed" || m.generationMethod == "mined"
     | _ => false
     
-  IO.println s!"[CROSS-ITER] Found {seedConcepts.length} seed concepts, {recentConcepts.length} recent concepts"
-  
-  -- Create bridge concepts between seed and recent discoveries
-  for seedConcept in seedConcepts.take 3 do
-    for recentConcept in recentConcepts.take 3 do
-      let seedName := getConceptName seedConcept
-      let recentName := getConceptName recentConcept
-      let bridgeName := s!"bridge_{seedName}_{recentName}"
+  -- Strategy 2: Cross-apply successful patterns to foundational concepts
+  for successfulConcept in successfulConcepts.take 5 do
+    for foundationalConcept in foundationalConcepts.take 5 do
+      let successName := getConceptName successfulConcept
+      let foundName := getConceptName foundationalConcept
+      let synthName := s!"cross_apply_{successName}_to_{foundName}"
       
-      if !concepts.any (fun c => getConceptName c == bridgeName) then  
+      if !concepts.any (fun c => getConceptName c == synthName) then
+        -- Create a conjecture about applying the successful pattern
+        let baseInterest := (getConceptMetadata successfulConcept).interestingness
         newConcepts := newConcepts ++ [
-          ConceptData.pattern bridgeName 
-            s!"Bridge connecting {seedName} with {recentName}"
-            [seedName, recentName]
-            { name := bridgeName
-              created := 0  
-              parent := some seedName
-              interestingness := 0.65
+          ConceptData.conjecture synthName
+            (mkConst ``True)  -- Placeholder statement
+            (baseInterest * 0.8)
+            { name := synthName
+              created := 0
+              parent := some successName
+              interestingness := baseInterest * 0.8
               useCount := 0
               successCount := 0
               specializationDepth := 1
               generationMethod := "cross_iteration_synthesis" }
         ]
+  
+  -- Strategy 3: Explore variations of recently proven theorems
+  let recentTheorems := concepts.filter fun c => match c with
+    | ConceptData.theorem n _ _ _ m =>
+      m.generationMethod != "mined" && m.specializationDepth <= 1
+    | _ => false
+    
+  for thm in recentTheorems.take 3 do
+    let thmName := getConceptName thm
+    let variationName := s!"variation_{thmName}"
+    
+    if !concepts.any (fun c => getConceptName c == variationName) then
+      newConcepts := newConcepts ++ [
+        ConceptData.pattern variationName
+          s!"Variation pattern based on theorem {thmName}"
+          [thmName]
+          { name := variationName
+            created := 0
+            parent := some thmName
+            interestingness := 0.7
+            useCount := 0
+            successCount := 0
+            specializationDepth := 1
+            generationMethod := "cross_iteration_synthesis" }
+      ]
+      
+  -- Strategy 4: Create meta-patterns about discovery methods
+  let methodCounts := ["application", "composition", "specialization", "conjecture"].map fun method =>
+    let count := concepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
+    (method, count)
+    
+  for (method, count) in methodCounts do
+    if count > 5 then
+      let metaPatternName := s!"meta_pattern_{method}_successful"
+      if !concepts.any (fun c => getConceptName c == metaPatternName) then
+        newConcepts := newConcepts ++ [
+          ConceptData.pattern metaPatternName
+            s!"Meta-pattern: {method} has been successful ({count} concepts)"
+            [s!"{method}_examples"]
+            { name := metaPatternName
+              created := 0
+              parent := none
+              interestingness := 0.8
+              useCount := 0
+              successCount := 0
+              specializationDepth := 0
+              generationMethod := "meta_pattern_recognition" }
+        ]
         
-  IO.println s!"[CROSS-ITER] Generated {newConcepts.length} synthesis concepts"
+  IO.println s!"[CROSS-ITER] Generated {newConcepts.length} synthesis concepts (successful: {successfulConcepts.length}, foundational: {foundationalConcepts.length}, recent theorems: {recentTheorems.length})"
+  return newConcepts
+
+/-- Historical memory heuristic: Uses full discovery history to find missed opportunities -/
+def historicalMemoryHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts : List ConceptData := []
+  
+  -- Find concepts that have been mentioned as dependencies but not fully explored
+  let allDependencies := concepts.foldl (fun acc c => match c with
+    | ConceptData.definition _ _ _ _ deps _ => acc ++ deps
+    | ConceptData.theorem _ _ _ deps _ => acc ++ deps
+    | _ => acc
+  ) []
+  
+  let actualConcepts := concepts.map getConceptName
+  let missingDependencies := allDependencies.filter (fun dep => !actualConcepts.contains dep)
+  
+  IO.println s!"[MEMORY] Found {missingDependencies.length} missing dependencies to explore"
+  
+  -- Create placeholder concepts for missing dependencies
+  for missingDep in missingDependencies.take 5 do
+    let placeholderName := s!"inferred_{missingDep}"
+    if !concepts.any (fun c => getConceptName c == placeholderName) then
+      newConcepts := newConcepts ++ [
+        ConceptData.pattern placeholderName
+          s!"Inferred concept based on dependency analysis: {missingDep}"
+          [missingDep]
+          { name := placeholderName
+            created := 0
+            parent := none
+            interestingness := 0.6
+            useCount := 0
+            successCount := 0
+            specializationDepth := 1
+            generationMethod := "historical_memory" }
+      ]
+  
+  -- Find underutilized successful concepts and try to build on them
+  let underutilizedSuccesses := concepts.filter fun c => match c with
+    | ConceptData.definition n _ _ _ _ m => 
+      m.successCount > 0 && m.useCount == 0 && m.generationMethod != "number_generation"
+    | ConceptData.theorem n _ _ _ m =>
+      m.successCount > 0 && m.useCount == 0
+    | _ => false
+    
+  for underutilized in underutilizedSuccesses.take 3 do
+    let baseName := getConceptName underutilized
+    let extensionName := s!"extension_{baseName}"
+    
+    if !concepts.any (fun c => getConceptName c == extensionName) then
+      newConcepts := newConcepts ++ [
+        ConceptData.conjecture extensionName
+          (mkConst ``True)  -- Placeholder
+          0.75
+          { name := extensionName
+            created := 0
+            parent := some baseName
+            interestingness := 0.75
+            useCount := 0
+            successCount := 0
+            specializationDepth := 1
+            generationMethod := "historical_memory" }
+      ]
+  
+  IO.println s!"[MEMORY] Generated {newConcepts.length} memory-guided concepts"
   return newConcepts
 
 /-- Complexity evaluation task -/
@@ -1849,6 +1963,11 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Connect discoveries across different iteration layers"
     { basicMeta with name := "cross_iteration_synthesis" }
 
+  let historicalMemoryRef := ConceptData.heuristicRef
+    "historical_memory"
+    "Use full discovery history to find missed opportunities"
+    { basicMeta with name := "historical_memory" }
+
   -- Create task references
   let complexityTaskRef := ConceptData.taskRef
     "complexity"
@@ -1876,6 +1995,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   heuristics := heuristics.insert "pattern_guided" patternGuidedHeuristic
   heuristics := heuristics.insert "stochastic_exploration" stochasticExplorationHeuristic
   heuristics := heuristics.insert "cross_iteration_synthesis" crossIterationSynthesisHeuristic
+  heuristics := heuristics.insert "historical_memory" historicalMemoryHeuristic
 
   let mut evaluators : EvaluationRegistry := EvaluationRegistry.empty
   evaluators := evaluators.insert "complexity" complexityTask
@@ -1885,7 +2005,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
       patternHeuristicRef, conjectureHeuristicRef, compositionHeuristicRef,
-      patternGuidedHeuristicRef, stochasticHeuristicRef, crossIterHeuristicRef,
+      patternGuidedHeuristicRef, stochasticHeuristicRef, crossIterHeuristicRef, historicalMemoryRef,
       complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
   
