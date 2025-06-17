@@ -1,4 +1,5 @@
 import LeanDisco.Basic
+import LeanDisco.IncrementalSave
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Ring.Basic
 
@@ -7,6 +8,7 @@ set_option linter.unusedVariables false
 namespace LeanDisco.Domains.GroupRing
 
 open Lean Meta Elab
+open LeanDisco.IncrementalSave
 
 /-- Configuration specific to group/ring mining -/
 structure GroupRingConfig where
@@ -864,6 +866,25 @@ def groupRingHeuristics : List (String × HeuristicFn) := [
 
 /-- Run discovery with group/ring theory focus -/
 def runGroupRingDiscovery
+    (grConfig : GroupRingConfig := {})
+    (discoConfig : DiscoveryConfig := {})
+    (maxIterations : Nat := 20) : MetaM Unit := do
+
+  -- Mine domain-specific concepts
+  let domainConcepts ← mineGroupRingConcepts grConfig
+  let seedConcepts ← LeanDisco.seedConcepts
+  let allInitialConcepts := seedConcepts ++ domainConcepts
+
+  -- Get domain-specific heuristics
+  let customHeuristics := groupRingHeuristics
+
+  -- Run using the enhanced runner with incremental saving
+  let description := s!"Group/Ring Theory Discovery (group: {grConfig.includeBasicGroupTheory}, ring: {grConfig.includeBasicRingTheory})"
+  let saveBasePath := "log/groupring_discovery"
+  runDiscoveryCustomWithSaving description allInitialConcepts customHeuristics [] maxIterations true discoConfig saveBasePath
+
+/-- Run discovery with traditional method (for comparison) -/
+def runGroupRingDiscoveryTraditional
     (grConfig : GroupRingConfig := {})
     (discoConfig : DiscoveryConfig := {})
     (maxIterations : Nat := 20) : MetaM Unit := do
