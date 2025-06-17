@@ -9,10 +9,8 @@ See sample outputs in [log](log) directory.
 
 ## Running
 
-`lake build` builds the system including `Main.lean`.
-You can also use `lake lean TestFiniteFields.lean` as an example for running a `Test*` file directly.
-You can also use `lake lean MainLong.lean` to try a longer running computation.
-
+`lake build` builds the system.
+You can use `lake lean TestFiniteFields.lean` as an example for running a `Test*` file directly.
 All these files can also be ran interactively in the VSCode Lean extension.
 
 ## References
