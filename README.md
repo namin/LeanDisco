@@ -1,10 +1,9 @@
 # LeanDisco
 
 [![CI Status](https://github.com/namin/LeanDisco/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/namin/LeanDisco/actions/workflows/lean_action_ci.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/namin/LeanDisco)
 
 _Eurisko-Inspired Discovery System for Lean in Lean_
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/namin/LeanDisco)
 
 See sample outputs in [log](log) directory.
 
