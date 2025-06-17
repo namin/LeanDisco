@@ -4,7 +4,6 @@
 
 _Eurisko-Inspired Discovery System for Lean in Lean_
 
-See [LeanDisco.lean](LeanDisco.lean) for the code.
 See sample outputs in [log](log) directory.
 
 ## Running
