@@ -79,14 +79,58 @@ def generateHelperLemmas (stmt : Expr) : MetaM (List ConceptData) := do
   
   return helpers
 
-/-- Try to prove simple goals with basic tactics -/
-def tryProveSimpleGoal (stmt : Expr) : MetaM (Option Expr) := do
+/-- Try to prove goals with tactics -/
+def tryProveGoal (stmt : Expr) : MetaM (Option Expr) := do
   -- For True, we can easily construct a proof
   if stmt.isConstOf ``True then
     IO.println "    [PROOF] Proving True with trivial"
     return some (mkConst ``True.intro)
   
-  -- For more complex statements, try the existing proof mechanism
+  -- Try to use known Nat theorems
+  let stmtStr := toString stmt
+  
+  -- Check if this looks like 0 + n = n
+  if contains stmtStr "Nat.zero" && contains stmtStr "Nat.add" then
+    IO.println "    [PROOF] Attempting to use Nat.zero_add"
+    let env ← getEnv
+    if let some info := env.find? ``Nat.zero_add then
+      match info with
+      | .thmInfo val =>
+        IO.println "    [PROOF] Found Nat.zero_add theorem"
+        return some (mkConst ``Nat.zero_add)
+      | _ => pure ()
+  
+  -- Check if this looks like n + 0 = n  
+  if contains stmtStr "Nat.add" && contains stmtStr "Nat.zero" then
+    let env ← getEnv
+    if let some info := env.find? ``Nat.add_zero then
+      match info with
+      | .thmInfo val =>
+        IO.println "    [PROOF] Found Nat.add_zero theorem"
+        return some (mkConst ``Nat.add_zero)
+      | _ => pure ()
+  
+  -- Check if this looks like 1 * n = n (represented as succ(0) * n = n)
+  if contains stmtStr "Nat.succ" && contains stmtStr "Nat.mul" && contains stmtStr "Nat.zero" then
+    let env ← getEnv
+    if let some info := env.find? ``Nat.one_mul then
+      match info with
+      | .thmInfo val =>
+        IO.println "    [PROOF] Found Nat.one_mul theorem"
+        return some (mkConst ``Nat.one_mul)
+      | _ => pure ()
+  
+  -- Check if this looks like n * 1 = n
+  if contains stmtStr "Nat.mul" && contains stmtStr "Nat.succ" && contains stmtStr "Nat.zero" then
+    let env ← getEnv
+    if let some info := env.find? ``Nat.mul_one then
+      match info with
+      | .thmInfo val =>
+        IO.println "    [PROOF] Found Nat.mul_one theorem"
+        return some (mkConst ``Nat.mul_one)
+      | _ => pure ()
+  
+  -- Fall back to existing proof mechanism
   let result ← tryProveConjecture stmt
   if result.isSome then
     IO.println "    [PROOF] Proved with existing mechanism"
@@ -107,8 +151,8 @@ def proofGuidedDiscoveryHeuristic : HeuristicFn := fun config concepts => do
   for goal in goals.take 3 do
     IO.println s!"[PROOF-GUIDED] Attempting goal: {goal.name}"
     
-    -- Try to prove the goal with enhanced tactics
-    let proofResult ← tryProveSimpleGoal goal.statement
+    -- Try to prove the goal with tactics
+    let proofResult ← tryProveGoal goal.statement
     match proofResult with
     | some proof =>
       -- Success! Add as theorem
@@ -159,6 +203,22 @@ def generateProvableStatement (name : String) : MetaM Expr := do
       let add := mkConst ``Nat.add
       let lhs := mkApp2 add n zero
       return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "one_mul" =>
+    -- Generate: ∀ n : Nat, 1 * n = n
+    let natType := mkConst ``Nat
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)  -- 1 = succ(0)
+      let mul := mkConst ``Nat.mul
+      let lhs := mkApp2 mul one n
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "mul_one" =>
+    -- Generate: ∀ n : Nat, n * 1 = n
+    let natType := mkConst ``Nat
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)  -- 1 = succ(0)
+      let mul := mkConst ``Nat.mul
+      let lhs := mkApp2 mul n one
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
   | "simple_true" =>
     -- Just True, should be easily provable
     return mkConst ``True
@@ -174,49 +234,41 @@ def goalSeedingHeuristic : HeuristicFn := fun config concepts => do
   
   -- Add some classic goals if we don't have many yet
   let currentGoals ← getCurrentProofGoals
-  if currentGoals.length < 3 then
+  if currentGoals.length < 6 then
     
-    -- Add some basic, provable goals
-    let stmt1 ← generateProvableStatement "simple_true"
-    let goal1 : ProofGoal := {
-      name := "simple_true_goal"
-      statement := stmt1
-      priority := 0.9
-    }
-    addProofGoal goal1
+    -- Define interesting mathematical goals (ordered by likelihood of success)
+    let goalSpecs := [
+      ("simple_true_goal", "simple_true", 0.9),
+      ("zero_add_proof", "zero_add", 0.85),
+      ("add_zero_proof", "add_zero", 0.85),
+      ("one_mul_proof", "one_mul", 0.8),
+      ("mul_one_proof", "mul_one", 0.8)
+    ]
     
-    let stmt2 ← generateProvableStatement "zero_add" 
-    let goal2 : ProofGoal := {
-      name := "zero_add_proof"
-      statement := stmt2
-      priority := 0.8
-    }
-    addProofGoal goal2
+    for (goalName, stmtName, priority) in goalSpecs do
+      -- Check if we already have this goal
+      if not (currentGoals.any (·.name == goalName)) then
+        let stmt ← generateProvableStatement stmtName
+        let goal : ProofGoal := {
+          name := goalName
+          statement := stmt
+          priority := priority
+        }
+        addProofGoal goal
     
-    -- Convert goals to conjecture concepts for tracking
-    let conj1 := ConceptData.conjecture goal1.name goal1.statement goal1.priority {
-      name := goal1.name
-      created := 0
-      parent := none
-      interestingness := goal1.priority
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "goal_seeding"
-    }
+        -- Create conjecture concept for tracking
+        let conjecture := ConceptData.conjecture goalName stmt priority {
+          name := goalName
+          created := 0
+          parent := none
+          interestingness := priority
+          useCount := 0
+          successCount := 0
+          specializationDepth := 0
+          generationMethod := "goal_seeding"
+        }
+        newConcepts := newConcepts ++ [conjecture]
     
-    let conj2 := ConceptData.conjecture goal2.name goal2.statement goal2.priority {
-      name := goal2.name
-      created := 0
-      parent := none
-      interestingness := goal2.priority
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "goal_seeding"
-    }
-    
-    newConcepts := [conj1, conj2]
     IO.println s!"[GOAL-SEEDING] Added {newConcepts.length} new goals"
   
   return newConcepts

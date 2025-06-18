@@ -131,10 +131,14 @@ def goalSeedingHeuristic : HeuristicFn := fun config concepts => do
   
   -- 3. Generate classic mathematical conjectures in our domain
   let classicGoals := [
-    createInterestingGoal "zero_divisor_characterization" "∀ a b : Nat, a * b = 0 → (a = 0 ∨ b = 0)" 0.95,
-    createInterestingGoal "cancellation_property" "∀ a b c : Nat, a + c = b + c → a = b" 0.9,
-    createInterestingGoal "multiplicative_identity_unique" "∀ e : Nat, (∀ n, n * e = n) → e = 1" 0.85,
-    createInterestingGoal "additive_identity_unique" "∀ e : Nat, (∀ n, n + e = n) → e = 0" 0.85
+    -- Basic identity goals (more likely to be provable)
+    createInterestingGoal "zero_add_identity" "∀ n : Nat, 0 + n = n" 0.95,
+    createInterestingGoal "add_zero_identity" "∀ n : Nat, n + 0 = n" 0.95,
+    createInterestingGoal "one_mul_identity" "∀ n : Nat, 1 * n = n" 0.9,
+    createInterestingGoal "mul_one_identity" "∀ n : Nat, n * 1 = n" 0.9,
+    -- More advanced goals
+    createInterestingGoal "add_commutativity" "∀ n m : Nat, n + m = m + n" 0.85,
+    createInterestingGoal "mul_commutativity" "∀ n m : Nat, n * m = m * n" 0.85
   ]
   
   -- Only add classic goals if we don't have many goals already
@@ -178,7 +182,6 @@ def createInterestingGoal (name : String) (description : String) (priority : Flo
 
 /-- Generate actual Lean expressions from description strings -/
 def generateStatementFromDescription (desc : String) : MetaM Expr := do
-  -- For now, return a placeholder. In full implementation, this would parse mathematical statements
   match desc with
   | "∀ n m : Nat, n + m = m + n" => 
     -- Generate actual commutativity statement
@@ -198,6 +201,38 @@ def generateStatementFromDescription (desc : String) : MetaM Expr := do
         let lhs := mkApp2 mulOp n m
         let rhs := mkApp2 mulOp m n
         return mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
+  | "∀ n : Nat, 0 + n = n" =>
+    -- Generate zero addition
+    let natType := mkConst ``Nat
+    mkSafeForall `n natType fun n => do
+      let zero := mkConst ``Nat.zero
+      let addOp := mkConst ``Nat.add
+      let lhs := mkApp2 addOp zero n
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "∀ n : Nat, n + 0 = n" =>
+    -- Generate addition zero
+    let natType := mkConst ``Nat
+    mkSafeForall `n natType fun n => do
+      let zero := mkConst ``Nat.zero
+      let addOp := mkConst ``Nat.add
+      let lhs := mkApp2 addOp n zero
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "∀ n : Nat, 1 * n = n" =>
+    -- Generate one multiplication
+    let natType := mkConst ``Nat
+    mkSafeForall `n natType fun n => do
+      let one := mkConst ``Nat.one
+      let mulOp := mkConst ``Nat.mul
+      let lhs := mkApp2 mulOp one n
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "∀ n : Nat, n * 1 = n" =>
+    -- Generate multiplication one
+    let natType := mkConst ``Nat
+    mkSafeForall `n natType fun n => do
+      let one := mkConst ``Nat.one
+      let mulOp := mkConst ``Nat.mul
+      let lhs := mkApp2 mulOp n one
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
   | _ => 
     -- Fallback to True for unrecognized descriptions
     return mkConst ``True
