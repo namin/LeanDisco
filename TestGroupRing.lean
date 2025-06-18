@@ -12,5 +12,6 @@ open LeanDisco.Domains.GroupRing
   { maxSpecializationDepth := 3
     maxConceptsPerIteration := 50
     enableConjectures := true
-    enablePatternRecognition := true }
+    enablePatternRecognition := true
+    enableDebugOutput := true }         -- Enable debug output to see goal-directed heuristics
   4  -- iterations

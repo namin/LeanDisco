@@ -1,18 +1,17 @@
 FINAL DISCOVERY SUMMARY
 =======================
-Total Iterations: 4
-Final Concept Count: 1251
-Patterns Found: 15
-Top Scoring Concepts: [(add2, 1.000000), (zero, 1.000000), (succ, 1.000000), (one, 1.000000), (two, 1.000000)]
+Total Iterations: 2
+Final Concept Count: 761
+Patterns Found: 14
+Top Scoring Concepts: [(zero_add_zero, 1.000000), (zero, 1.000000), (succ, 1.000000), (one, 1.000000), (two, 1.000000)]
 
 Generation Method Distribution:
   seed: 18
   mined: 300
-  application: 51
-  specialization: 155
-  pattern_recognition: 6
-  composition: 174
-  lemma_application: 154
+  application: 39
+  specialization: 60
+  pattern_recognition: 5
+  composition: 54
+  lemma_application: 34
   typeclass_specialization: 2
-  algebraic_conjecture: 2
   concrete_instance: 2

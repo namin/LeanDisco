@@ -1,5 +1,5 @@
 === ITERATION 0 COMPLETE ===
-Total Concepts: 362 (+0 new)
+Total Concepts: 364 (+0 new)
 Patterns: 0
 Conjectures: 0
 Theorems: 211

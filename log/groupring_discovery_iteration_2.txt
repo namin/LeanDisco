@@ -1,10 +1,10 @@
 === ITERATION 2 COMPLETE ===
-Total Concepts: 851 (+249 new)
-Patterns: 15
-Conjectures: 100
-Theorems: 367
+Total Concepts: 761 (+199 new)
+Patterns: 14
+Conjectures: 91
+Theorems: 319
 Top Concepts:
-  - pattern_guided (score: 1.000000)
+  - zero_add_zero (score: 1.000000)
   - zero (score: 1.000000)
   - succ (score: 1.000000)
   - one (score: 1.000000)
@@ -17,30 +17,35 @@ Top Concepts:
 Generation Methods:
   seed: 18
   mined: 300
-  application: 51
-  specialization: 100
-  pattern_recognition: 6
-  composition: 74
-  lemma_application: 54
+  application: 39
+  specialization: 60
+  pattern_recognition: 5
+  composition: 54
+  lemma_application: 34
   typeclass_specialization: 2
   concrete_instance: 2
-All Patterns (15):
+All Patterns (14):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
   - variation_add_comm: Variation pattern based on theorem add_comm
   - variation_zero_add_zero: Variation pattern based on theorem zero_add_zero
   - Nat_is_AddMonoid: Natural numbers form an additive monoid
-  - succ_iteration_pattern: Repeated application of succ
-  - add_iteration_pattern: Repeated application of add
   - add1_iteration_pattern: Repeated application of add1
   - add2_iteration_pattern: Repeated application of add2
-  - Nat.sub_iteration_pattern: Repeated application of Nat.sub
-  - meta_pattern_application_successful: Meta-pattern: application has been successful (45 concepts)
+  - succ_iteration_pattern: Repeated application of succ
+  - add_iteration_pattern: Repeated application of add
+  - meta_pattern_application_successful: Meta-pattern: application has been successful (30 concepts)
   - meta_pattern_composition_successful: Meta-pattern: composition has been successful (24 concepts)
-  - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (50 concepts)
+  - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (30 concepts)
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_zero_eq_zero: Revived: Variation pattern based on theorem zero_eq_zero
-All Conjectures (100):
+All Conjectures (91):
+  - function_lemma_for_zero_add_zero
+    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero)
+  - function_lemma_for_one_add_one_eq_two
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero))
+  - function_lemma_for_two_add_one_eq_three
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero))
   - succ_comp_add1_eq_0
     Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
   - succ_comp_add1_eq_1
@@ -101,26 +106,6 @@ All Conjectures (100):
     Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.add Nat.zero)
   - add_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) Nat.zero
-  - add_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.add Nat.zero)
-  - add_comp_add1_eq_1
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
-  - add_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - add_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - add_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.add Nat.zero)
-  - add_comp_add2_eq_1
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
-  - add_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - add_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
   - add1_comp_succ_eq_0
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - add1_comp_succ_eq_1
@@ -141,6 +126,18 @@ All Conjectures (100):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - add1_comp_succ_eq_1
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
+  - add1_comp_succ_eq_2
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) Nat.zero
+  - add1_comp_succ_eq_3
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
+  - add1_comp_add2_eq_0
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
+  - add1_comp_add2_eq_1
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
+  - add1_comp_add2_eq_2
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
+  - add1_comp_add2_eq_3
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
   - add2_comp_succ_eq_0
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - add2_comp_succ_eq_1
@@ -169,79 +166,63 @@ All Conjectures (100):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - add2_comp_add1_eq_1
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
-  - add2_comp_add1_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - add2_comp_add1_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_succ_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
-  - add2_comp_succ_eq_1
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_succ_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) Nat.zero
-  - add2_comp_succ_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_add1_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
-  - add2_comp_add1_eq_1
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
-  - add2_comp_add1_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - add2_comp_add1_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_succ_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
-  - add2_comp_succ_eq_1
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_succ_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) Nat.zero
-  - add2_comp_succ_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_add1_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
-  - add2_comp_add1_eq_1
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
-  - add2_comp_add1_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - add2_comp_add1_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_succ_eq_0
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) Nat.zero)
-  - Nat.sub_comp_succ_eq_1
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_succ_eq_2
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) Nat.zero
-  - Nat.sub_comp_succ_eq_3
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_add1_eq_0
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) Nat.zero)
-  - Nat.sub_comp_add1_eq_1
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
-  - Nat.sub_comp_add1_eq_2
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - Nat.sub_comp_add1_eq_3
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_add2_eq_0
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) Nat.zero)
-  - Nat.sub_comp_add2_eq_1
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
-  - Nat.sub_comp_add2_eq_2
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - Nat.sub_comp_add2_eq_3
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_succ_eq_0
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) Nat.zero)
-  - Nat.sub_comp_succ_eq_1
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_succ_eq_2
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) Nat.zero
-  - Nat.sub_comp_succ_eq_3
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - Nat.sub_comp_add1_eq_0
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) Nat.zero)
-  - Nat.sub_comp_add1_eq_1
-    Statement: Eq.{1} Nat ((fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ((Nat.rec.{1} (fun (t : Nat) => PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) t)) (PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) Nat.zero) PUnit.{1} (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => x._@.Init.Prelude._hyg.4348) PUnit.unit.{1}) (fun (n : Nat) (n_ih : PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) => PProd.mk.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) (Nat.succ n)) (PProd.{1, 1} ((fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n) (Nat.below.{1} (fun (x._@.Init.Prelude._hyg.4349 : [mdata borrowed:1 Nat]) => ([mdata borrowed:1 Nat]) -> Nat) n)) (fun (x._@.Init.Prelude._hyg.4348 : [mdata borrowed:1 Nat]) => (fun (motive : ([mdata borrowed:1 Nat]) -> Type) (x._@.Init.Prelude._hyg.3120.3131 : [mdata borrowed:1 Nat]) (h_1 : Unit -> (motive (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (h_2 : forall (n : Nat), motive (Nat.succ n)) => Nat.rec.{1} (fun (x : [mdata borrowed:1 Nat]) => motive x) (h_1 PUnit.unit.{1}) (fun (n : Nat) (n_ih : motive n) => h_2 n) x._@.Init.Prelude._hyg.3120.3131) (fun (x._@.Init.Prelude._hyg.3730.3741 : [mdata borrowed:1 Nat]) => Nat) (n_ih.1 x._@.Init.Prelude._hyg.4348) (fun (_ : Unit) => 0) (fun (a : Nat) => a)) n_ih) x._@.Init.Prelude._hyg.4349).1) x._@.Init.Prelude._hyg.4348) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
-All Theorems (367):
+  - cross_apply_zero_add_zero_to_zero
+    Statement: True
+  - cross_apply_zero_add_zero_to_succ
+    Statement: True
+  - cross_apply_zero_add_zero_to_one
+    Statement: True
+  - cross_apply_zero_add_zero_to_two
+    Statement: True
+  - cross_apply_zero_add_zero_to_add
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_zero
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_succ
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_one
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_two
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_add
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_zero
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_succ
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_one
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_two
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_add
+    Statement: True
+  - cross_apply_zero_add_zero_to_zero
+    Statement: True
+  - cross_apply_zero_add_zero_to_succ
+    Statement: True
+  - cross_apply_zero_add_zero_to_one
+    Statement: True
+  - cross_apply_zero_add_zero_to_two
+    Statement: True
+  - cross_apply_zero_add_zero_to_add
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_zero
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_succ
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_one
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_two
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_add
+    Statement: True
+  - extension_zero_add_zero
+    Statement: True
+  - extension_one_add_one_eq_two
+    Statement: True
+  - extension_two_add_one_eq_three
+    Statement: True
+All Theorems (319):
   - zero_eq_zero
     Statement: Eq.{1} Nat Nat.zero Nat.zero
   - add_comm
@@ -724,6 +705,38 @@ All Theorems (367):
     Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (Nat.succ Nat.zero) m) (Nat.succ (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) Nat.zero m))
   - nat_succ_add_spec_one
     Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (Nat.succ (Nat.succ Nat.zero)) m) (Nat.succ (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (Nat.succ Nat.zero) m))
+  - one_add_one_eq_two_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - one_add_one_eq_two_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - one_add_one_eq_two_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - one_add_one_eq_two_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - intermediate_for_zero_add_zero_via_add
+    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
+  - intermediate_for_zero_add_zero_via_zero
+    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
+  - dual_of_zero_add_zero
+    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
+  - intermediate_for_one_add_one_eq_two_via_add
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - intermediate_for_one_add_one_eq_two_via_one
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - intermediate_for_one_add_one_eq_two_via_two
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - dual_of_one_add_one_eq_two
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - intermediate_for_two_add_one_eq_three_via_add
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_two
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_one
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_succ
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - dual_of_two_add_one_eq_three
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - nat_add_succ_spec_zero
     Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) Nat.zero (Nat.succ m)) (Nat.succ (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) Nat.zero m))
   - nat_add_succ_spec_one
@@ -754,24 +767,6 @@ All Theorems (367):
     Statement: Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1)) Nat.zero) (Nat.succ Nat.zero)
   - nat_one_add_spec_one
     Statement: Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - add_comm_spec_zero
-    Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) Nat.zero m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m Nat.zero)
-  - add_comm_spec_one
-    Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (Nat.succ Nat.zero) m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m (Nat.succ Nat.zero))
-  - add_comm_spec_two
-    Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (Nat.succ (Nat.succ Nat.zero)) m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m (Nat.succ (Nat.succ Nat.zero)))
-  - add_comm_spec_zero
-    Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) Nat.zero m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m Nat.zero)
-  - add_comm_spec_one
-    Statement: forall (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (Nat.succ Nat.zero) m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_two
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_two
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_two
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_two
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
   - Nat.mul_self_sub_mul_self_eq_spec_zero
     Statement: forall (b : Nat), Eq.{1} Nat (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero Nat.zero) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) b b)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) Nat.zero b) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) Nat.zero b))
   - Nat.mul_self_sub_mul_self_eq_spec_one
@@ -802,76 +797,6 @@ All Theorems (367):
     Statement: forall (n : Nat) (k : Nat), (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) Nat.zero) -> (Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero n) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero k)) (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) n k))
   - Nat.mul_div_mul_left_spec_one
     Statement: forall (n : Nat) (k : Nat), (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (Nat.succ Nat.zero)) -> (Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) n) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) k)) (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) n k))
-  - Nat.succ_max_succ_spec_zero
-    Statement: forall (y : Nat), Eq.{1} Nat (Max.max.{0} Nat Nat.instMax (Nat.succ Nat.zero) (Nat.succ y)) (Nat.succ (Max.max.{0} Nat Nat.instMax Nat.zero y))
-  - Nat.succ_max_succ_spec_one
-    Statement: forall (y : Nat), Eq.{1} Nat (Max.max.{0} Nat Nat.instMax (Nat.succ (Nat.succ Nat.zero)) (Nat.succ y)) (Nat.succ (Max.max.{0} Nat Nat.instMax (Nat.succ Nat.zero) y))
-  - Nat.succ_max_succ_spec_two
-    Statement: forall (y : Nat), Eq.{1} Nat (Max.max.{0} Nat Nat.instMax (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ y)) (Nat.succ (Max.max.{0} Nat Nat.instMax (Nat.succ (Nat.succ Nat.zero)) y))
-  - Nat.succ_max_succ_spec_zero
-    Statement: forall (y : Nat), Eq.{1} Nat (Max.max.{0} Nat Nat.instMax (Nat.succ Nat.zero) (Nat.succ y)) (Nat.succ (Max.max.{0} Nat Nat.instMax Nat.zero y))
-  - Nat.succ_max_succ_spec_one
-    Statement: forall (y : Nat), Eq.{1} Nat (Max.max.{0} Nat Nat.instMax (Nat.succ (Nat.succ Nat.zero)) (Nat.succ y)) (Nat.succ (Max.max.{0} Nat Nat.instMax (Nat.succ Nat.zero) y))
-  - Nat.sub_one_add_one_eq_of_pos_spec_zero
-    Statement: (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) Nat.zero) -> (Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) Nat.zero (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) Nat.zero)
-  - Nat.sub_one_add_one_eq_of_pos_spec_one
-    Statement: (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (Nat.succ Nat.zero)) -> (Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) (Nat.succ Nat.zero) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (Nat.succ Nat.zero))
-  - Nat.sub_one_add_one_eq_of_pos_spec_two
-    Statement: (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (Nat.succ (Nat.succ Nat.zero))) -> (Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (Nat.succ (Nat.succ Nat.zero)))
-  - Nat.sub_one_add_one_eq_of_pos_spec_zero
-    Statement: (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) Nat.zero) -> (Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) Nat.zero (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) Nat.zero)
-  - Nat.sub_one_add_one_eq_of_pos_spec_one
-    Statement: (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (Nat.succ Nat.zero)) -> (Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) (Nat.succ Nat.zero) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (Nat.succ Nat.zero))
-  - Nat.mul_zero_spec_zero
-    Statement: Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
-  - Nat.mul_zero_spec_one
-    Statement: Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
-  - Nat.mul_zero_spec_two
-    Statement: Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
-  - Nat.mul_zero_spec_zero
-    Statement: Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
-  - Nat.mul_zero_spec_one
-    Statement: Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
-  - Nat.sub_pos_of_lt_spec_zero
-    Statement: forall {n : Nat}, (LT.lt.{0} Nat instLTNat Nat.zero n) -> (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) n Nat.zero))
-  - Nat.sub_pos_of_lt_spec_one
-    Statement: forall {n : Nat}, (LT.lt.{0} Nat instLTNat (Nat.succ Nat.zero) n) -> (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) n (Nat.succ Nat.zero)))
-  - Nat.sub_pos_of_lt_spec_two
-    Statement: forall {n : Nat}, (LT.lt.{0} Nat instLTNat (Nat.succ (Nat.succ Nat.zero)) n) -> (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) n (Nat.succ (Nat.succ Nat.zero))))
-  - Nat.sub_pos_of_lt_spec_zero
-    Statement: forall {n : Nat}, (LT.lt.{0} Nat instLTNat Nat.zero n) -> (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) n Nat.zero))
-  - Nat.sub_pos_of_lt_spec_one
-    Statement: forall {n : Nat}, (LT.lt.{0} Nat instLTNat (Nat.succ Nat.zero) n) -> (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) n (Nat.succ Nat.zero)))
-  - Nat.mul_add_div_spec_zero
-    Statement: (GT.gt.{0} Nat instLTNat Nat.zero (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) -> (forall (x : Nat) (y : Nat), Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero x) y) Nat.zero) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) y Nat.zero)))
-  - Nat.mul_add_div_spec_one
-    Statement: (GT.gt.{0} Nat instLTNat (Nat.succ Nat.zero) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) -> (forall (x : Nat) (y : Nat), Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) x) y) (Nat.succ Nat.zero)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) y (Nat.succ Nat.zero))))
-  - Nat.mul_add_div_spec_two
-    Statement: (GT.gt.{0} Nat instLTNat (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) -> (forall (x : Nat) (y : Nat), Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ (Nat.succ Nat.zero)) x) y) (Nat.succ (Nat.succ Nat.zero))) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) y (Nat.succ (Nat.succ Nat.zero)))))
-  - Nat.mul_add_div_spec_zero
-    Statement: (GT.gt.{0} Nat instLTNat Nat.zero (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) -> (forall (x : Nat) (y : Nat), Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero x) y) Nat.zero) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) y Nat.zero)))
-  - Nat.mul_add_div_spec_one
-    Statement: (GT.gt.{0} Nat instLTNat (Nat.succ Nat.zero) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) -> (forall (x : Nat) (y : Nat), Eq.{1} Nat (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) x) y) (Nat.succ Nat.zero)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (HDiv.hDiv.{0, 0, 0} Nat Nat Nat (instHDiv.{0} Nat Nat.instDiv) y (Nat.succ Nat.zero))))
-  - Nat.mul_mul_mul_comm_spec_zero
-    Statement: forall (b : Nat) (c : Nat) (d : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero b) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) c d)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero c) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) b d))
-  - Nat.mul_mul_mul_comm_spec_one
-    Statement: forall (b : Nat) (c : Nat) (d : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) b) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) c d)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) c) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) b d))
-  - Nat.mul_mul_mul_comm_spec_two
-    Statement: forall (b : Nat) (c : Nat) (d : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ (Nat.succ Nat.zero)) b) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) c d)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ (Nat.succ Nat.zero)) c) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) b d))
-  - Nat.mul_mul_mul_comm_spec_zero
-    Statement: forall (b : Nat) (c : Nat) (d : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero b) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) c d)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero c) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) b d))
-  - Nat.mul_mul_mul_comm_spec_one
-    Statement: forall (b : Nat) (c : Nat) (d : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) b) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) c d)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) c) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) b d))
-  - Nat.mul_mod_mod_spec_zero
-    Statement: forall (n : Nat) (l : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n l)) l) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero n) l)
-  - Nat.mul_mod_mod_spec_one
-    Statement: forall (n : Nat) (l : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n l)) l) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) n) l)
-  - Nat.mul_mod_mod_spec_two
-    Statement: forall (n : Nat) (l : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ (Nat.succ Nat.zero)) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n l)) l) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ (Nat.succ Nat.zero)) n) l)
-  - Nat.mul_mod_mod_spec_zero
-    Statement: forall (n : Nat) (l : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n l)) l) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) Nat.zero n) l)
-  - Nat.mul_mod_mod_spec_one
-    Statement: forall (n : Nat) (l : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n l)) l) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.succ Nat.zero) n) l)
   - zero_eq_zero_on_structure_type_10
     Statement: Eq.{1} Nat 0 Nat.zero
   - zero_eq_zero_on_structure_type_12
@@ -932,46 +857,6 @@ All Theorems (367):
     Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
   - one_add_one_eq_two_on_succ_applied_to_one
     Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_add1_applied_to_one
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_add1_applied_to_one
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_add2_applied_to_zero
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_add2_applied_to_zero
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_twist_8_two
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_divisors_of_9
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_char_2
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_ring_Z_mod_2
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_mult_group_Z_3
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - two_add_one_eq_three_on_num_3
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_succ_applied_to_two
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add1_applied_to_two
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add2_applied_to_one
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add2_applied_to_one
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_succ_applied_to_two
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add1_applied_to_two
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add2_applied_to_one
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add2_applied_to_one
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_divisors_of_10
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_char_3
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - mul_one_on_Nat
     Statement: forall (a : Nat), Eq.{1} Nat (Nat.mul a (Nat.succ Nat.zero)) a
   - one_mul_on_Nat

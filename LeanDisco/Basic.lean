@@ -131,6 +131,24 @@ structure FailedAttempt where
   attemptCount : Nat
   lastAttempt : Nat  -- iteration number
 
+/-- Proof goal representing a target to prove -/
+structure ProofGoal where
+  name : String
+  statement : Expr
+  evidence : Float := 0.5
+  priority : Float := 1.0
+  dependencies : List String := []
+  sorryCount : Nat := 0          -- Number of sorry holes in current best attempt
+  missingLemmas : List String := []  -- Identified missing supporting lemmas
+  iteration : Nat                -- When this goal was identified
+
+/-- Track proof context and missing pieces -/
+structure ProofContext where
+  goals : List ProofGoal := []
+  activeGoal : Option String := none
+  recentFailures : List FailedAttempt := []
+  targetConjectures : List String := []  -- High-priority conjectures to prove
+
 /-- Result of applying a heuristic or evolution step -/
 structure Discovery where
   newConcepts : List ConceptData
@@ -156,6 +174,7 @@ structure KnowledgeBase where
   history : List (Nat × List String)
   cache : ConceptCache := {}
   failedProofs : List FailedAttempt := []
+  proofContext : ProofContext := {}         -- Goal-directed proof tracking
 
 /-- Context provided to heuristics for better discovery -/
 structure HeuristicContext where
@@ -164,6 +183,7 @@ structure HeuristicContext where
   layers : ConceptLayers                  -- Layered access to concepts
   iteration : Nat                         -- Current iteration number
   failedProofs : List FailedAttempt       -- What didn't work before
+  proofContext : ProofContext             -- Current proof goals and context
 
 
 /-- Extract concept name -/
@@ -274,6 +294,48 @@ def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
         -- If reduction fails, just cache the original value
         return ConceptData.definition n t v (some v) deps meta
   | _ => return c
+
+-- Utility functions for proof goal management
+
+/-- Add a new proof goal -/
+def addProofGoal (context : ProofContext) (goal : ProofGoal) : ProofContext :=
+  { context with 
+    goals := context.goals ++ [goal]
+    targetConjectures := 
+      if goal.priority > 0.8 then context.targetConjectures ++ [goal.name]
+      else context.targetConjectures }
+
+/-- Update proof goal with new information -/
+def updateProofGoal (context : ProofContext) (goalName : String) (update : ProofGoal → ProofGoal) : ProofContext :=
+  { context with 
+    goals := context.goals.map fun g => if g.name = goalName then update g else g }
+
+/-- Get active proof targets -/
+def getActiveTargets (context : ProofContext) : List ProofGoal :=
+  context.goals.filter fun g => g.priority > 0.5
+
+/-- Extract sorry holes from a proof expression -/
+partial def countSorryHoles (expr : Expr) : Nat :=
+  match expr with
+  | Expr.const name _ => if name.toString = "sorry" then 1 else 0
+  | Expr.app f arg => countSorryHoles f + countSorryHoles arg
+  | Expr.lam _ _ body _ => countSorryHoles body
+  | Expr.forallE _ _ body _ => countSorryHoles body
+  | Expr.letE _ _ val body _ => countSorryHoles val + countSorryHoles body
+  | _ => 0
+
+/-- Convert high-evidence conjecture to proof goal -/
+def conjectureToProofGoal (c : ConceptData) (iteration : Nat) : Option ProofGoal :=
+  match c with
+  | ConceptData.conjecture name statement evidence meta =>
+    if evidence > 0.7 then  -- High evidence threshold
+      some { name := name
+             statement := statement
+             evidence := evidence
+             priority := evidence
+             iteration := iteration }
+    else none
+  | _ => none
 
 /-- Check if a concept name indicates an internal proof term -/
 def isInternalProofTerm (name : String) : Bool :=
@@ -744,8 +806,22 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
   
   IO.println s!"[DEBUG] Providing enhanced visibility to heuristics: {allConceptsWithLayers.length} total concepts (foundational={kb.layers.foundational.length}, historical={kb.layers.historical.length}, recent={kb.layers.recent.length}, current={kb.layers.current.length})"
 
-  IO.println s!"[DEBUG] Invoking heuristics: {kb.heuristics.entries.map Prod.fst}"
-  for (name, meta) in heuristicRefs do
+  -- Prioritize goal-directed heuristics over stochastic exploration
+  let prioritizedHeuristics := heuristicRefs.partition fun (name, _) => 
+    name ∈ ["goal_directed", "backwards_reasoning", "pattern_guided", "specialization", "application"]
+  let (highPriorityRefs, regularRefs) := prioritizedHeuristics
+  
+  -- Apply high-priority (goal-directed) heuristics first
+  let orderedRefs := highPriorityRefs ++ regularRefs.filter fun (name, _) => name ≠ "stochastic_exploration"
+  
+  -- Only apply stochastic exploration if we haven't found enough concepts after 2 iterations
+  let finalRefs := if kb.iteration > 2 && discoveries.length < 3 then
+    orderedRefs ++ regularRefs.filter fun (name, _) => name = "stochastic_exploration"
+  else
+    orderedRefs
+  
+  IO.println s!"[DEBUG] Prioritized heuristic order: {finalRefs.map Prod.fst}"
+  for (name, meta) in finalRefs do
     if let some heuristic := kb.heuristics.find? name then
       try
         let newConcepts ← heuristic kb.config allConceptsWithLayers
@@ -1604,6 +1680,224 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
   debugPrint false s!"[DEBUG] compositionHeuristic: returning {newConcepts.length} concepts"
   return newConcepts
 
+/-- Goal-directed concept generation heuristic - generates concepts to help prove specific goals -/
+def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts : List ConceptData := []
+  
+  -- Extract proof context (this would come from HeuristicContext in full implementation)
+  let highEvidenceConjectures := concepts.filterMap fun c => match c with
+    | ConceptData.conjecture name statement evidence meta =>
+      if evidence > 0.7 then some (name, statement, evidence, meta) else none
+    | _ => none
+  
+  IO.println s!"[GOAL-DIRECTED] Found {highEvidenceConjectures.length} high-evidence conjectures to target"
+  
+  for (conjName, conjStatement, evidence, conjMeta) in highEvidenceConjectures.take 5 do
+    IO.println s!"[GOAL-DIRECTED] Targeting conjecture: {conjName}"
+    
+    -- Strategy 1: Generate supporting lemmas for the conjecture
+    let lemmaName := s!"lemma_for_{conjName}"
+    if !concepts.any (fun c => getConceptName c == lemmaName) then
+      -- Create a supporting lemma conjecture (simplified approach)
+      newConcepts := newConcepts ++ [
+        ConceptData.conjecture lemmaName conjStatement (evidence * 0.9) {
+          name := lemmaName
+          created := 0
+          parent := some conjName
+          interestingness := evidence * 0.95
+          useCount := 0
+          successCount := 0
+          specializationDepth := conjMeta.specializationDepth + 1
+          generationMethod := "goal_directed_lemma"
+        }
+      ]
+    
+    -- Strategy 2: Generate intermediate steps by analyzing the statement structure
+    match conjStatement with
+    | Expr.forallE varName varType body _ =>
+      -- For universal statements, try to create specialized instances
+      let specializedName := s!"{conjName}_specialized"
+      if !concepts.any (fun c => getConceptName c == specializedName) then
+        -- Look for suitable terms to instantiate with
+        let suitableTerms := concepts.filterMap fun c => match c with
+          | ConceptData.definition name typ _ _ _ meta =>
+            if meta.generationMethod == "seed" || meta.generationMethod == "mined" then
+              -- Basic type checking - this is simplified
+              if toString typ == toString varType then some name else none
+            else none
+          | _ => none
+        
+        for termName in suitableTerms.take 3 do
+          let specName := s!"{conjName}_spec_{termName}"
+          if !concepts.any (fun c => getConceptName c == specName) then
+            newConcepts := newConcepts ++ [
+              ConceptData.conjecture specName body (evidence * 0.8) {
+                name := specName
+                created := 0
+                parent := some conjName
+                interestingness := evidence * 0.85
+                useCount := 0
+                successCount := 0
+                specializationDepth := conjMeta.specializationDepth + 1
+                generationMethod := "goal_directed_specialization"
+              }
+            ]
+    | _ => pure ()
+    
+    -- Strategy 3: Generate inverse or dual concepts
+    let inverseName := s!"inverse_{conjName}"
+    if !concepts.any (fun c => getConceptName c == inverseName) then
+      newConcepts := newConcepts ++ [
+        ConceptData.conjecture inverseName conjStatement (evidence * 0.7) {
+          name := inverseName
+          created := 0
+          parent := some conjName
+          interestingness := evidence * 0.8
+          useCount := 0
+          successCount := 0
+          specializationDepth := conjMeta.specializationDepth + 1
+          generationMethod := "goal_directed_inverse"
+        }
+      ]
+  
+  -- Strategy 4: Generate concepts to fill gaps identified in failed proofs
+  let failedProofPatterns := concepts.filterMap fun c => match c with
+    | ConceptData.conjecture name _ evidence meta =>
+      if evidence < 0.3 && meta.useCount > 2 then some name else none
+    | _ => none
+  
+  for failedName in failedProofPatterns.take 3 do
+    let bridgeName := s!"bridge_to_{failedName}"
+    if !concepts.any (fun c => getConceptName c == bridgeName) then
+      -- Create a bridging concept that might help prove the failed conjecture
+      newConcepts := newConcepts ++ [
+        ConceptData.definition bridgeName (Expr.sort Level.zero) (mkConst ``True) none [failedName] {
+          name := bridgeName
+          created := 0
+          parent := some failedName
+          interestingness := 0.6
+          useCount := 0
+          successCount := 0
+          specializationDepth := 1
+          generationMethod := "goal_directed_bridge"
+        }
+      ]
+  
+  IO.println s!"[GOAL-DIRECTED] Generated {newConcepts.length} goal-directed concepts"
+  return newConcepts
+
+/-- Backwards reasoning heuristic - generates concepts needed to prove target theorems -/
+def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts : List ConceptData := []
+  
+  -- Find theorems that might need intermediate steps
+  let targetTheorems := concepts.filterMap fun c => match c with
+    | ConceptData.theorem name statement _ deps meta =>
+      if meta.specializationDepth <= 1 && deps.length > 1 then
+        some (name, statement, deps, meta)
+      else none
+    | _ => none
+  
+  IO.println s!"[BACKWARDS] Analyzing {targetTheorems.length} target theorems for backwards reasoning"
+  
+  for (thmName, statement, deps, meta) in targetTheorems.take 3 do
+    IO.println s!"[BACKWARDS] Working backwards from theorem: {thmName}"
+    
+    -- Strategy 1: Generate missing intermediate theorems
+    for dep in deps do
+      let intermediateName := s!"intermediate_for_{thmName}_via_{dep}"
+      if !concepts.any (fun c => getConceptName c == intermediateName) then
+        -- Create an intermediate theorem conjecture
+        newConcepts := newConcepts ++ [
+          ConceptData.conjecture intermediateName statement 0.8 {
+            name := intermediateName
+            created := 0
+            parent := some thmName
+            interestingness := 0.85
+            useCount := 0
+            successCount := 0
+            specializationDepth := meta.specializationDepth + 1
+            generationMethod := "backwards_reasoning_intermediate"
+          }
+        ]
+    
+    -- Strategy 2: Generate helper lemmas by analyzing statement structure
+    match statement with
+    | Expr.forallE _ _ body _ =>
+      -- For implications or universal statements, generate the antecedent as a lemma
+      let antecedentName := s!"antecedent_for_{thmName}"
+      if !concepts.any (fun c => getConceptName c == antecedentName) then
+        newConcepts := newConcepts ++ [
+          ConceptData.conjecture antecedentName body 0.7 {
+            name := antecedentName
+            created := 0
+            parent := some thmName
+            interestingness := 0.8
+            useCount := 0
+            successCount := 0
+            specializationDepth := meta.specializationDepth + 1
+            generationMethod := "backwards_reasoning_antecedent"
+          }
+        ]
+    | Expr.app f arg =>
+      -- For applications, generate lemmas about the function and argument
+      let functionLemmaName := s!"function_lemma_for_{thmName}"
+      if !concepts.any (fun c => getConceptName c == functionLemmaName) then
+        newConcepts := newConcepts ++ [
+          ConceptData.conjecture functionLemmaName f 0.6 {
+            name := functionLemmaName
+            created := 0
+            parent := some thmName
+            interestingness := 0.75
+            useCount := 0
+            successCount := 0
+            specializationDepth := meta.specializationDepth + 1
+            generationMethod := "backwards_reasoning_function"
+          }
+        ]
+    | _ => pure ()
+    
+    -- Strategy 3: Generate dual or contrapositive statements
+    let dualName := s!"dual_of_{thmName}"
+    if !concepts.any (fun c => getConceptName c == dualName) then
+      newConcepts := newConcepts ++ [
+        ConceptData.conjecture dualName statement 0.6 {
+          name := dualName
+          created := 0
+          parent := some thmName
+          interestingness := 0.7
+          useCount := 0
+          successCount := 0
+          specializationDepth := meta.specializationDepth + 1
+          generationMethod := "backwards_reasoning_dual"
+        }
+      ]
+  
+  -- Strategy 4: Generate prerequisite concepts for failed proofs
+  let failedConjectures := concepts.filterMap fun c => match c with
+    | ConceptData.conjecture name _ evidence meta =>
+      if evidence < 0.4 && meta.useCount > 1 then some (name, meta) else none
+    | _ => none
+  
+  for (failedName, failedMeta) in failedConjectures.take 2 do
+    let prereqName := s!"prerequisite_for_{failedName}"
+    if !concepts.any (fun c => getConceptName c == prereqName) then
+      newConcepts := newConcepts ++ [
+        ConceptData.definition prereqName (Expr.sort Level.zero) (mkConst ``True) none [failedName] {
+          name := prereqName
+          created := 0
+          parent := some failedName
+          interestingness := 0.65
+          useCount := 0
+          successCount := 0
+          specializationDepth := failedMeta.specializationDepth + 1
+          generationMethod := "backwards_reasoning_prerequisite"
+        }
+      ]
+  
+  IO.println s!"[BACKWARDS] Generated {newConcepts.length} backwards reasoning concepts"
+  return newConcepts
+
 /-- Stochastic exploration heuristic - creates random variations to break cycles -/
 def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
@@ -2076,6 +2370,16 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Use discovered patterns to guide generation"
     { basicMeta with name := "pattern_guided" }
 
+  let goalDirectedHeuristicRef := ConceptData.heuristicRef
+    "goal_directed"
+    "Generate concepts to prove specific high-evidence conjectures"
+    { basicMeta with name := "goal_directed" }
+
+  let backwardsReasoningHeuristicRef := ConceptData.heuristicRef
+    "backwards_reasoning"
+    "Generate concepts needed to prove target theorems via backwards reasoning"
+    { basicMeta with name := "backwards_reasoning" }
+
   let stochasticHeuristicRef := ConceptData.heuristicRef
     "stochastic_exploration"
     "Create random variations to break discovery cycles"
@@ -2121,6 +2425,8 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   heuristics := heuristics.insert "conjecture_generation" conjectureGenerationHeuristic
   heuristics := heuristics.insert "composition" compositionHeuristic
   heuristics := heuristics.insert "pattern_guided" patternGuidedHeuristic
+  heuristics := heuristics.insert "goal_directed" goalDirectedHeuristic
+  heuristics := heuristics.insert "backwards_reasoning" backwardsReasoningHeuristic
   heuristics := heuristics.insert "stochastic_exploration" stochasticExplorationHeuristic
   heuristics := heuristics.insert "cross_iteration_synthesis" crossIterationSynthesisHeuristic
   heuristics := heuristics.insert "historical_memory" historicalMemoryHeuristic
@@ -2134,7 +2440,8 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
       patternHeuristicRef, conjectureHeuristicRef, compositionHeuristicRef,
-      patternGuidedHeuristicRef, stochasticHeuristicRef, crossIterHeuristicRef, historicalMemoryRef, conceptFreshnessRef,
+      patternGuidedHeuristicRef, goalDirectedHeuristicRef, backwardsReasoningHeuristicRef,
+      stochasticHeuristicRef, crossIterHeuristicRef, historicalMemoryRef, conceptFreshnessRef,
       complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
   
