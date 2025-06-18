@@ -1,9 +1,23 @@
-import LeanDisco.ProofConstruction
+import LeanDisco.ProofGuidedSimple
 
 namespace TestProofConstruction
 
-open LeanDisco LeanDisco.ProofConstruction
+open LeanDisco LeanDisco.ProofGuidedSimple
 open Lean Meta Elab
+
+/-- Generate test goal: 0 = 0 -/
+def generateZeroEqZero : MetaM Expr := do
+  let zero := mkConst ``Nat.zero
+  return mkApp3 (mkConst ``Eq [levelOne]) (mkConst ``Nat) zero zero
+
+/-- Generate test goal: ∀ n : Nat, n + 0 = n -/
+def generateAddZeroRight : MetaM Expr := do
+  let natType := mkConst ``Nat
+  mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+    let add := mkConst ``Nat.add
+    let zero := mkConst ``Nat.zero
+    let lhs := mkApp2 add n zero
+    return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
 
 def testProofConstruction : MetaM Unit := do
   IO.println "=== Testing Proof Construction ==="

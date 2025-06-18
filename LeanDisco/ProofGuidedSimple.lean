@@ -5,6 +5,143 @@ namespace LeanDisco.ProofGuidedSimple
 open Lean Meta Elab
 open LeanDisco
 
+/-- A single step in a proof -/
+inductive ProofStep where
+  | apply (thm : Name) : ProofStep
+  | rewrite (thm : Name) : ProofStep
+  | rfl : ProofStep
+  | assumption : ProofStep
+  deriving Repr
+
+/-- Result of attempting a proof step -/
+inductive StepResult where
+  | success (newGoal : Option Expr) (proof : Expr)
+  | failure (reason : String)
+
+/-- Try to apply a theorem to the current goal -/
+def tryApplyTheorem (goal : Expr) (thmName : Name) : MetaM StepResult := do
+  try
+    let thm := mkConst thmName
+    let thmType ← inferType thm
+    
+    -- Check if theorem type unifies with goal
+    if ← isDefEq thmType goal then
+      return StepResult.success none thm
+    
+    -- Try to apply theorem (might produce subgoals)
+    -- For now, we'll just check direct application
+    return StepResult.failure s!"Cannot apply {thmName} to goal"
+    
+  catch e =>
+    return StepResult.failure s!"Error applying {thmName}: {← e.toMessageData.toString}"
+
+/-- Try reflexivity -/
+def tryRefl (goal : Expr) : MetaM StepResult := do
+  -- Check if goal is of form a = a
+  if goal.isAppOfArity ``Eq 3 then
+    let args := goal.getAppArgs
+    if ← isDefEq args[1]! args[2]! then
+      let proof := mkApp (mkConst ``Eq.refl) args[1]!
+      return StepResult.success none proof
+  return StepResult.failure "Goal is not a reflexive equality"
+
+/-- Try a two-step proof: use transitivity of equality -/
+def tryTwoStepProof (goal : Expr) (thm1 thm2 : Name) : MetaM (Option Expr) := do
+  try
+    -- For equality goals a = c, try to prove via a = b and b = c
+    if goal.isAppOfArity ``Eq 3 then
+      let args := goal.getAppArgs
+      let lhs := args[1]!
+      let rhs := args[2]!
+      
+      -- Try thm1 to transform lhs, then thm2 to get to rhs
+      let t1 := mkConst thm1
+      let t2 := mkConst thm2
+      let t1Type ← inferType t1
+      let t2Type ← inferType t2
+      
+      -- Check if t1 applies to lhs and t2 applies to the result
+      if t1Type.isAppOfArity ``Eq 3 && t2Type.isAppOfArity ``Eq 3 then
+        let t1Args := t1Type.getAppArgs
+        let t2Args := t2Type.getAppArgs
+        
+        -- Simple case: if t1 proves lhs = middle and t2 proves middle = rhs
+        if (← isDefEq t1Args[1]! lhs) && (← isDefEq t2Args[2]! rhs) && (← isDefEq t1Args[2]! t2Args[1]!) then
+          -- Build transitivity proof: Eq.trans t1 t2
+          let proof := mkApp2 (mkConst ``Eq.trans) t1 t2
+          IO.println s!"[PROOF-CONSTRUCT] Built transitivity proof with {thm1} and {thm2}"
+          return some proof
+    
+    return none
+  catch _ =>
+    return none
+
+/-- Try multi-step proofs by calling helper functions -/
+def tryMultiStepProof (goal : Expr) (theorems : List Name) : MetaM (Option Expr) := do
+  for thm1 in theorems do
+    for thm2 in theorems do
+      if let some proof ← tryTwoStepProof goal thm1 thm2 then
+        IO.println s!"[PROOF-CONSTRUCT] ✓ Two-step proof: {thm1} then {thm2}"
+        return some proof
+  return none
+
+/-- Attempt to prove a goal using basic proof construction -/
+def constructProof (goal : Expr) (availableTheorems : List Name) (maxSteps : Nat := 5) : MetaM (Option Expr) := do
+  IO.println s!"[PROOF-CONSTRUCT] Attempting to construct proof for goal"
+  
+  -- First, try direct theorem application
+  for thmName in availableTheorems do
+    match ← tryApplyTheorem goal thmName with
+    | StepResult.success none proof =>
+      IO.println s!"[PROOF-CONSTRUCT] ✓ Direct application of {thmName}"
+      return some proof
+    | _ => continue
+  
+  -- Try reflexivity
+  match ← tryRefl goal with
+  | StepResult.success none proof =>
+    IO.println s!"[PROOF-CONSTRUCT] ✓ Proved by reflexivity"
+    return some proof
+  | _ => pure ()
+  
+  -- Try simple two-step proofs  
+  if maxSteps > 1 then
+    if let some proof ← tryMultiStepProof goal availableTheorems then
+      return some proof
+  
+  IO.println s!"[PROOF-CONSTRUCT] ✗ Could not construct proof"
+  return none
+
+/-- Collect available theorems from the environment and discovered concepts -/
+def collectAvailableTheorems (concepts : List ConceptData) : MetaM (List Name) := do
+  let mut theorems := []
+  
+  -- Add known useful theorems
+  let knownTheorems := [
+    ``Nat.add_comm, ``Nat.add_assoc, ``Nat.add_zero, ``Nat.zero_add,
+    ``Nat.mul_comm, ``Nat.mul_assoc, ``Nat.mul_one, ``Nat.one_mul,
+    ``Nat.mul_zero, ``Nat.zero_mul,
+    ``Nat.add_succ, ``Nat.succ_add,
+    ``Nat.gcd_comm, ``Nat.gcd_self, ``Nat.gcd_zero_right
+  ]
+  
+  -- Check which ones exist
+  let env ← getEnv
+  for thmName in knownTheorems do
+    if env.contains thmName then
+      theorems := theorems ++ [thmName]
+  
+  -- Add theorems from discovered concepts
+  for concept in concepts do
+    match concept with
+    | ConceptData.theorem name _ _ _ _ =>
+      -- Convert string name to Name if possible
+      -- For now, skip this as it requires name resolution
+      pure ()
+    | _ => pure ()
+  
+  return theorems
+
 
 /-- Simplified proof goal structure -/
 structure ProofGoal where
@@ -548,10 +685,35 @@ def tryProveGoal (stmt : Expr) : MetaM (Option Expr) := do
   let result ← tryProveConjecture stmt
   if result.isSome then
     IO.println "    [PROOF] Proved with existing mechanism"
+    return result
+  
+  -- Try proof construction as last resort
+  IO.println "    [PROOF] Attempting proof construction"
+  let availableTheorems ← collectAvailableTheorems []
+  let constructionResult ← constructProof stmt availableTheorems
+  if constructionResult.isSome then
+    IO.println "    [PROOF] ✓ Proved via construction"
+    return constructionResult
   else
     IO.println "    [PROOF] Could not prove with available tactics"
-  return result
+    return none
 
+/-- Enhanced version that takes discovered concepts for better theorem collection -/
+def tryProveGoalWithConcepts (stmt : Expr) (concepts : List ConceptData) : MetaM (Option Expr) := do
+  -- First try the standard approach
+  let standardResult ← tryProveGoal stmt
+  if standardResult.isSome then
+    return standardResult
+  
+  -- If that fails, try proof construction with enhanced theorem collection
+  IO.println "    [PROOF] Standard tactics failed, trying construction with discovered concepts"
+  let availableTheorems ← collectAvailableTheorems concepts
+  let constructionResult ← constructProof stmt availableTheorems
+  if constructionResult.isSome then
+    IO.println "    [PROOF] ✓ Proved via construction with discovered concepts"
+    return constructionResult
+  else
+    return none
 
 /-- Simple proof-guided discovery heuristic -/
 def proofGuidedDiscoveryHeuristic : HeuristicFn := fun config concepts => do
@@ -566,8 +728,8 @@ def proofGuidedDiscoveryHeuristic : HeuristicFn := fun config concepts => do
   for goal in goals.take 3 do
     IO.println s!"[PROOF-GUIDED] Attempting goal: {goal.name}"
     
-    -- Try to prove the goal with tactics
-    let proofResult ← tryProveGoal goal.statement
+    -- Try to prove the goal with tactics (pass concepts for enhanced theorem collection)
+    let proofResult ← tryProveGoalWithConcepts goal.statement concepts
     match proofResult with
     | some proof =>
       -- Success! Add as theorem
@@ -658,6 +820,37 @@ def generateProvableStatement (name : String) : MetaM Expr := do
   | _ =>
     -- Fallback to True
     return mkConst ``True
+
+/-- Proof construction heuristic using the local functions -/
+def proofConstructionHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts := []
+  
+  -- Get available theorems
+  let availableTheorems ← collectAvailableTheorems concepts
+  IO.println s!"[PROOF-CONSTRUCT] Available theorems: {availableTheorems.length}"
+  
+  -- Try to prove some simple constructed goals
+  let simpleGoals := [
+    ("reflexivity_zero", mkApp3 (mkConst ``Eq [levelOne]) (mkConst ``Nat) (mkConst ``Nat.zero) (mkConst ``Nat.zero)),
+    ("reflexivity_one", mkApp3 (mkConst ``Eq [levelOne]) (mkConst ``Nat) (mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)) (mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)))
+  ]
+  
+  for (name, goal) in simpleGoals do
+    if let some proof ← constructProof goal availableTheorems then
+      let metadata : ConceptMetadata := {
+        name := name
+        created := 0
+        parent := none
+        interestingness := 0.6
+        useCount := 0
+        successCount := 1
+        specializationDepth := 0
+        generationMethod := "proof_construction"
+      }
+      let concept := ConceptData.theorem name goal proof [] metadata
+      newConcepts := newConcepts ++ [concept]
+  
+  return newConcepts
 
 /-- Goal seeding heuristic - creates interesting goals to prove -/
 def goalSeedingHeuristic : HeuristicFn := fun config concepts => do
