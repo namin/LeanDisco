@@ -387,7 +387,60 @@ def generateHelperLemmas (stmt : Expr) (goalName : String) : MetaM (List Concept
   
   return helpers
 
-/-- Try to prove goals with tactics -/
+/-- Helper to safely find and verify theorem -/
+def tryFindTheorem (thmName : Name) : MetaM (Option Expr) := do
+  try
+    let env ← getEnv
+    if let some info := env.find? thmName then
+      match info with
+      | .thmInfo _ =>
+        return some (mkConst thmName)
+      | _ => return none
+    else
+      return none
+  catch _ => return none
+
+/-- Attempt inductive proof for universal statements over Nat -/
+def tryInductiveProof (stmt : Expr) : MetaM (Option Expr) := do
+  -- Check if statement is of form ∀ n : Nat, P(n)
+  if stmt.isForall then
+    let domain := stmt.bindingDomain!
+    if ← isDefEq domain (mkConst ``Nat) then
+      -- Try to use existing induction theorems
+      let inductionThms := [``Nat.add_comm, ``Nat.mul_comm, ``Nat.add_zero, ``Nat.zero_add, ``Nat.mul_one, ``Nat.one_mul]
+      for thmName in inductionThms do
+        try
+          let thm := mkConst thmName
+          let thmType ← inferType thm
+          if ← isDefEq thmType stmt then
+            IO.println s!"    [PROOF] Found induction theorem {thmName}"
+            return some thm
+        catch _ => continue
+      
+      -- Try more specific induction patterns
+      let stmtStr := toString stmt
+      if contains stmtStr "Nat.add" && contains stmtStr "=" then
+        -- Check for specific addition patterns
+        if contains stmtStr "Nat.zero" then
+          -- This might be n + 0 = n or 0 + n = n
+          if let some thm ← tryFindTheorem ``Nat.add_zero then
+            return some thm
+          if let some thm ← tryFindTheorem ``Nat.zero_add then
+            return some thm
+        
+      if contains stmtStr "Nat.mul" && contains stmtStr "=" then
+        -- Check for specific multiplication patterns
+        if contains stmtStr "succ" && contains stmtStr "zero" then
+          -- This might be n * 1 = n or 1 * n = n  
+          if let some thm ← tryFindTheorem ``Nat.mul_one then
+            return some thm
+          if let some thm ← tryFindTheorem ``Nat.one_mul then
+            return some thm
+      
+      return none
+  return none
+
+/-- Proof tactics with induction and number theory support -/
 def tryProveGoal (stmt : Expr) : MetaM (Option Expr) := do
   -- For True, we can easily construct a proof
   if stmt.isConstOf ``True then
@@ -397,46 +450,99 @@ def tryProveGoal (stmt : Expr) : MetaM (Option Expr) := do
   -- Try to use known Nat theorems
   let stmtStr := toString stmt
   
-  -- Check if this looks like 0 + n = n
-  if contains stmtStr "Nat.zero" && contains stmtStr "Nat.add" then
-    IO.println "    [PROOF] Attempting to use Nat.zero_add"
-    let env ← getEnv
-    if let some info := env.find? ``Nat.zero_add then
-      match info with
-      | .thmInfo val =>
-        IO.println "    [PROOF] Found Nat.zero_add theorem"
-        return some (mkConst ``Nat.zero_add)
-      | _ => pure ()
+  -- GCD theorem matching
+  if contains stmtStr "Nat.gcd" then
+    IO.println "    [PROOF] Attempting GCD theorems"
+    let gcdThms := [``Nat.gcd_comm, ``Nat.gcd_self, ``Nat.gcd_zero_right, ``Nat.gcd_zero_left]
+    for thmName in gcdThms do
+      let env ← getEnv
+      if let some info := env.find? thmName then
+        match info with
+        | .thmInfo _ =>
+          try
+            let thm := mkConst thmName
+            let thmType ← inferType thm
+            if ← isDefEq thmType stmt then
+              IO.println s!"    [PROOF] Found {thmName} theorem"
+              return some thm
+          catch _ => continue
+        | _ => continue
+    
+    -- Try GCD-specific patterns
+    if contains stmtStr "gcd" then
+      -- Try specific GCD identities
+      if contains stmtStr "0" then
+        -- This might be gcd(a, 0) = a or gcd(0, a) = a
+        if let some thm ← tryFindTheorem ``Nat.gcd_zero_right then
+          return some thm
+        if let some thm ← tryFindTheorem ``Nat.gcd_zero_left then
+          return some thm
+      
+      if contains stmtStr "self" || (contains stmtStr "a" && !contains stmtStr "b") then
+        -- This might be gcd(a, a) = a
+        if let some thm ← tryFindTheorem ``Nat.gcd_self then
+          return some thm
   
-  -- Check if this looks like n + 0 = n  
-  if contains stmtStr "Nat.add" && contains stmtStr "Nat.zero" then
-    let env ← getEnv
-    if let some info := env.find? ``Nat.add_zero then
-      match info with
-      | .thmInfo val =>
-        IO.println "    [PROOF] Found Nat.add_zero theorem"
-        return some (mkConst ``Nat.add_zero)
-      | _ => pure ()
+  -- Addition theorem matching
+  if contains stmtStr "Nat.add" then
+    IO.println "    [PROOF] Attempting addition theorems"
+    let addThms := [``Nat.zero_add, ``Nat.add_zero, ``Nat.add_comm, ``Nat.add_assoc]
+    for thmName in addThms do
+      let env ← getEnv
+      if let some info := env.find? thmName then
+        match info with
+        | .thmInfo _ =>
+          try
+            let thm := mkConst thmName
+            let thmType ← inferType thm
+            if ← isDefEq thmType stmt then
+              IO.println s!"    [PROOF] Found {thmName} theorem"
+              return some thm
+          catch _ => continue
+        | _ => continue
   
-  -- Check if this looks like 1 * n = n (represented as succ(0) * n = n)
-  if contains stmtStr "Nat.succ" && contains stmtStr "Nat.mul" && contains stmtStr "Nat.zero" then
-    let env ← getEnv
-    if let some info := env.find? ``Nat.one_mul then
-      match info with
-      | .thmInfo val =>
-        IO.println "    [PROOF] Found Nat.one_mul theorem"
-        return some (mkConst ``Nat.one_mul)
-      | _ => pure ()
+  -- Multiplication theorem matching
+  if contains stmtStr "Nat.mul" then
+    IO.println "    [PROOF] Attempting multiplication theorems"
+    let mulThms := [``Nat.one_mul, ``Nat.mul_one, ``Nat.zero_mul, ``Nat.mul_zero, ``Nat.mul_comm, ``Nat.mul_assoc]
+    for thmName in mulThms do
+      let env ← getEnv
+      if let some info := env.find? thmName then
+        match info with
+        | .thmInfo _ =>
+          try
+            let thm := mkConst thmName
+            let thmType ← inferType thm
+            if ← isDefEq thmType stmt then
+              IO.println s!"    [PROOF] Found {thmName} theorem"
+              return some thm
+          catch _ => continue
+        | _ => continue
   
-  -- Check if this looks like n * 1 = n
-  if contains stmtStr "Nat.mul" && contains stmtStr "Nat.succ" && contains stmtStr "Nat.zero" then
-    let env ← getEnv
-    if let some info := env.find? ``Nat.mul_one then
-      match info with
-      | .thmInfo val =>
-        IO.println "    [PROOF] Found Nat.mul_one theorem"
-        return some (mkConst ``Nat.mul_one)
-      | _ => pure ()
+  -- Modular arithmetic theorem matching
+  if contains stmtStr "Nat.mod" then
+    IO.println "    [PROOF] Attempting modular arithmetic theorems"
+    let modThms := [``Nat.mod_self, ``Nat.zero_mod, ``Nat.mod_mod]
+    for thmName in modThms do
+      let env ← getEnv
+      if let some info := env.find? thmName then
+        match info with
+        | .thmInfo _ =>
+          try
+            let thm := mkConst thmName
+            let thmType ← inferType thm
+            if ← isDefEq thmType stmt then
+              IO.println s!"    [PROOF] Found {thmName} theorem"
+              return some thm
+          catch _ => continue
+        | _ => continue
+  
+  -- Try induction for universal statements
+  if stmt.isForall then
+    IO.println "    [PROOF] Attempting induction for universal statement"
+    let inductionResult ← tryInductiveProof stmt
+    if inductionResult.isSome then
+      return inductionResult
   
   -- Fall back to existing proof mechanism
   let result ← tryProveConjecture stmt
@@ -445,6 +551,7 @@ def tryProveGoal (stmt : Expr) : MetaM (Option Expr) := do
   else
     IO.println "    [PROOF] Could not prove with available tactics"
   return result
+
 
 /-- Simple proof-guided discovery heuristic -/
 def proofGuidedDiscoveryHeuristic : HeuristicFn := fun config concepts => do
