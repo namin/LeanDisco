@@ -5,12 +5,6 @@ namespace LeanDisco.ProofGuidedSimple
 open Lean Meta Elab
 open LeanDisco
 
-/-- Simple failure classification for proof-guided discovery -/
-inductive FailureReason where
-  | missingLemma (description : String) (suggestedName : String)
-  | needsCommutativity (operation : String)
-  | needsAssociativity (operation : String) 
-  | unknown (message : String)
 
 /-- Simplified proof goal structure -/
 structure ProofGoal where
@@ -43,39 +37,353 @@ def getCurrentProofGoals : MetaM (List ProofGoal) := do
   let state ← proofGuidedStateRef.get
   return state.goals
 
-/-- Generate helper lemmas for failed proofs -/
-def generateHelperLemmas (stmt : Expr) : MetaM (List ConceptData) := do
+/-- Classification of proof failures for simple analysis -/
+inductive SimpleFailureReason where
+  | missingCommutativity (operation : String)
+  | missingAssociativity (operation : String)
+  | missingIdentity (operation : String) (identity : String)
+  | needsInduction (variableName : String)
+  | missingLemma (description : String)
+  | typeError (expected : String) (got : String)
+  | unknown (message : String)
+
+/-- Analyze why a proof failed with enhanced pattern recognition -/
+def analyzeFailure (stmt : Expr) (goalName : String) : MetaM SimpleFailureReason := do
   let stmtStr := toString stmt
+  
+  IO.println s!"    [ANALYSIS] Analyzing failure of: {goalName}"
+  IO.println s!"    [ANALYSIS] Statement: {stmtStr.take 100}..."
+  
+  -- Enhanced analysis based on statement structure and goal name
+  if contains stmtStr "=" && contains stmtStr "Nat.add" then
+    if contains goalName "comm" || (contains stmtStr "+" && contains stmtStr "m" && contains stmtStr "n") then
+      IO.println s!"    [ANALYSIS] → Detected missing addition commutativity"
+      return SimpleFailureReason.missingCommutativity "addition"
+    else if contains goalName "assoc" then
+      IO.println s!"    [ANALYSIS] → Detected missing addition associativity"
+      return SimpleFailureReason.missingAssociativity "addition" 
+    else if contains stmtStr "0" || contains stmtStr "zero" then
+      IO.println s!"    [ANALYSIS] → Detected missing addition identity"
+      return SimpleFailureReason.missingIdentity "addition" "zero"
+    else
+      IO.println s!"    [ANALYSIS] → General addition property missing"
+      return SimpleFailureReason.missingLemma "addition property"
+      
+  else if contains stmtStr "=" && contains stmtStr "Nat.mul" then
+    if contains goalName "comm" || (contains stmtStr "*" && contains stmtStr "m" && contains stmtStr "n") then
+      IO.println s!"    [ANALYSIS] → Detected missing multiplication commutativity"
+      return SimpleFailureReason.missingCommutativity "multiplication"
+    else if contains goalName "assoc" then
+      IO.println s!"    [ANALYSIS] → Detected missing multiplication associativity"
+      return SimpleFailureReason.missingAssociativity "multiplication"
+    else if contains stmtStr "succ" && contains stmtStr "zero" then
+      IO.println s!"    [ANALYSIS] → Detected missing multiplication identity"
+      return SimpleFailureReason.missingIdentity "multiplication" "one"
+    else
+      IO.println s!"    [ANALYSIS] → General multiplication property missing"
+      return SimpleFailureReason.missingLemma "multiplication property"
+      
+  else if contains stmtStr "∀" || contains stmtStr "forall" then
+    -- For universal quantifications, we often need induction
+    if contains stmtStr "Nat" then
+      IO.println s!"    [ANALYSIS] → Universal statement over Nat, likely needs induction"
+      return SimpleFailureReason.needsInduction "n"
+    else
+      IO.println s!"    [ANALYSIS] → Universal statement, may need case analysis"
+      return SimpleFailureReason.missingLemma "universal property"
+    
+  else if contains stmtStr "Type" then
+    IO.println s!"    [ANALYSIS] → Type error detected"
+    return SimpleFailureReason.typeError "unknown" "unknown"
+    
+  else
+    IO.println s!"    [ANALYSIS] → Unknown failure pattern"
+    return SimpleFailureReason.unknown stmtStr
+
+/-- Generate commutativity statement for an operation -/
+def generateCommutativityStatement (op : String) : MetaM Expr := do
+  let natType := mkConst ``Nat
+  match op with
+  | "addition" =>
+    -- Generate: ∀ n m : Nat, n + m = m + n
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      mkSafeForall `m natType fun m => do
+        let add := mkConst ``Nat.add
+        let lhs := mkApp2 add n m
+        let rhs := mkApp2 add m n
+        return mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
+  | "multiplication" =>
+    -- Generate: ∀ n m : Nat, n * m = m * n
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      mkSafeForall `m natType fun m => do
+        let mul := mkConst ``Nat.mul
+        let lhs := mkApp2 mul n m
+        let rhs := mkApp2 mul m n
+        return mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
+  | _ =>
+    -- Fallback to True
+    return mkConst ``True
+
+/-- Generate associativity statement for an operation -/
+def generateAssociativityStatement (op : String) : MetaM Expr := do
+  let natType := mkConst ``Nat
+  match op with
+  | "addition" =>
+    -- Generate: ∀ a b c : Nat, (a + b) + c = a + (b + c)
+    mkForallFVars #[] =<< mkSafeForall `a natType fun a => do
+      mkSafeForall `b natType fun b => do
+        mkSafeForall `c natType fun c => do
+          let add := mkConst ``Nat.add
+          let ab := mkApp2 add a b
+          let abc := mkApp2 add ab c
+          let bc := mkApp2 add b c
+          let a_bc := mkApp2 add a bc
+          return mkApp3 (mkConst ``Eq [levelOne]) natType abc a_bc
+  | "multiplication" =>
+    -- Generate: ∀ a b c : Nat, (a * b) * c = a * (b * c)
+    mkForallFVars #[] =<< mkSafeForall `a natType fun a => do
+      mkSafeForall `b natType fun b => do
+        mkSafeForall `c natType fun c => do
+          let mul := mkConst ``Nat.mul
+          let ab := mkApp2 mul a b
+          let abc := mkApp2 mul ab c
+          let bc := mkApp2 mul b c
+          let a_bc := mkApp2 mul a bc
+          return mkApp3 (mkConst ``Eq [levelOne]) natType abc a_bc
+  | _ =>
+    return mkConst ``True
+
+/-- Generate identity statements (both left and right) for an operation -/
+def generateIdentityStatements (op : String) (identity : String) : MetaM (Expr × Expr) := do
+  let natType := mkConst ``Nat
+  match op, identity with
+  | "addition", "zero" =>
+    -- Left: ∀ n : Nat, 0 + n = n
+    let leftStmt ← mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let zero := mkConst ``Nat.zero
+      let add := mkConst ``Nat.add
+      let lhs := mkApp2 add zero n
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+    -- Right: ∀ n : Nat, n + 0 = n  
+    let rightStmt ← mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let zero := mkConst ``Nat.zero
+      let add := mkConst ``Nat.add
+      let lhs := mkApp2 add n zero
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+    return (leftStmt, rightStmt)
+  | "multiplication", "one" =>
+    -- Left: ∀ n : Nat, 1 * n = n
+    let leftStmt ← mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)  -- 1 = succ(0)
+      let mul := mkConst ``Nat.mul
+      let lhs := mkApp2 mul one n
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+    -- Right: ∀ n : Nat, n * 1 = n
+    let rightStmt ← mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)  -- 1 = succ(0)
+      let mul := mkConst ``Nat.mul
+      let lhs := mkApp2 mul n one
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+    return (leftStmt, rightStmt)
+  | _, _ =>
+    -- Fallback
+    let fallback := mkConst ``True
+    return (fallback, fallback)
+
+/-- Generate base case for induction-based proofs -/
+def generateInductionBaseCase (goalName : String) (originalStmt : Expr) : MetaM Expr := do
+  let natType := mkConst ``Nat
+  let zero := mkConst ``Nat.zero
+  
+  -- Try to instantiate the original statement with n = 0
+  -- For now, create a simplified base case
+  if contains goalName "comm" then
+    -- For commutativity: 0 + 0 = 0 + 0 (trivially true)
+    let add := mkConst ``Nat.add
+    let lhs := mkApp2 add zero zero
+    let rhs := mkApp2 add zero zero
+    return mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
+  else
+    -- General case: just True for now
+    return mkConst ``True
+
+/-- Generate inductive step hint for induction-based proofs -/
+def generateInductionStepHint (goalName : String) (originalStmt : Expr) : MetaM Expr := do
+  let natType := mkConst ``Nat
+  
+  -- Generate a hint about the inductive step structure
+  -- For commutativity: if P(n) then P(succ(n))
+  -- This is a meta-level hint, so we'll use True as placeholder
+  -- In a full implementation, this would generate the actual inductive hypothesis
+  return mkConst ``True
+
+/-- Generate targeted lemma based on description -/
+def generateTargetedLemma (desc : String) (originalStmt : Expr) : MetaM Expr := do
+  match desc with
+  | "addition property" =>
+    -- Generate a useful addition property
+    let natType := mkConst ``Nat
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let zero := mkConst ``Nat.zero
+      let add := mkConst ``Nat.add
+      let lhs := mkApp2 add n zero
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "multiplication property" =>
+    -- Generate a useful multiplication property
+    let natType := mkConst ``Nat
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)
+      let mul := mkConst ``Nat.mul
+      let lhs := mkApp2 mul n one
+      return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "universal property" =>
+    -- Generate a universal quantification lemma
+    return mkConst ``True
+  | _ =>
+    -- Fallback
+    return mkConst ``True
+
+/-- Generate targeted helper lemmas based on failure analysis -/
+def generateHelperLemmas (stmt : Expr) (goalName : String) : MetaM (List ConceptData) := do
+  let failureReason ← analyzeFailure stmt goalName
   let mut helpers := []
   
-  -- Simple heuristics based on statement content
-  if contains stmtStr "+" then
-    -- Likely needs addition properties
-    let addCommHelper := ConceptData.conjecture "add_comm_helper" (mkConst ``True) 0.8 {
-      name := "add_comm_helper"
+  match failureReason with
+  | SimpleFailureReason.missingCommutativity op =>
+    -- Generate actual commutativity statement
+    let helperStmt ← generateCommutativityStatement op
+    let helperName := s!"{op}_commutativity_helper"
+    let helper := ConceptData.conjecture helperName helperStmt 0.9 {
+      name := helperName
       created := 0
-      parent := none
+      parent := some goalName
+      interestingness := 0.9
+      useCount := 0
+      successCount := 0
+      specializationDepth := 0
+      generationMethod := s!"failure_analysis_{op}_commutativity"
+    }
+    helpers := helpers ++ [helper]
+    IO.println s!"    → Generated actual {op} commutativity lemma: ∀ n m, n {if op == "addition" then "+" else "*"} m = m {if op == "addition" then "+" else "*"} n"
+    
+  | SimpleFailureReason.missingAssociativity op =>
+    -- Generate actual associativity statement  
+    let helperStmt ← generateAssociativityStatement op
+    let helperName := s!"{op}_associativity_helper"
+    let helper := ConceptData.conjecture helperName helperStmt 0.9 {
+      name := helperName
+      created := 0
+      parent := some goalName
+      interestingness := 0.9
+      useCount := 0
+      successCount := 0
+      specializationDepth := 0
+      generationMethod := s!"failure_analysis_{op}_associativity"
+    }
+    helpers := helpers ++ [helper]
+    IO.println s!"    → Generated actual {op} associativity lemma: ∀ a b c, (a {if op == "addition" then "+" else "*"} b) {if op == "addition" then "+" else "*"} c = a {if op == "addition" then "+" else "*"} (b {if op == "addition" then "+" else "*"} c)"
+    
+  | SimpleFailureReason.missingIdentity op identity =>
+    -- Generate actual identity statements
+    let (leftHelperStmt, rightHelperStmt) ← generateIdentityStatements op identity
+    
+    -- Left identity
+    let leftHelperName := s!"{identity}_{op}_left_identity"
+    let leftHelper := ConceptData.conjecture leftHelperName leftHelperStmt 0.9 {
+      name := leftHelperName
+      created := 0
+      parent := some goalName
+      interestingness := 0.9
+      useCount := 0
+      successCount := 0
+      specializationDepth := 0
+      generationMethod := s!"failure_analysis_{op}_{identity}_left_identity"
+    }
+    helpers := helpers ++ [leftHelper]
+    
+    -- Right identity  
+    let rightHelperName := s!"{op}_{identity}_right_identity"
+    let rightHelper := ConceptData.conjecture rightHelperName rightHelperStmt 0.9 {
+      name := rightHelperName
+      created := 0
+      parent := some goalName
+      interestingness := 0.9
+      useCount := 0
+      successCount := 0
+      specializationDepth := 0
+      generationMethod := s!"failure_analysis_{op}_{identity}_right_identity"
+    }
+    helpers := helpers ++ [rightHelper]
+    
+    IO.println s!"    → Generated {identity} identity lemmas for {op} (both left and right)"
+    
+  | SimpleFailureReason.needsInduction var =>
+    -- Generate useful induction-related lemmas
+    let baseStmt ← generateInductionBaseCase goalName stmt
+    let stepStmt ← generateInductionStepHint goalName stmt
+    
+    let baseName := s!"base_case_for_{goalName}"
+    let baseHelper := ConceptData.conjecture baseName baseStmt 0.8 {
+      name := baseName
+      created := 0
+      parent := some goalName
       interestingness := 0.8
       useCount := 0
       successCount := 0
       specializationDepth := 0
-      generationMethod := "proof_guided_helper"
+      generationMethod := s!"failure_analysis_induction_base"
     }
-    helpers := helpers ++ [addCommHelper]
-  
-  if contains stmtStr "*" then
-    -- Likely needs multiplication properties
-    let mulCommHelper := ConceptData.conjecture "mul_comm_helper" (mkConst ``True) 0.8 {
-      name := "mul_comm_helper"
+    
+    let stepName := s!"induction_step_hint_for_{goalName}"
+    let stepHelper := ConceptData.conjecture stepName stepStmt 0.8 {
+      name := stepName
       created := 0
-      parent := none
+      parent := some goalName
       interestingness := 0.8
       useCount := 0
       successCount := 0
       specializationDepth := 0
-      generationMethod := "proof_guided_helper"
+      generationMethod := s!"failure_analysis_induction_step"
     }
-    helpers := helpers ++ [mulCommHelper]
+    
+    helpers := helpers ++ [baseHelper, stepHelper]
+    IO.println s!"    → Generated induction helpers: base case and step hint for {var}"
+    
+  | SimpleFailureReason.missingLemma desc =>
+    -- Try to generate a more specific lemma based on the description
+    let helperStmt ← generateTargetedLemma desc stmt
+    let helperName := s!"targeted_lemma_for_{goalName}"
+    let helper := ConceptData.conjecture helperName helperStmt 0.7 {
+      name := helperName
+      created := 0
+      parent := some goalName
+      interestingness := 0.7
+      useCount := 0
+      successCount := 0
+      specializationDepth := 0
+      generationMethod := s!"failure_analysis_targeted_lemma"
+    }
+    helpers := helpers ++ [helper]
+    IO.println s!"    → Generated targeted lemma for: {desc}"
+    
+  | SimpleFailureReason.typeError expected got =>
+    IO.println s!"    → Type error analysis: expected {expected}, got {got} - no lemma generated"
+    
+  | SimpleFailureReason.unknown msg =>
+    IO.println s!"    → Unknown failure pattern: {msg.take 50}... - generating diagnostic lemma"
+    let diagnosticStmt := mkConst ``True  -- Fallback placeholder
+    let diagnosticName := s!"diagnostic_lemma_for_{goalName}"
+    let diagnostic := ConceptData.conjecture diagnosticName diagnosticStmt 0.5 {
+      name := diagnosticName
+      created := 0
+      parent := some goalName
+      interestingness := 0.5
+      useCount := 0
+      successCount := 0
+      specializationDepth := 0
+      generationMethod := s!"failure_analysis_diagnostic"
+    }
+    helpers := helpers ++ [diagnostic]
   
   return helpers
 
@@ -176,9 +484,9 @@ def proofGuidedDiscoveryHeuristic : HeuristicFn := fun config concepts => do
       proofGuidedStateRef.set { state with goals := newGoals, completedGoals := newCompleted }
       
     | none =>
-      -- Failed, generate helper conjectures
-      IO.println s!"[PROOF-GUIDED] ✗ Failed: {goal.name}, generating helpers..."
-      let helpers ← generateHelperLemmas goal.statement
+      -- Failed, analyze why and generate targeted helpers
+      IO.println s!"[PROOF-GUIDED] ✗ Failed: {goal.name}, analyzing failure..."
+      let helpers ← generateHelperLemmas goal.statement goal.name
       newConcepts := newConcepts ++ helpers
   
   IO.println s!"[PROOF-GUIDED] Generated {newConcepts.length} concepts"
@@ -219,6 +527,24 @@ def generateProvableStatement (name : String) : MetaM Expr := do
       let mul := mkConst ``Nat.mul
       let lhs := mkApp2 mul n one
       return mkApp3 (mkConst ``Eq [levelOne]) natType lhs n
+  | "add_comm" =>
+    -- Generate: ∀ n m : Nat, n + m = m + n (challenging commutativity)
+    let natType := mkConst ``Nat
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      mkSafeForall `m natType fun m => do
+        let add := mkConst ``Nat.add
+        let lhs := mkApp2 add n m
+        let rhs := mkApp2 add m n
+        return mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
+  | "mul_comm" =>
+    -- Generate: ∀ n m : Nat, n * m = m * n (challenging commutativity)
+    let natType := mkConst ``Nat
+    mkForallFVars #[] =<< mkSafeForall `n natType fun n => do
+      mkSafeForall `m natType fun m => do
+        let mul := mkConst ``Nat.mul
+        let lhs := mkApp2 mul n m
+        let rhs := mkApp2 mul m n
+        return mkApp3 (mkConst ``Eq [levelOne]) natType lhs rhs
   | "simple_true" =>
     -- Just True, should be easily provable
     return mkConst ``True
@@ -236,13 +562,15 @@ def goalSeedingHeuristic : HeuristicFn := fun config concepts => do
   let currentGoals ← getCurrentProofGoals
   if currentGoals.length < 6 then
     
-    -- Define interesting mathematical goals (ordered by likelihood of success)
+    -- Define interesting mathematical goals (mix of provable and challenging ones)
     let goalSpecs := [
       ("simple_true_goal", "simple_true", 0.9),
       ("zero_add_proof", "zero_add", 0.85),
       ("add_zero_proof", "add_zero", 0.85),
       ("one_mul_proof", "one_mul", 0.8),
-      ("mul_one_proof", "mul_one", 0.8)
+      ("mul_one_proof", "mul_one", 0.8),
+      ("add_comm_challenge", "add_comm", 0.9),
+      ("mul_comm_challenge", "mul_comm", 0.85)
     ]
     
     for (goalName, stmtName, priority) in goalSpecs do
