@@ -12,9 +12,9 @@ structure IterationState where
   newConceptsThisIteration : Nat
   concepts : List String  -- Just names for now, full serialization is complex
   topConcepts : List (String × Float)  -- name and interestingness score
-  patterns : List String
-  conjectures : List String
-  theorems : List String
+  patterns : List (String × String)  -- name and description
+  conjectures : List (String × String)  -- name and statement (as string)
+  theorems : List (String × String)  -- name and statement (as string)
   methods : List (String × Nat)  -- generation method and count
 
 /-- Convert KnowledgeBase to a serializable state -/
@@ -27,17 +27,17 @@ def knowledgeBaseToState (kb : KnowledgeBase) (newConcepts : List ConceptData) :
   let topConcepts := (sorted.toList.take 10).map fun c =>
     (getConceptName c, getInterestingness c)
   
-  -- Categorize concepts
+  -- Categorize concepts with details
   let patterns := kb.concepts.filterMap fun c => match c with
-    | ConceptData.pattern name _ _ _ => some name
+    | ConceptData.pattern name desc _ _ => some (name, desc)
     | _ => none
   
   let conjectures := kb.concepts.filterMap fun c => match c with
-    | ConceptData.conjecture name _ _ _ => some name
+    | ConceptData.conjecture name stmt _ _ => some (name, toString stmt)
     | _ => none
   
   let theorems := kb.concepts.filterMap fun c => match c with
-    | ConceptData.theorem name _ _ _ _ => some name
+    | ConceptData.theorem name stmt _ _ _ => some (name, toString stmt)
     | _ => none
   
   -- Count by generation method
@@ -82,17 +82,20 @@ def formatIterationState (state : IterationState) : String :=
   else ""
   
   let recentPatterns := if state.patterns.length > 0 then
-    let patternList := state.patterns.map (s!"  - " ++ ·)
+    let patternList := state.patterns.map fun (name, desc) =>
+      s!"  - {name}: {desc}"
     s!"All Patterns ({state.patterns.length}):\n" ++ String.intercalate "\n" patternList ++ "\n"
   else ""
   
   let recentConjectures := if state.conjectures.length > 0 then
-    let conjList := state.conjectures.map (s!"  - " ++ ·)
+    let conjList := state.conjectures.map fun (name, stmt) =>
+      s!"  - {name}\n    Statement: {stmt}"
     s!"All Conjectures ({state.conjectures.length}):\n" ++ String.intercalate "\n" conjList ++ "\n"
   else ""
   
   let recentTheorems := if state.theorems.length > 0 then
-    let thmList := state.theorems.map (s!"  - " ++ ·)
+    let thmList := state.theorems.map fun (name, stmt) =>
+      s!"  - {name}\n    Statement: {stmt}"
     s!"All Theorems ({state.theorems.length}):\n" ++ String.intercalate "\n" thmList ++ "\n"
   else ""
   
