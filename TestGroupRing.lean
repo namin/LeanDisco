@@ -13,4 +13,4 @@ open LeanDisco.Domains.GroupRing
     maxConceptsPerIteration := 50
     enableConjectures := true
     enablePatternRecognition := true }
-  4  -- iterations
+  20  -- iterations

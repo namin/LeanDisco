@@ -8,9 +8,12 @@ See sample outputs in [log](log) directory.
 
 ## Running
 
-`lake build` builds the system.
-You can use `lake lean TestFiniteFields.lean` as an example for running a `Test*` file directly.
-All these files can also be ran interactively in the VSCode Lean extension.
+`lake build` builds the system. Then, run a test file:
+- `lake lean TestInfiniteNumbers.lean`
+- `lake lean TestFiniteFields.lean`
+- `lake lean TestGroupRing.lean` (slow, but shows incremental progress for each iteration in the [`log`](log) directory, for example [`log/groupring_discovery_iteration_3.txt`](log/groupring_discovery_iteration_3.txt) for iteration 3)
+
+The test files lso run interactively in the VSCode Lean extension.
 
 ## References
 
