@@ -82,18 +82,21 @@ def formatIterationState (state : IterationState) : String :=
   else ""
   
   let recentPatterns := if state.patterns.length > 0 then
-    let patternList := state.patterns.take 5 |>.map (s!"  - " ++ ·)
-    s!"Recent Patterns:\n" ++ String.intercalate "\n" patternList ++ 
-    (if state.patterns.length > 5 then s!"\n  ... and {state.patterns.length - 5} more\n" else "\n")
+    let patternList := state.patterns.map (s!"  - " ++ ·)
+    s!"All Patterns ({state.patterns.length}):\n" ++ String.intercalate "\n" patternList ++ "\n"
   else ""
   
   let recentConjectures := if state.conjectures.length > 0 then
-    let conjList := state.conjectures.take 5 |>.map (s!"  - " ++ ·)
-    s!"Recent Conjectures:\n" ++ String.intercalate "\n" conjList ++ 
-    (if state.conjectures.length > 5 then s!"\n  ... and {state.conjectures.length - 5} more\n" else "\n")
+    let conjList := state.conjectures.map (s!"  - " ++ ·)
+    s!"All Conjectures ({state.conjectures.length}):\n" ++ String.intercalate "\n" conjList ++ "\n"
   else ""
   
-  header ++ summary ++ categoryInfo ++ topConceptsInfo ++ methodsInfo ++ recentPatterns ++ recentConjectures ++ "\n"
+  let recentTheorems := if state.theorems.length > 0 then
+    let thmList := state.theorems.map (s!"  - " ++ ·)
+    s!"All Theorems ({state.theorems.length}):\n" ++ String.intercalate "\n" thmList ++ "\n"
+  else ""
+  
+  header ++ summary ++ categoryInfo ++ topConceptsInfo ++ methodsInfo ++ recentPatterns ++ recentConjectures ++ recentTheorems ++ "\n"
 
 /-- Save iteration state to file -/
 def saveIterationState (state : IterationState) (basePath : String := "log/discovery") : IO Unit := do
