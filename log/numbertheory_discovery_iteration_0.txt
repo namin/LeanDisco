@@ -1,0 +1,98 @@
+=== ITERATION 0 COMPLETE ===
+Total Concepts: 133 (+0 new)
+Patterns: 0
+Conjectures: 0
+Theorems: 39
+Top Concepts:
+  - pattern_importance (score: 1.000000)
+  - add_assoc (score: 1.000000)
+  - add_comm (score: 1.000000)
+  - add_zero (score: 1.000000)
+  - zero_add (score: 1.000000)
+  - mul_assoc (score: 1.000000)
+  - mul_comm (score: 1.000000)
+  - mul_one (score: 1.000000)
+  - one_mul (score: 1.000000)
+  - mul_zero (score: 1.000000)
+Generation Methods:
+  seed: 9
+All Theorems (39):
+  - add_assoc
+    Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
+  - add_comm
+    Statement: forall (n : Nat) (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m n)
+  - add_zero
+    Statement: forall (n : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) n
+  - zero_add
+    Statement: forall (n : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) n) n
+  - mul_assoc
+    Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n m) k) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) m k))
+  - mul_comm
+    Statement: forall (n : Nat) (m : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n m) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) m n)
+  - mul_one
+    Statement: forall (n : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) n
+  - one_mul
+    Statement: forall (n : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1)) n) n
+  - mul_zero
+    Statement: forall (n : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
+  - zero_mul
+    Statement: forall (n : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) n) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
+  - left_distrib
+    Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n m) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n k))
+  - right_distrib
+    Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) n k) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) m k))
+  - dvd_refl
+    Statement: forall (a : Nat), Dvd.dvd.{0} Nat Nat.instDvd a a
+  - dvd_trans
+    Statement: forall {a : Nat} {b : Nat} {c : Nat}, (Dvd.dvd.{0} Nat Nat.instDvd a b) -> (Dvd.dvd.{0} Nat Nat.instDvd b c) -> (Dvd.dvd.{0} Nat Nat.instDvd a c)
+  - dvd_add
+    Statement: forall {a : Nat} {b : Nat} {c : Nat}, (Dvd.dvd.{0} Nat Nat.instDvd a b) -> (Dvd.dvd.{0} Nat Nat.instDvd a c) -> (Dvd.dvd.{0} Nat Nat.instDvd a (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) b c))
+  - dvd_mul
+    Statement: forall {k : Nat} {m : Nat} {n : Nat}, Iff (Dvd.dvd.{0} Nat Nat.instDvd k (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) m n)) (Exists.{1} Nat (fun (k₁ : Nat) => Exists.{1} Nat (fun (k₂ : Nat) => And (Dvd.dvd.{0} Nat Nat.instDvd k₁ m) (And (Dvd.dvd.{0} Nat Nat.instDvd k₂ n) (Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) k₁ k₂) k)))))
+  - gcd_comm
+    Statement: forall (m : Nat) (n : Nat), Eq.{1} Nat (Nat.gcd m n) (Nat.gcd n m)
+  - gcd_assoc
+    Statement: forall (m : Nat) (n : Nat) (k : Nat), Eq.{1} Nat (Nat.gcd (Nat.gcd m n) k) (Nat.gcd m (Nat.gcd n k))
+  - gcd_zero_left
+    Statement: forall (y : Nat), Eq.{1} Nat (Nat.gcd (OfNat.ofNat.{0} ([mdata borrowed:1 Nat]) 0 (instOfNatNat 0)) y) y
+  - gcd_zero_right
+    Statement: forall (n : Nat), Eq.{1} Nat (Nat.gcd n (OfNat.ofNat.{0} ([mdata borrowed:1 Nat]) 0 (instOfNatNat 0))) n
+  - lcm_comm
+    Statement: forall (m : Nat) (n : Nat), Eq.{1} Nat (Nat.lcm m n) (Nat.lcm n m)
+  - lcm_assoc
+    Statement: forall (m : Nat) (n : Nat) (k : Nat), Eq.{1} Nat (Nat.lcm (Nat.lcm m n) k) (Nat.lcm m (Nat.lcm n k))
+  - prime_def
+    Statement: forall {p : Nat}, Iff (Nat.Prime p) (And (LE.le.{0} Nat instLENat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) p) (forall (m : Nat), (Dvd.dvd.{0} Nat Nat.instDvd m p) -> (Or (Eq.{1} Nat m (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (Eq.{1} Nat m p))))
+  - prime_two
+    Statement: Nat.Prime (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
+  - prime_three
+    Statement: Nat.Prime (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - prime_five
+    Statement: Nat.Prime (OfNat.ofNat.{0} Nat 5 (instOfNatNat 5))
+  - prime_seven
+    Statement: Nat.Prime (OfNat.ofNat.{0} Nat 7 (instOfNatNat 7))
+  - mod_mod
+    Statement: forall (a : Nat) (n : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) a n) n) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) a n)
+  - add_mod
+    Statement: forall (a : Nat) (b : Nat) (n : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) a b) n) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) a n) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) b n)) n)
+  - mul_mod
+    Statement: forall (a : Nat) (b : Nat) (n : Nat), Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) a b) n) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) a n) (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) b n)) n)
+  - mod_two_eq_zero_or_one
+    Statement: forall (n : Nat), Or (Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) n (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1)))
+  - fib_zero
+    Statement: Eq.{1} Nat (Nat.fib (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))
+  - fib_one
+    Statement: Eq.{1} Nat (Nat.fib (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
+  - fib_add
+    Statement: forall (m : Nat) (n : Nat), Eq.{1} Nat (Nat.fib (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m n) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1)))) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.fib m) (Nat.fib n)) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (Nat.fib (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1)))) (Nat.fib (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))))))
+  - zero_eq_zero
+    Statement: Eq.{1} Nat Nat.zero Nat.zero
+  - add_comm
+    Statement: forall (n : Nat) (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m n)
+  - zero_add_zero
+    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
+  - one_add_one_eq_two
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - two_add_one_eq_three
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+

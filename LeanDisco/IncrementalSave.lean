@@ -20,34 +20,34 @@ structure IterationState where
 /-- Convert KnowledgeBase to a serializable state -/
 def knowledgeBaseToState (kb : KnowledgeBase) (newConcepts : List ConceptData) : IterationState :=
   let conceptNames := kb.concepts.map getConceptName
-  
+
   -- Get top concepts by interestingness
   let sorted := kb.concepts.toArray.qsort fun c1 c2 =>
     getInterestingness c1 > getInterestingness c2
   let topConcepts := (sorted.toList.take 10).map fun c =>
     (getConceptName c, getInterestingness c)
-  
+
   -- Categorize concepts with details
   let patterns := kb.concepts.filterMap fun c => match c with
     | ConceptData.pattern name desc _ _ => some (name, desc)
     | _ => none
-  
+
   let conjectures := kb.concepts.filterMap fun c => match c with
     | ConceptData.conjecture name stmt _ _ => some (name, toString stmt)
     | _ => none
-  
+
   let theorems := kb.concepts.filterMap fun c => match c with
     | ConceptData.theorem name stmt _ _ _ => some (name, toString stmt)
     | _ => none
-  
+
   -- Count by generation method
-  let allMethods := ["seed", "mined", "application", "specialization", "conjecture", 
+  let allMethods := ["seed", "mined", "application", "specialization", "conjecture",
                      "pattern_recognition", "composition", "lemma_application",
                      "typeclass_specialization", "algebraic_conjecture", "concrete_instance"]
   let methods := allMethods.map fun method =>
     let count := kb.concepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
     (method, count)
-  
+
   { iteration := kb.iteration
     totalConcepts := kb.concepts.length
     newConceptsThisIteration := newConcepts.length
@@ -62,59 +62,59 @@ def knowledgeBaseToState (kb : KnowledgeBase) (newConcepts : List ConceptData) :
 def formatIterationState (state : IterationState) : String :=
   let header := s!"=== ITERATION {state.iteration} COMPLETE ===\n"
   let summary := s!"Total Concepts: {state.totalConcepts} (+{state.newConceptsThisIteration} new)\n"
-  
+
   let categoryInfo := String.join [
     s!"Patterns: {state.patterns.length}\n",
-    s!"Conjectures: {state.conjectures.length}\n", 
+    s!"Conjectures: {state.conjectures.length}\n",
     s!"Theorems: {state.theorems.length}\n"
   ]
-  
+
   let topConceptsInfo := if state.topConcepts.length > 0 then
     let topList := state.topConcepts.map fun (name, score) =>
       s!"  - {name} (score: {score.toString})"
     s!"Top Concepts:\n" ++ String.intercalate "\n" topList ++ "\n"
   else ""
-  
+
   let methodsInfo := if state.methods.length > 0 then
     let methodList := state.methods.map fun (method, count) =>
       s!"  {method}: {count}"
     s!"Generation Methods:\n" ++ String.intercalate "\n" methodList ++ "\n"
   else ""
-  
+
   let recentPatterns := if state.patterns.length > 0 then
     let patternList := state.patterns.map fun (name, desc) =>
       s!"  - {name}: {desc}"
     s!"All Patterns ({state.patterns.length}):\n" ++ String.intercalate "\n" patternList ++ "\n"
   else ""
-  
+
   let recentConjectures := if state.conjectures.length > 0 then
     let conjList := state.conjectures.map fun (name, stmt) =>
       s!"  - {name}\n    Statement: {stmt}"
     s!"All Conjectures ({state.conjectures.length}):\n" ++ String.intercalate "\n" conjList ++ "\n"
   else ""
-  
+
   let recentTheorems := if state.theorems.length > 0 then
     let thmList := state.theorems.map fun (name, stmt) =>
       s!"  - {name}\n    Statement: {stmt}"
     s!"All Theorems ({state.theorems.length}):\n" ++ String.intercalate "\n" thmList ++ "\n"
   else ""
-  
+
   header ++ summary ++ categoryInfo ++ topConceptsInfo ++ methodsInfo ++ recentPatterns ++ recentConjectures ++ recentTheorems ++ "\n"
 
 /-- Save iteration state to file -/
 def saveIterationState (state : IterationState) (basePath : String := "log/discovery") : IO Unit := do
-  let timestamp := ← IO.monoMsNow
-  
+  -- let timestamp := ← IO.monoMsNow
+
   -- Create log directory if it doesn't exist
   let _ ← IO.Process.output { cmd := "mkdir", args := #["-p", "log"] }
-  
+
   -- Save formatted state
   let filename := s!"{basePath}_iteration_{state.iteration}.txt"
   let content := formatIterationState state
   IO.FS.writeFile filename content
-  
+
   -- Also append to a cumulative log
-  let cumulativeFile := s!"{basePath}_full.txt" 
+  let cumulativeFile := s!"{basePath}_full.txt"
   let separator := String.replicate 80 '=' ++ "\n"
   -- Read existing content and append
   let existingContent ← try
@@ -122,15 +122,15 @@ def saveIterationState (state : IterationState) (basePath : String := "log/disco
   catch _ =>
     pure ""
   IO.FS.writeFile cumulativeFile (existingContent ++ content ++ separator)
-  
+
   IO.println s!"[SAVE] Iteration {state.iteration} state saved to {filename}"
 
 /-- Enhanced discovery loop with intermediate saving -/
-partial def discoveryLoopWithSaving 
-    (kb : KnowledgeBase) 
-    (maxIterations : Nat) 
+partial def discoveryLoopWithSaving
+    (kb : KnowledgeBase)
+    (maxIterations : Nat)
     (saveBasePath : String := "log/discovery") : MetaM KnowledgeBase := do
-  
+
   if kb.iteration >= maxIterations then
     return kb
 
@@ -250,11 +250,11 @@ def runDiscoveryCustomWithSaving
     (initialConcepts : List ConceptData)
     (customHeuristics : List (String × HeuristicFn))
     (customEvaluators : List (String × EvaluationFn))
-    (maxIterations : Nat := 10) 
-    (useMining : Bool := false) 
+    (maxIterations : Nat := 10)
+    (useMining : Bool := false)
     (config : DiscoveryConfig := {})
     (saveBasePath : String := "log/discovery") : MetaM Unit := do
-  
+
   IO.println s!"=== Starting {description}Discovery System with Incremental Saving ==="
   IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
   IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
