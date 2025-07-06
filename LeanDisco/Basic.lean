@@ -898,7 +898,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
     -- Count by method manually
     IO.println s!"\n📊 Discovery Summary:"
     let methods := ["specialization", "application", "conjecture", "pattern_recognition",
-                    "lemma_application", "number_generation", "composition", "pattern_extension"]
+                    "lemma_application", "number_generation", "composition", "pattern_extension", "induction_discovery"]
     for method in methods do
       let count := evaluatedConcepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
       if count > 0 then

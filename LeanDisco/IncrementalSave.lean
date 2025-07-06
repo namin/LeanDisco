@@ -43,7 +43,8 @@ def knowledgeBaseToState (kb : KnowledgeBase) (newConcepts : List ConceptData) :
   -- Count by generation method
   let allMethods := ["seed", "mined", "application", "specialization", "conjecture",
                      "pattern_recognition", "composition", "lemma_application",
-                     "typeclass_specialization", "algebraic_conjecture", "concrete_instance"]
+                     "typeclass_specialization", "algebraic_conjecture", "concrete_instance",
+                     "induction_discovery"]
   let methods := allMethods.map fun method =>
     let count := kb.concepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
     (method, count)

@@ -238,7 +238,7 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
   IO.println s!"[BACKWARDS] Generated {newConcepts.length} backwards reasoning concepts"
   return newConcepts
 
-/-- Helper functions to construct theorem expressions -/
+/-- General helper functions for theorem construction -/
 
 -- Helper to create forall expressions
 def mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
@@ -248,143 +248,33 @@ def mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
 def mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
   mkApp3 (mkConst ``Eq [levelOne]) type left right
 
--- Helper to create List Nat type
-def mkListNatType : Expr :=
-  mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-
--- Helper to create Nat type
-def mkNatType : Expr := mkConst ``Nat
-
--- Helper to create List.length application
-def mkListLengthApp (list : Expr) : Expr :=
-  mkApp2 (mkConst ``List.length [levelZero]) (mkConst ``Nat) list
-
--- Helper to create List.append application
-def mkListAppendApp (list1 : Expr) (list2 : Expr) : Expr :=
-  mkApp3 (mkConst ``List.append [levelZero]) (mkConst ``Nat) list1 list2
-
--- Helper to create Nat.add application
-def mkNatAddApp (n1 : Expr) (n2 : Expr) : Expr :=
-  mkApp2 (mkConst ``Nat.add) n1 n2
-
--- Helper to create List.reverse application
-def mkListReverseApp (list : Expr) : Expr :=
-  mkApp2 (mkConst ``List.reverse [levelZero]) (mkConst ``Nat) list
-
--- Helper to create List.map application
-def mkListMapApp (func : Expr) (list : Expr) : Expr :=
-  mkApp4 (mkConst ``List.map [levelZero, levelZero]) (mkConst ``Nat) (mkConst ``Nat) func list
-
--- Create length-append theorem: ∀ l1 l2 : List Nat, length (l1 ++ l2) = length l1 + length l2
-def mkLengthAppendTheorem : MetaM Expr := do
-  let l1Var := mkFVar (FVarId.mk (Name.mkSimple "l1"))
-  let l2Var := mkFVar (FVarId.mk (Name.mkSimple "l2"))
-  
-  let lhsExpr := mkListLengthApp (mkListAppendApp l1Var l2Var)
-  let rhsExpr := mkNatAddApp (mkListLengthApp l1Var) (mkListLengthApp l2Var)
-  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkNatType
-  
-  let l2ForallExpr := mkForallExpr "l2" mkListNatType equalityExpr
-  let l1ForallExpr := mkForallExpr "l1" mkListNatType l2ForallExpr
-  
-  return l1ForallExpr
-
--- Create reverse-reverse theorem: ∀ l : List Nat, reverse (reverse l) = l
-def mkReverseReverseTheorem : MetaM Expr := do
-  let lVar := mkFVar (FVarId.mk (Name.mkSimple "l"))
-  
-  let lhsExpr := mkListReverseApp (mkListReverseApp lVar)
-  let rhsExpr := lVar
-  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkListNatType
-  
-  let forallExpr := mkForallExpr "l" mkListNatType equalityExpr
-  
-  return forallExpr
-
--- Create map-append theorem: ∀ f : Nat → Nat, ∀ l1 l2 : List Nat, map f (l1 ++ l2) = map f l1 ++ map f l2
-def mkMapAppendTheorem : MetaM Expr := do
-  let fVar := mkFVar (FVarId.mk (Name.mkSimple "f"))
-  let l1Var := mkFVar (FVarId.mk (Name.mkSimple "l1"))
-  let l2Var := mkFVar (FVarId.mk (Name.mkSimple "l2"))
-  let natToNatType := Expr.forallE (Name.mkSimple "_") mkNatType mkNatType (BinderInfo.default)
-  
-  let lhsExpr := mkListMapApp fVar (mkListAppendApp l1Var l2Var)
-  let rhsExpr := mkListAppendApp (mkListMapApp fVar l1Var) (mkListMapApp fVar l2Var)
-  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkListNatType
-  
-  let l2ForallExpr := mkForallExpr "l2" mkListNatType equalityExpr
-  let l1ForallExpr := mkForallExpr "l1" mkListNatType l2ForallExpr
-  let fForallExpr := mkForallExpr "f" natToNatType l1ForallExpr
-  
-  return fForallExpr
-
--- Create length-reverse theorem: ∀ l : List Nat, length (reverse l) = length l
-def mkLengthReverseTheorem : MetaM Expr := do
-  let lVar := mkFVar (FVarId.mk (Name.mkSimple "l"))
-  
-  let lhsExpr := mkListLengthApp (mkListReverseApp lVar)
-  let rhsExpr := mkListLengthApp lVar
-  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkNatType
-  
-  let forallExpr := mkForallExpr "l" mkListNatType equalityExpr
-  
-  return forallExpr
-
--- Create append-associativity theorem: ∀ l1 l2 l3 : List Nat, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
-def mkAppendAssocTheorem : MetaM Expr := do
-  let l1Var := mkFVar (FVarId.mk (Name.mkSimple "l1"))
-  let l2Var := mkFVar (FVarId.mk (Name.mkSimple "l2"))
-  let l3Var := mkFVar (FVarId.mk (Name.mkSimple "l3"))
-  
-  let lhsExpr := mkListAppendApp (mkListAppendApp l1Var l2Var) l3Var
-  let rhsExpr := mkListAppendApp l1Var (mkListAppendApp l2Var l3Var)
-  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkListNatType
-  
-  let l3ForallExpr := mkForallExpr "l3" mkListNatType equalityExpr
-  let l2ForallExpr := mkForallExpr "l2" mkListNatType l3ForallExpr
-  let l1ForallExpr := mkForallExpr "l1" mkListNatType l2ForallExpr
-  
-  return l1ForallExpr
-
--- Create length-map theorem: ∀ f : Nat → Nat, ∀ l : List Nat, length (map f l) = length l
-def mkLengthMapTheorem : MetaM Expr := do
-  let fVar := mkFVar (FVarId.mk (Name.mkSimple "f"))
-  let lVar := mkFVar (FVarId.mk (Name.mkSimple "l"))
-  let natToNatType := Expr.forallE (Name.mkSimple "_") mkNatType mkNatType (BinderInfo.default)
-  
-  let lhsExpr := mkListLengthApp (mkListMapApp fVar lVar)
-  let rhsExpr := mkListLengthApp lVar
-  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkNatType
-  
-  let lForallExpr := mkForallExpr "l" mkListNatType equalityExpr
-  let fForallExpr := mkForallExpr "f" natToNatType lForallExpr
-  
-  return fForallExpr
-
-/-- Detect base cases and inductive steps -/
+/-- Detect base cases and inductive steps based on general patterns -/
 def detectInductiveStructure (concepts : List ConceptData) : MetaM (List (String × Bool × List Expr)) := do
   let mut inductiveStructures : List (String × Bool × List Expr) := []
   
   for concept in concepts do
     match concept with
-    | ConceptData.definition name _ expr _ _ _ => do
-      -- Check if this is a base case (involves empty list)
-      if contains name "nil" || contains name "empty" then
+    | ConceptData.definition name _ expr _ _ metadata => do
+      -- Check if this is explicitly marked as a base case or inductive step
+      if contains name "base_case" || contains metadata.generationMethod "base" then
         inductiveStructures := (name, true, [expr]) :: inductiveStructures
-      -- Check if this is an inductive step (involves cons or list construction)
-      else if contains name "cons" || contains name "single" || contains name "append" then
+      else if contains name "inductive_step" || contains metadata.generationMethod "inductive" then
         inductiveStructures := (name, false, [expr]) :: inductiveStructures
-    | ConceptData.conjecture name _ _ _ => do
+      -- General heuristics for base cases (small, simple, foundational)
+      else if metadata.specializationDepth == 0 && 
+              (contains name "zero" || contains name "empty" || contains name "nil" || 
+               contains name "trivial" || contains name "unit") then
+        inductiveStructures := (name, true, [expr]) :: inductiveStructures
+      -- General heuristics for inductive steps (constructors, successors)
+      else if contains name "succ" || contains name "cons" || contains name "step" ||
+              contains name "next" || contains name "build" || contains name "construct" then
+        inductiveStructures := (name, false, [expr]) :: inductiveStructures
+    | ConceptData.conjecture name _ _ metadata => do
       -- Check for explicit base case patterns
-      if contains name "base_case" then
+      if contains name "base_case" || contains metadata.generationMethod "base" then
         inductiveStructures := (name, true, []) :: inductiveStructures
       -- Check for explicit inductive step patterns
-      else if contains name "inductive_step" then
-        inductiveStructures := (name, false, []) :: inductiveStructures
-      -- Check for implicit patterns based on name
-      else if contains name "nil" || contains name "empty" then
-        inductiveStructures := (name, true, []) :: inductiveStructures
-      else if contains name "cons" || contains name "single" || contains name "append" then
+      else if contains name "inductive_step" || contains metadata.generationMethod "inductive" then
         inductiveStructures := (name, false, []) :: inductiveStructures
     | _ => pure ()
   
@@ -403,206 +293,32 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
   
   IO.println s!"[INDUCTION] Found {baseCases.length} base cases and {inductiveSteps.length} inductive steps"
   
-  -- Strategy 3: Look for specific list operation patterns
-  let lengthAppendConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "length" && contains name "append"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "length" && contains name "append"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "length" && contains name "append"
-    | _ => false
+  -- Strategy 3: Look for general operation patterns that suggest inductive structure
+  let operationPatterns := concepts.filter fun c => 
+    let name := getConceptName c
+    -- Look for patterns indicating relationships between operations
+    contains name "_" || contains name "comp" || contains name "combine"
+  
+  -- Look for recurring operation combinations
+  if operationPatterns.length >= 5 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
+    IO.println s!"[INDUCTION] Found {operationPatterns.length} operation pattern concepts with sufficient inductive structure"
     
-  if lengthAppendConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for length-append inductive theorem!"
-    IO.println s!"[INDUCTION] Base cases: {baseCases.length}, Inductive steps: {inductiveSteps.length}"
-    
-    let lengthAppendThm ← mkLengthAppendTheorem
+    -- Generate a general inductive conjecture about operation patterns
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "length_append_inductive" lengthAppendThm 0.95 {
-        name := "length_append_inductive"
+      ConceptData.conjecture "operation_pattern_inductive" (mkConst ``True) 0.85 {
+        name := "operation_pattern_inductive"
         created := 0
         parent := none
-        interestingness := 0.95
+        interestingness := 0.85
         useCount := 0
         successCount := 0
         specializationDepth := 0
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l1 l2 : List Nat, length (l1 ++ l2) = length l1 + length l2"
+    IO.println s!"[INDUCTION] Generated inductive conjecture for operation patterns"
   
-  -- Strategy 4: Reverse-reverse patterns
-  let reverseReverseConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "reverse" && contains name "reverse"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "reverse" && contains name "reverse"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "reverse" && contains name "reverse"
-    | _ => false
-    
-  if reverseReverseConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for reverse-reverse inductive theorem!"
-    
-    let reverseReverseThm ← mkReverseReverseTheorem
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "reverse_reverse_inductive" reverseReverseThm 0.95 {
-        name := "reverse_reverse_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l : List Nat, reverse (reverse l) = l"
-  
-  -- Strategy 5: Map-append patterns
-  let mapAppendConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "map" && contains name "append"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "map" && contains name "append"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "map" && contains name "append"
-    | _ => false
-    
-  if mapAppendConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for map-append inductive theorem!"
-    
-    let mapAppendThm ← mkMapAppendTheorem
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "map_append_inductive" mapAppendThm 0.95 {
-        name := "map_append_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ f : Nat → Nat, ∀ l1 l2 : List Nat, map f (l1 ++ l2) = map f l1 ++ map f l2"
-  
-  -- Strategy 6: Length-reverse patterns (length(reverse(l)) = length(l))
-  let lengthReverseConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "length" && contains name "reverse"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "length" && contains name "reverse"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "length" && contains name "reverse"
-    | _ => false
-    
-  if lengthReverseConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for length-reverse inductive theorem!"
-    
-    let lengthReverseThm ← mkLengthReverseTheorem
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "length_reverse_inductive" lengthReverseThm 0.95 {
-        name := "length_reverse_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l : List Nat, length (reverse l) = length l"
-  
-  -- Strategy 7: Append associativity patterns ((l1++l2)++l3 = l1++(l2++l3))
-  let appendAssocConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "append" && contains name "assoc"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "append" && contains name "assoc"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "append" && contains name "assoc"
-    | _ => false
-    
-  if appendAssocConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for append-associativity inductive theorem!"
-    
-    let appendAssocThm ← mkAppendAssocTheorem
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "append_assoc_inductive" appendAssocThm 0.95 {
-        name := "append_assoc_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l1 l2 l3 : List Nat, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)"
-  
-  -- Strategy 8: Filter-append patterns (filter p (l1++l2) = filter p l1 ++ filter p l2)
-  let filterAppendConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "filter" && contains name "append"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "filter" && contains name "append"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "filter" && contains name "append"
-    | _ => false
-    
-  if filterAppendConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Skipping filter-append theorem (complex expression construction needed)"
-    -- TODO: Implement filter-append theorem construction
-    -- This requires predicate variables and more sophisticated expression building
-  
-  -- Strategy 9: Map composition patterns (map f (map g l) = map (f ∘ g) l)
-  let mapMapConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "map" && contains name "map"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "map" && contains name "map"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "map" && contains name "map"
-    | _ => false
-    
-  if mapMapConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Skipping map-composition theorem (requires function composition)"
-    -- TODO: Implement map f (map g l) = map (f ∘ g) l
-    -- This requires function composition operator and more complex type handling
-  
-  -- Strategy 10: Length-map patterns (length(map f l) = length(l))
-  let lengthMapConcepts := concepts.filter fun c => match c with
-    | ConceptData.conjecture name _ _ _ => 
-      contains name "length" && contains name "map"
-    | ConceptData.theorem name _ _ _ _ => 
-      contains name "length" && contains name "map"
-    | ConceptData.definition name _ _ _ _ _ => 
-      contains name "length" && contains name "map"
-    | _ => false
-    
-  if lengthMapConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for length-map inductive theorem!"
-    
-    let lengthMapThm ← mkLengthMapTheorem
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "length_map_inductive" lengthMapThm 0.95 {
-        name := "length_map_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ f : Nat → Nat, ∀ l : List Nat, length (map f l) = length l"
-  
-  -- Strategy 11: Direct theorem pattern detection (strongest evidence)
+  -- Strategy 4: Direct theorem pattern detection for any domain
   let directTheoremConcepts := concepts.filter fun c => match c with
     | ConceptData.conjecture name _ _ _ => 
       contains name "theorem_" && contains name "_inductive"
@@ -615,6 +331,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
       match concept with
       | ConceptData.conjecture name _ evidence _ =>
         let inductiveName := name.replace "theorem_" ""
+        -- Generate a general placeholder conjecture (domains should provide specific theorems)
         newConcepts := newConcepts ++ [
           ConceptData.conjecture s!"discovered_{inductiveName}" (mkConst ``True) 0.98 {
             name := s!"discovered_{inductiveName}"
@@ -627,23 +344,26 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
             generationMethod := "induction_discovery"
           }
         ]
-        IO.println s!"[INDUCTION] Generated inductive theorem from pattern: {name}"
+        IO.println s!"[INDUCTION] Generated inductive conjecture from pattern: {name}"
       | _ => pure ()
 
-  -- Strategy 12: Natural number induction patterns
-  let succAddConcepts := concepts.filter fun c => match c with
+  -- Strategy 5: Constructor-operation patterns (successor, cons, etc.)
+  let constructorOpConcepts := concepts.filter fun c => match c with
     | ConceptData.conjecture name _ _ _ => 
-      contains name "succ" && contains name "add"
+      (contains name "succ" || contains name "cons" || contains name "next") &&
+      (contains name "add" || contains name "append" || contains name "combine")
     | ConceptData.theorem name _ _ _ _ => 
-      contains name "succ" && contains name "add"
+      (contains name "succ" || contains name "cons" || contains name "next") &&
+      (contains name "add" || contains name "append" || contains name "combine")
     | _ => false
     
-  if succAddConcepts.length >= 2 then
-    IO.println s!"[INDUCTION] Found {succAddConcepts.length} successor-addition patterns"
+  if constructorOpConcepts.length >= 2 then
+    IO.println s!"[INDUCTION] Found {constructorOpConcepts.length} constructor-operation patterns"
     
+    -- Generate a general inductive pattern conjecture
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "add_succ_inductive" (mkConst ``True) 0.90 {
-        name := "add_succ_inductive"
+      ConceptData.conjecture "constructor_operation_inductive" (mkConst ``True) 0.90 {
+        name := "constructor_operation_inductive"
         created := 0
         parent := none
         interestingness := 0.90
@@ -653,7 +373,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated natural number inductive theorem: n + succ(m) = succ(n + m)"
+    IO.println s!"[INDUCTION] Generated constructor-operation inductive pattern"
   
   IO.println s!"[INDUCTION] Generated {newConcepts.length} sophisticated inductive concepts"
   IO.println s!"[INDUCTION] Enhanced with structural analysis, base case detection, and real theorem generation"
