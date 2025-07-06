@@ -307,6 +307,11 @@ def runDiscoveryCustomWithSaving
   IO.println s!"\nInitial concepts ({kb.concepts.length}):"
   showConceptStats kb.concepts
 
+  -- Reset the cumulative log file before starting
+  let cumulativeFile := s!"{saveBasePath}_full.txt"
+  IO.FS.writeFile cumulativeFile ""
+  IO.println s!"[RESET] Cleared cumulative log file: {cumulativeFile}"
+
   -- Save initial state
   let initialState := knowledgeBaseToState kb []
   saveIterationState initialState saveBasePath
