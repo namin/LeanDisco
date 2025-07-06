@@ -1,0 +1,47 @@
+=== ITERATION 0 COMPLETE ===
+Total Concepts: 51 (+0 new)
+Patterns: 0
+Conjectures: 8
+Theorems: 5
+Top Concepts:
+  - pattern_importance (score: 1.000000)
+  - empty_list (score: 1.000000)
+  - two (score: 1.000000)
+  - one_add_one_eq_two (score: 1.000000)
+  - add (score: 1.000000)
+  - pattern_recognition (score: 1.000000)
+  - two_add_one_eq_three (score: 1.000000)
+  - zero (score: 1.000000)
+  - succ (score: 1.000000)
+  - one (score: 1.000000)
+Generation Methods:
+  seed: 31
+All Conjectures (8):
+  - length_append_example_1
+    Statement: True
+  - length_append_example_2
+    Statement: True
+  - length_append_example_3
+    Statement: True
+  - reverse_reverse_example_1
+    Statement: True
+  - reverse_reverse_example_2
+    Statement: True
+  - reverse_reverse_example_3
+    Statement: True
+  - map_append_example_1
+    Statement: True
+  - map_append_example_2
+    Statement: True
+All Theorems (5):
+  - zero_eq_zero
+    Statement: Eq.{1} Nat Nat.zero Nat.zero
+  - add_comm
+    Statement: forall (n : Nat) (m : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m n)
+  - zero_add_zero
+    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
+  - one_add_one_eq_two
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
+  - two_add_one_eq_three
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+

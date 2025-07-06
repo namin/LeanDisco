@@ -1,0 +1,12 @@
+FINAL DISCOVERY SUMMARY
+=======================
+Total Iterations: 3
+Final Concept Count: 211
+Patterns Found: 7
+Top Scoring Concepts: [(two, 1.000000), (empty_list, 1.000000), (two_add_one_eq_three, 1.000000), (pattern_recognition, 1.000000), (add, 1.000000)]
+
+Generation Method Distribution:
+  seed: 31
+  pattern_recognition: 1
+  composition: 60
+  lemma_application: 3
