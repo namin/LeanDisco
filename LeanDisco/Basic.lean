@@ -489,12 +489,34 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
     if shouldKeep then
       result := c :: result
       keepCount := keepCount + 1
+      debugPrint false s!"[HASH_DEDUP] Keeping {cName}: {keepReason}"
     else
       duplicateCount := duplicateCount + 1
       debugPrint false s!"[HASH_DEDUP] Rejecting {cName}: {keepReason}"
 
   let endTime ← IO.monoMsNow
   let duration := endTime - startTime
+  
+  -- Summary logging
+  let existingSize := existing.length
+  let nameHashSize := existingNames.size
+  let exprHashSize := exprHashes.size
+  
+  if duplicateCount == newConcepts.length && newConcepts.length > 0 then
+    IO.println s!"[HASH_DEDUP] WARNING: 100% rejection rate! Existing DB: {existingSize} concepts, {nameHashSize} names, {exprHashSize} expressions"
+    -- Sample a few rejected concepts for analysis
+    for i in [:min 3 newConcepts.length] do
+      if h : i < newConcepts.length then
+        let c := newConcepts[i]
+        let cName := getConceptName c
+        match c with
+        | ConceptData.definition _ _ _ _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (definition)"
+        | ConceptData.theorem _ _ _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (theorem)"
+        | ConceptData.conjecture _ _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (conjecture)"
+        | ConceptData.pattern _ _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (pattern)"
+        | ConceptData.heuristicRef _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (heuristic)"
+        | ConceptData.taskRef _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (task)"
+  
   IO.println s!"[HASH_DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates in {duration}ms"
   return result.reverse
 
@@ -1216,12 +1238,14 @@ def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
 
                   let newProof := proof
                   let newName := thName ++ "_on_" ++ getConceptName tgt
-                  let newMeta := { metadata with
-                    name := newName,
-                    parent := some thName,
-                    generationMethod := "lemma_application"
-                  }
-                  out := out ++ [ConceptData.theorem newName newStmt newProof deps newMeta]
+                  -- Check if this concept already exists
+                  if !concepts.any (fun c => getConceptName c == newName) then
+                    let newMeta := { metadata with
+                      name := newName,
+                      parent := some thName,
+                      generationMethod := "lemma_application"
+                    }
+                    out := out ++ [ConceptData.theorem newName newStmt newProof deps newMeta]
               catch e =>
                 debugPrint false s!"[DEBUG][lemma_application] isDefEq failed"
                 pure ()
@@ -1252,14 +1276,17 @@ def patternGuidedHeuristic : HeuristicFn := fun config concepts => do
 
       -- Generate the next few numbers in the sequence
       for i in [maxNum + 1:min (maxNum + 3) 15] do  -- Increased limit
-        let numExpr := (List.range i).foldl (fun acc _ =>
-          mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
-        let newConcept := ConceptData.definition s!"num_{i}"
-          (mkConst ``Nat) numExpr none []
-          { name := s!"num_{i}", created := 0, parent := some "natural_number_sequence",
-            interestingness := 0.6, useCount := 0, successCount := 0,
-            specializationDepth := 0, generationMethod := "pattern_extension" }
-        newConcepts := newConcepts ++ [newConcept]
+        let conceptName := s!"num_{i}"
+        -- Check if this concept already exists
+        if !concepts.any (fun c => getConceptName c == conceptName) then
+          let numExpr := (List.range i).foldl (fun acc _ =>
+            mkApp (mkConst ``Nat.succ) acc) (mkConst ``Nat.zero)
+          let newConcept := ConceptData.definition conceptName
+            (mkConst ``Nat) numExpr none []
+            { name := conceptName, created := 0, parent := some "natural_number_sequence",
+              interestingness := 0.6, useCount := 0, successCount := 0,
+              specializationDepth := 0, generationMethod := "pattern_extension" }
+          newConcepts := newConcepts ++ [newConcept]
 
     | ConceptData.pattern name desc instances metadata =>
       -- For function iteration patterns, try to continue the iteration
@@ -1330,23 +1357,25 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
           hasSequence := true
 
       if hasSequence && sequenceNames.length >= 3 then
-        let patternMeta := {
-          name := "natural_number_sequence"
-          created := 0
-          parent := none
-          interestingness := 0.8
-          useCount := 0
-          successCount := 0
-          specializationDepth := 0
-          generationMethod := "pattern_recognition"
-        }
-        patterns := patterns ++ [
-          ConceptData.pattern
-            "natural_number_sequence"
-            "Sequence: 0, 1, 2, ... (natural numbers via successor)"
-            sequenceNames
-            patternMeta
-        ]
+        -- Check if this pattern already exists
+        if !concepts.any (fun c => getConceptName c == "natural_number_sequence") then
+          let patternMeta := {
+            name := "natural_number_sequence"
+            created := 0
+            parent := none
+            interestingness := 0.8
+            useCount := 0
+            successCount := 0
+            specializationDepth := 0
+            generationMethod := "pattern_recognition"
+          }
+          patterns := patterns ++ [
+            ConceptData.pattern
+              "natural_number_sequence"
+              "Sequence: 0, 1, 2, ... (natural numbers via successor)"
+              sequenceNames
+              patternMeta
+          ]
 
     -- Look for function iteration patterns
     let applications := concepts.filter fun c => match c with
@@ -1371,20 +1400,23 @@ def patternRecognitionHeuristic : HeuristicFn := fun config concepts => do
 
       for (func, apps) in functionApplications do
         if apps.length >= 2 then
-          let patternMeta := {
-            name := s!"{func}_iteration_pattern"
-            created := 0
-            parent := none
-            interestingness := 0.7
-            useCount := 0
-            successCount := 0
-            specializationDepth := 0
-            generationMethod := "pattern_recognition"
-          }
-          patterns := patterns ++ [
-            ConceptData.pattern
-              s!"{func}_iteration_pattern"
-              s!"Repeated application of {func}"
+          let patternName := s!"{func}_iteration_pattern"
+          -- Check if this pattern already exists
+          if !concepts.any (fun c => getConceptName c == patternName) then
+            let patternMeta := {
+              name := patternName
+              created := 0
+              parent := none
+              interestingness := 0.7
+              useCount := 0
+              successCount := 0
+              specializationDepth := 0
+              generationMethod := "pattern_recognition"
+            }
+            patterns := patterns ++ [
+              ConceptData.pattern
+                patternName
+                s!"Repeated application of {func}"
               apps
               patternMeta
           ]
