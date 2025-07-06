@@ -427,6 +427,77 @@ def deduplicateWithWeakerNormalization (existing : List ConceptData) (newConcept
   IO.println s!"[DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates"
   return result.reverse
 
+/-- Simple hash-based deduplication using built-in data structures -/
+def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List ConceptData) : MetaM (List ConceptData) := do
+  let startTime ← IO.monoMsNow
+  let mut result : List ConceptData := []
+  let mut duplicateCount := 0
+  let mut keepCount := 0
+  
+  -- Build name-based lookup set (O(n) setup cost)
+  let existingNames := existing.map getConceptName |>.foldl (fun acc name => acc.insert name ()) (RBMap.empty : RBMap String Unit compare)
+  
+  -- Build expression hash lookup for existing concepts
+  let mut exprHashes : RBMap UInt64 (String × Expr) compare := RBMap.empty
+  for concept in existing do
+    if let some expr := getConceptExpr concept then
+      try
+        let normalizedExpr ← whnf expr
+        let exprHash := hash normalizedExpr
+        exprHashes := exprHashes.insert exprHash (getConceptName concept, normalizedExpr)
+      catch _ =>
+        -- If normalization fails, use original expression
+        let exprHash := hash expr
+        exprHashes := exprHashes.insert exprHash (getConceptName concept, expr)
+  
+  -- Process each new concept with O(log n) lookups
+  for c in newConcepts do
+    let cName := getConceptName c
+    let mut shouldKeep := true
+    let mut keepReason := "new"
+    
+    -- Level 1: O(log n) name-based duplicate check
+    if existingNames.contains cName then
+      shouldKeep := false
+      keepReason := "name_duplicate"
+    else
+      -- Level 2: For concepts with expressions, check normalized form
+      match c with
+      | ConceptData.pattern _ _ _ _ 
+      | ConceptData.conjecture _ _ _ _
+      | ConceptData.heuristicRef _ _ _ 
+      | ConceptData.taskRef _ _ _ =>
+        -- These types only need name checking
+        shouldKeep := true
+      | _ =>
+        -- Level 3: Expression-based deduplication for definitions/theorems
+        if let some expr := getConceptExpr c then
+          try
+            let normalizedExpr ← whnf expr
+            let exprHash := hash normalizedExpr
+            
+            -- O(log n) hash lookup for normalized expressions
+            if let some (existingName, existingExpr) := exprHashes.find? exprHash then
+              -- Double-check with structural equality to handle hash collisions
+              if normalizedExpr == existingExpr then
+                shouldKeep := false
+                keepReason := s!"expression_duplicate_of_{existingName}"
+          catch _ =>
+            -- If normalization fails, keep the concept
+            shouldKeep := true
+
+    if shouldKeep then
+      result := c :: result
+      keepCount := keepCount + 1
+    else
+      duplicateCount := duplicateCount + 1
+      debugPrint false s!"[HASH_DEDUP] Rejecting {cName}: {keepReason}"
+
+  let endTime ← IO.monoMsNow
+  let duration := endTime - startTime
+  IO.println s!"[HASH_DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates in {duration}ms"
+  return result.reverse
+
 /-- Filter concepts by specialization depth -/
 def filterByDepth (maxDepth : Nat) (concepts : List ConceptData) : List ConceptData :=
   concepts.filter fun c =>
@@ -458,11 +529,11 @@ def cleanupConcepts (config : DiscoveryConfig) (existing : List ConceptData) (ne
     cleaned ← cleaned.mapM canonicalizeConcept
     debugPrint config.enableDebugOutput s!"[CLEANUP] After canonicalizeConcepts: {cleaned.length} concepts"
 
-  -- WEAKER NORMALIZATION DEDUPLICATION instead of aggressive deduplication
+  -- OPTIMIZED HASH-BASED DEDUPLICATION
   if config.deduplicateConcepts then
-    debugPrint config.enableDebugOutput s!"[CLEANUP] Starting weaker normalization deduplication..."
-    cleaned ← deduplicateWithWeakerNormalization existing cleaned
-    debugPrint config.enableDebugOutput s!"[CLEANUP] After weaker deduplication: {cleaned.length} concepts"
+    debugPrint config.enableDebugOutput s!"[CLEANUP] Starting hash-based deduplication..."
+    cleaned ← deduplicateWithHashLookup existing cleaned
+    debugPrint config.enableDebugOutput s!"[CLEANUP] After hash deduplication: {cleaned.length} concepts"
 
   -- Special deduplication for patterns - check by name only
   let cleanedPatterns := cleaned.filter fun c => match c with
