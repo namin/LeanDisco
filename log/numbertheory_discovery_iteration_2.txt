@@ -1,8 +1,8 @@
 === ITERATION 2 COMPLETE ===
-Total Concepts: 489 (+214 new)
+Total Concepts: 476 (+210 new)
 Patterns: 9
 Conjectures: 121
-Theorems: 198
+Theorems: 185
 Top Concepts:
   - nat_32 (score: 1.000000)
   - add_assoc (score: 1.000000)
@@ -20,7 +20,7 @@ Generation Methods:
   specialization: 100
   pattern_recognition: 2
   composition: 56
-  lemma_application: 47
+  lemma_application: 43
 All Patterns (9):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_add_assoc: Variation pattern based on theorem add_assoc
@@ -274,7 +274,7 @@ All Conjectures (121):
     Statement: True
   - extension_two_add_one_eq_three
     Statement: True
-All Theorems (198):
+All Theorems (185):
   - add_assoc
     Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
   - add_comm
@@ -475,28 +475,10 @@ All Theorems (198):
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - two_add_one_eq_three_on_prime_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_zero_add_zero_via_add
-    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
-  - intermediate_for_zero_add_zero_via_zero
-    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
   - dual_of_zero_add_zero
     Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
-  - intermediate_for_one_add_one_eq_two_via_add
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - intermediate_for_one_add_one_eq_two_via_one
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - intermediate_for_one_add_one_eq_two_via_two
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
   - dual_of_one_add_one_eq_two
     Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - intermediate_for_two_add_one_eq_three_via_add
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_two
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_one
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_succ
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - dual_of_two_add_one_eq_three
     Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - left_distrib_spec_nat_0
@@ -660,14 +642,6 @@ All Theorems (198):
   - two_add_one_eq_three_on_nat_3_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - two_add_one_eq_three_on_prime_3_on_num_3
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_add_on_num_3
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_two_on_num_3
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_one_on_num_3
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - intermediate_for_two_add_one_eq_three_via_succ_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - dual_of_two_add_one_eq_three_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))

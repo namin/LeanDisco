@@ -1241,19 +1241,23 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
                 let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
                 for (idx, cand) in candidates do
                   let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
-                  let ev   ← calculateConjectureEvidence stmt kb
-                  conjectures := conjectures ++
-                    [ ConceptData.conjecture
-                        s!"{f₁}_comp_{f₂}_eq_{idx}"
-                        stmt ev
-                        { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
-                          created            := 0
-                          parent             := none
-                          interestingness    := 0.7
-                          useCount           := 0
-                          successCount       := 0
-                          specializationDepth:= 1
-                          generationMethod   := "composition_pattern" } ]
+                  let isValid ← isWellFormedConjecture stmt
+                  if isValid then
+                    let ev   ← calculateConjectureEvidence stmt kb
+                    conjectures := conjectures ++
+                      [ ConceptData.conjecture
+                          s!"{f₁}_comp_{f₂}_eq_{idx}"
+                          stmt ev
+                          { name               := s!"{f₁}_comp_{f₂}_eq_{idx}"
+                            created            := 0
+                            parent             := none
+                            interestingness    := 0.7
+                            useCount           := 0
+                            successCount       := 0
+                            specializationDepth:= 1
+                            generationMethod   := "composition_pattern" } ]
+                  else
+                    IO.println s!"[COMPOSITION] Skipping malformed conjecture: {f₁}_comp_{f₂}_eq_{idx}"
           | _ => pure ()
 
     -- PATTERN 2: Preservation: theorems × functions (once)

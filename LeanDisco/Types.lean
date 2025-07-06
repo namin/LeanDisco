@@ -189,6 +189,50 @@ structure KnowledgeBase where
   failedProofs : List FailedAttempt := []
   proofContext : ProofContext := {}
 
+-- Conjecture validation function
+def isWellFormedConjecture (stmt : Expr) : MetaM Bool := do
+  try
+    -- Check if the statement has metavariables (incomplete)
+    if stmt.hasExprMVar then return false
+    
+    -- Check for basic well-formedness: no loose bound variables
+    if stmt.hasLooseBVars then return false
+    
+    -- Check that it's not just a constant True/False
+    if stmt.isConstOf ``True || stmt.isConstOf ``False then return false
+    
+    -- Special check for Eq expressions (common malformation)
+    match stmt with
+    | Expr.app (Expr.app (Expr.app eq_const typ) lhs) rhs =>
+      -- This is a complete equality - check both sides are valid
+      let _ ← inferType lhs
+      let _ ← inferType rhs
+      -- Check they're not the same (trivial)
+      if ← isDefEq lhs rhs then return false
+      return true
+    | Expr.app (Expr.app eq_const _) _ =>
+      -- Partial equality application - malformed
+      IO.println s!"[VALIDATION] Rejecting partial equality: {stmt}"
+      return false
+    | Expr.app eq_const _ =>
+      -- Single application of Eq - malformed
+      IO.println s!"[VALIDATION] Rejecting single Eq application: {stmt}"
+      return false
+    | _ =>
+      -- Try to infer the type for other expressions
+      let type ← inferType stmt
+      
+      -- Check if it's a proposition (Sort 0)
+      let isProp ← isType type
+      if !isProp then 
+        IO.println s!"[VALIDATION] Rejecting non-proposition: {stmt}"
+        return false
+      
+      return true
+  catch _ => 
+    IO.println s!"[VALIDATION] Rejecting due to error: {stmt}"
+    return false
+
 /-- Conjecture proving with multiple strategies -/
 def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) := do
   -- Create proof context from knowledge base

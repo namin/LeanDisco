@@ -59,18 +59,22 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
     let lemmaName := s!"lemma_for_{conjName}"
     if !concepts.any (fun c => getConceptName c == lemmaName) then
       -- Create a supporting lemma conjecture (simplified approach)
-      newConcepts := newConcepts ++ [
-        ConceptData.conjecture lemmaName conjStatement (evidence * 0.9) {
-          name := lemmaName
-          created := 0
-          parent := some conjName
-          interestingness := evidence * 0.95
-          useCount := 0
-          successCount := 0
-          specializationDepth := conjMeta.specializationDepth + 1
-          generationMethod := "goal_directed_lemma"
-        }
-      ]
+      let isValid ← isWellFormedConjecture conjStatement
+      if isValid then
+        newConcepts := newConcepts ++ [
+          ConceptData.conjecture lemmaName conjStatement (evidence * 0.9) {
+            name := lemmaName
+            created := 0
+            parent := some conjName
+            interestingness := evidence * 0.95
+            useCount := 0
+            successCount := 0
+            specializationDepth := conjMeta.specializationDepth + 1
+            generationMethod := "goal_directed_lemma"
+          }
+        ]
+      else
+        IO.println s!"[GOAL-DIRECTED] Skipping malformed conjecture: {lemmaName}"
 
     -- Strategy 2: Generate intermediate steps by analyzing the statement structure
     match conjStatement with
@@ -90,35 +94,43 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
         for termName in suitableTerms.take 3 do
           let specName := s!"{conjName}_spec_{termName}"
           if !concepts.any (fun c => getConceptName c == specName) then
-            newConcepts := newConcepts ++ [
-              ConceptData.conjecture specName body (evidence * 0.8) {
-                name := specName
-                created := 0
-                parent := some conjName
-                interestingness := evidence * 0.85
-                useCount := 0
-                successCount := 0
-                specializationDepth := conjMeta.specializationDepth + 1
-                generationMethod := "goal_directed_specialization"
-              }
-            ]
+            let isValid ← isWellFormedConjecture body
+            if isValid then
+              newConcepts := newConcepts ++ [
+                ConceptData.conjecture specName body (evidence * 0.8) {
+                  name := specName
+                  created := 0
+                  parent := some conjName
+                  interestingness := evidence * 0.85
+                  useCount := 0
+                  successCount := 0
+                  specializationDepth := conjMeta.specializationDepth + 1
+                  generationMethod := "goal_directed_specialization"
+                }
+              ]
+            else
+              IO.println s!"[GOAL-DIRECTED] Skipping malformed specialization: {specName}"
     | _ => pure ()
 
     -- Strategy 3: Generate inverse or dual concepts
     let inverseName := s!"inverse_{conjName}"
     if !concepts.any (fun c => getConceptName c == inverseName) then
-      newConcepts := newConcepts ++ [
-        ConceptData.conjecture inverseName conjStatement (evidence * 0.7) {
-          name := inverseName
-          created := 0
-          parent := some conjName
-          interestingness := evidence * 0.8
-          useCount := 0
-          successCount := 0
-          specializationDepth := conjMeta.specializationDepth + 1
-          generationMethod := "goal_directed_inverse"
-        }
-      ]
+      let isValid ← isWellFormedConjecture conjStatement
+      if isValid then
+        newConcepts := newConcepts ++ [
+          ConceptData.conjecture inverseName conjStatement (evidence * 0.7) {
+            name := inverseName
+            created := 0
+            parent := some conjName
+            interestingness := evidence * 0.8
+            useCount := 0
+            successCount := 0
+            specializationDepth := conjMeta.specializationDepth + 1
+            generationMethod := "goal_directed_inverse"
+          }
+        ]
+      else
+        IO.println s!"[GOAL-DIRECTED] Skipping malformed inverse: {inverseName}"
 
   -- Strategy 4: Generate concepts to fill gaps identified in failed proofs
   let failedProofPatterns := concepts.filterMap fun c => match c with
@@ -168,18 +180,22 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
       let intermediateName := s!"intermediate_for_{thmName}_via_{dep}"
       if !concepts.any (fun c => getConceptName c == intermediateName) then
         -- Create an intermediate theorem conjecture
-        newConcepts := newConcepts ++ [
-          ConceptData.conjecture intermediateName statement 0.8 {
-            name := intermediateName
-            created := 0
-            parent := some thmName
-            interestingness := 0.85
-            useCount := 0
-            successCount := 0
-            specializationDepth := metadata.specializationDepth + 1
-            generationMethod := "backwards_reasoning_intermediate"
-          }
-        ]
+        let isValid ← isWellFormedConjecture statement
+        if isValid then
+          newConcepts := newConcepts ++ [
+            ConceptData.conjecture intermediateName statement 0.8 {
+              name := intermediateName
+              created := 0
+              parent := some thmName
+              interestingness := 0.85
+              useCount := 0
+              successCount := 0
+              specializationDepth := metadata.specializationDepth + 1
+              generationMethod := "backwards_reasoning_intermediate"
+            }
+          ]
+        else
+          IO.println s!"[BACKWARDS] Skipping malformed intermediate: {intermediateName}"
 
     -- Strategy 2: Generate helper lemmas by analyzing statement structure
     match statement with
