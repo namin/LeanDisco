@@ -14,5 +14,5 @@ Generation Method Distribution:
   composition: 174
   lemma_application: 124
   typeclass_specialization: 2
-  algebraic_conjecture: 2
+  algebraic_conjecture: 1
   concrete_instance: 1

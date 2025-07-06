@@ -1,8 +1,8 @@
 === ITERATION 4 COMPLETE ===
 Total Concepts: 1341 (+227 new)
 Patterns: 18
-Conjectures: 243
-Theorems: 565
+Conjectures: 242
+Theorems: 566
 Top Concepts:
   - add_comm (score: 1.000000)
   - zero (score: 1.000000)
@@ -23,7 +23,7 @@ Generation Methods:
   composition: 174
   lemma_application: 124
   typeclass_specialization: 2
-  algebraic_conjecture: 2
+  algebraic_conjecture: 1
   concrete_instance: 1
 All Patterns (18):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
@@ -44,7 +44,7 @@ All Patterns (18):
   - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (50 concepts)
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_zero_eq_zero: Revived: Variation pattern based on theorem zero_eq_zero
-All Conjectures (243):
+All Conjectures (242):
   - function_lemma_for_zero_add_zero
     Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero)
   - function_lemma_for_one_add_one_eq_two
@@ -427,8 +427,6 @@ All Conjectures (243):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
   - add1_compose_add2_preserves_add_comm_spec_zero_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) (Nat.succ Nat.zero))
-  - nat_mul_zero_conjecture
-    Statement: forall (n : Nat), Eq.{1} Nat (Nat.mul n Nat.zero) Nat.zero
   - nat_mul_comm_conjecture
     Statement: forall (a : Nat) (b : Nat), Eq.{1} Nat (Nat.mul a b) (Nat.mul b a)
   - succ_compose_succ_compose_add1_preserves_add_comm_spec_zero_maybe
@@ -531,7 +529,7 @@ All Conjectures (243):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 1 x))) (Nat.succ Nat.zero))
   - add2_compose_succ_compose_add2_preserves_add_comm_spec_zero_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 2 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 2 x))) (Nat.succ Nat.zero))
-All Theorems (565):
+All Theorems (566):
   - zero_eq_zero
     Statement: Eq.{1} Nat Nat.zero Nat.zero
   - add_comm
@@ -1462,6 +1460,8 @@ All Theorems (565):
     Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - one_mul_on_Nat_two
     Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ Nat.zero))
+  - nat_mul_zero_conjecture
+    Statement: forall (n : Nat), Eq.{1} Nat (Nat.mul n Nat.zero) Nat.zero
   - Nat.sub_one_add_one_eq_of_pos_spec_zero
     Statement: (LT.lt.{0} Nat instLTNat (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) Nat.zero) -> (Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HSub.hSub.{0, 0, 0} Nat Nat Nat (instHSub.{0} Nat instSubNat) Nat.zero (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) Nat.zero)
   - Nat.sub_one_add_one_eq_of_pos_spec_one
