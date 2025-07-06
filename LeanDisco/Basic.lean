@@ -1,6 +1,7 @@
 import Lean
 import Lean.Meta.Basic
 import Lean.Elab.Command
+import LeanDisco.Prover
 
  -- for mining!
 import Mathlib.Algebra.Group.Basic
@@ -668,50 +669,16 @@ def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float
 
   return min 1.0 evidence
 
-/-- Conjecture proving with multiple strategies -/
+/-- Conjecture proving using the strategy framework -/
 def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) := do
-  -- Create proof context from knowledge base
-  let availableTheorems := kb.concepts.filter fun c => match c with
-    | ConceptData.theorem _ _ _ _ _ => true
-    | _ => false
-
-  -- Try multiple proof strategies
-  try
-    -- Strategy 1: Reflexivity
-    match stmt with
-    | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
-      if ← isDefEq lhs rhs then
-        let proof ← mkAppM ``Eq.refl #[lhs]
-        return some proof
-      else
-        -- Try reducing both sides
-        let lhs' ← reduce lhs
-        let rhs' ← reduce rhs
-        if ← isDefEq lhs' rhs' then
-          let proof ← mkAppM ``Eq.refl #[lhs']
-          return some proof
-        else
-          -- Strategy 2: Try simplification
-          let lhsSimp ← whnf lhs'
-          let rhsSimp ← whnf rhs'
-          if ← isDefEq lhsSimp rhsSimp then
-            let proof ← mkAppM ``Eq.refl #[lhsSimp]
-            return some proof
-          else
-            return none
-    | _ =>
-      -- Strategy 3: Try to find exact matching theorem
-      for thm in availableTheorems do
-        match thm with
-        | ConceptData.theorem name thmStmt _ _ _ =>
-          if ← isDefEq stmt thmStmt then
-            -- Found exact match - try to create proof term
-            return some (mkConst (Name.mkSimple name))
-          else
-            continue
-        | _ => continue
-      return none
-  catch _ => return none
+  -- Convert available theorems to TheoremData
+  let theorems := kb.concepts.filterMap (fun c => match c with
+    | ConceptData.theorem name thmStmt proof _ _ => 
+      some { name := name, statement := thmStmt, proof := proof : LeanDisco.TheoremData }
+    | _ => none) |>.toArray
+  
+  -- Use the strategy framework
+  LeanDisco.proveWithTheorems stmt theorems
 
 /-- Check if a constant should be included based on filters -/
 def shouldIncludeConstant (name : Name) (allowedPrefixes : List String) : Bool :=
