@@ -1257,7 +1257,7 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
                             specializationDepth:= 1
                             generationMethod   := "composition_pattern" } ]
                   else
-                    IO.println s!"[COMPOSITION] Skipping malformed conjecture: {f₁}_comp_{f₂}_eq_{idx}"
+                    IO.println s!"[COMPOSITION] Skipping invalid conjecture: {f₁}_comp_{f₂}_eq_{idx}"
           | _ => pure ()
 
     -- PATTERN 2: Preservation: theorems × functions (once)

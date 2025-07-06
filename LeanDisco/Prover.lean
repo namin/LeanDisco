@@ -74,7 +74,7 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
           }
         ]
       else
-        IO.println s!"[GOAL-DIRECTED] Skipping malformed conjecture: {lemmaName}"
+        IO.println s!"[GOAL-DIRECTED] Skipping invalid conjecture: {lemmaName}"
 
     -- Strategy 2: Generate intermediate steps by analyzing the statement structure
     match conjStatement with
@@ -109,7 +109,7 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
                 }
               ]
             else
-              IO.println s!"[GOAL-DIRECTED] Skipping malformed specialization: {specName}"
+              IO.println s!"[GOAL-DIRECTED] Skipping invalid specialization: {specName}"
     | _ => pure ()
 
     -- Strategy 3: Generate inverse or dual concepts
@@ -130,7 +130,7 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
           }
         ]
       else
-        IO.println s!"[GOAL-DIRECTED] Skipping malformed inverse: {inverseName}"
+        IO.println s!"[GOAL-DIRECTED] Skipping invalid inverse: {inverseName}"
 
   -- Strategy 4: Generate concepts to fill gaps identified in failed proofs
   let failedProofPatterns := concepts.filterMap fun c => match c with
@@ -175,12 +175,12 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
   for (thmName, statement, deps, metadata) in targetTheorems.take 3 do
     IO.println s!"[BACKWARDS] Working backwards from theorem: {thmName}"
 
-    -- Strategy 1: Skip generating duplicate intermediate theorems
-    -- The original logic was flawed - it just copied the original theorem statement
-    -- Instead, let's focus on more meaningful backwards reasoning strategies
-    IO.println s!"[BACKWARDS] Skipping intermediate generation for {thmName} (would create duplicates)"
+    -- Strategy 1: Generate intermediate theorems (currently disabled)
+    -- TODO: Implement meaningful intermediate theorem generation that creates
+    -- stepping-stone conjectures to help prove the target theorem
+    IO.println s!"[BACKWARDS] Skipping intermediate generation for {thmName} (needs proper implementation)"
 
-    -- Strategy 2: Generate helper lemmas by analyzing statement structure (FIXED)
+    -- Strategy 2: Generate helper lemmas by analyzing statement structure
     match statement with
     | Expr.forallE _ _ body _ =>
       -- For universal statements, the body might be a meaningful subgoal
@@ -201,17 +201,17 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
             }
           ]
         else
-          IO.println s!"[BACKWARDS] Skipping malformed antecedent: {antecedentName}"
+          IO.println s!"[BACKWARDS] Skipping invalid antecedent: {antecedentName}"
     | Expr.app f arg =>
-      -- REMOVED: This was generating malformed conjectures by using bare functions
-      -- A function `f` by itself is not a valid proposition
+      -- Skip function applications - bare functions are not valid propositions
+      -- TODO: Implement meaningful lemma generation for function applications
       IO.println s!"[BACKWARDS] Skipping function lemma generation for {thmName} (functions are not propositions)"
     | _ => pure ()
 
-    -- Strategy 3: REMOVED - was generating duplicates
-    -- The original "dual" generation just copied the same statement, creating duplicates
-    -- Real dual/contrapositive generation would require sophisticated logical manipulation
-    IO.println s!"[BACKWARDS] Skipping dual generation for {thmName} (would create duplicates)"
+    -- Strategy 3: Generate dual or contrapositive statements (currently disabled)
+    -- TODO: Implement proper dual/contrapositive generation with logical manipulation
+    -- This requires sophisticated analysis of statement structure to create meaningful variants
+    IO.println s!"[BACKWARDS] Skipping dual generation for {thmName} (needs proper implementation)"
 
   -- Strategy 4: Generate prerequisite concepts for failed proofs
   let failedConjectures := concepts.filterMap fun c => match c with
