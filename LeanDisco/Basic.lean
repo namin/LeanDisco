@@ -6,6 +6,9 @@ import Lean.Elab.Command
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Ring.Basic
 
+import LeanDisco.Types
+import LeanDisco.Prover
+
 set_option autoImplicit false
 set_option linter.unusedVariables false
 
@@ -21,83 +24,12 @@ with formal verification.
 
 namespace LeanDisco
 
-/-- Configuration for controlling discovery -/
-structure DiscoveryConfig where
-  maxSpecializationDepth : Nat := 4
-  maxConceptsPerIteration : Nat := 1000
-  pruneThreshold : Float := 0.1
-  deduplicateConcepts : Bool := true
-  canonicalizeConcepts : Bool := true
-  filterInternalProofs : Bool := true
-  enableConjectures : Bool := true
-  enablePatternRecognition : Bool := true
-  enableDebugOutput : Bool := false
+-- Core types are now imported from LeanDisco.Types
+-- Proof-related structures and functions are now in LeanDisco.Prover
 
-/-- Metadata for tracking concept performance and history -/
-structure ConceptMetadata where
-  name : String
-  created : Nat
-  parent : Option String
-  interestingness : Float
-  useCount : Nat
-  successCount : Nat
-  specializationDepth : Nat := 0
-  generationMethod : String := "unknown"
-  deriving Repr, BEq
-
-/-- Core concept data with dependencies -/
-inductive ConceptData where
-  | definition :
-    (name : String) →
-    (type : Expr) →
-    (value : Expr) →
-    (canonicalValue : Option Expr) →
-    (dependencies : List String) →
-    (metadata : ConceptMetadata) →
-    ConceptData
-  | theorem :
-    (name : String) →
-    (statement : Expr) →
-    (proof : Expr) →
-    (dependencies : List String) →
-    (metadata : ConceptMetadata) →
-    ConceptData
-  | conjecture :
-    (name : String) →
-    (statement : Expr) →
-    (evidence : Float) →
-    (metadata : ConceptMetadata) →
-    ConceptData
-  | pattern :
-    (name : String) →
-    (description : String) →
-    (instances : List String) →
-    (metadata : ConceptMetadata) →
-    ConceptData
-  | heuristicRef :
-    (name : String) →
-    (description : String) →
-    (metadata : ConceptMetadata) →
-    ConceptData
-  | taskRef :
-    (name : String) →
-    (goal : String) →
-    (metadata : ConceptMetadata) →
-    ConceptData
-
-/-- Unique identifier for concepts -/
-abbrev ConceptId := String
-
-/-- Type for heuristic functions -/
-abbrev HeuristicFn := DiscoveryConfig → List ConceptData → MetaM (List ConceptData)
-
-/-- Type for evaluation functions -/
-abbrev EvaluationFn := List ConceptData → MetaM Float
+-- Additional structures needed for Basic functionality
 
 /-- Simple association list for storing heuristics -/
-structure HeuristicRegistry where
-  entries : List (ConceptId × HeuristicFn)
-
 def HeuristicRegistry.empty : HeuristicRegistry := ⟨[]⟩
 
 def HeuristicRegistry.insert (reg : HeuristicRegistry) (id : ConceptId) (fn : HeuristicFn) : HeuristicRegistry :=
@@ -105,10 +37,6 @@ def HeuristicRegistry.insert (reg : HeuristicRegistry) (id : ConceptId) (fn : He
 
 def HeuristicRegistry.find? (reg : HeuristicRegistry) (id : ConceptId) : Option HeuristicFn :=
   reg.entries.lookup id
-
-/-- Simple association list for storing evaluators -/
-structure EvaluationRegistry where
-  entries : List (ConceptId × EvaluationFn)
 
 def EvaluationRegistry.empty : EvaluationRegistry := ⟨[]⟩
 
@@ -118,63 +46,11 @@ def EvaluationRegistry.insert (reg : EvaluationRegistry) (id : ConceptId) (fn : 
 def EvaluationRegistry.find? (reg : EvaluationRegistry) (id : ConceptId) : Option EvaluationFn :=
   reg.entries.lookup id
 
-/-- Cache for previously attempted concept combinations -/
-structure ConceptCache where
-  attemptedApplications : List (String × String) := []  -- (function, argument) pairs
-  attemptedSpecializations : List (String × String) := []  -- (theorem, value) pairs
-  attemptedConjectures : List String := []  -- conjecture statements as strings
-  normalizedExpressions : List (Expr × String) := []  -- (normalized expr, concept name) pairs
-
-/-- Track failed proof attempts -/
-structure FailedAttempt where
-  statementStr : String
-  attemptCount : Nat
-  lastAttempt : Nat  -- iteration number
-
-/-- Proof goal representing a target to prove -/
-structure ProofGoal where
-  name : String
-  statement : Expr
-  evidence : Float := 0.5
-  priority : Float := 1.0
-  dependencies : List String := []
-  sorryCount : Nat := 0          -- Number of sorry holes in current best attempt
-  missingLemmas : List String := []  -- Identified missing supporting lemmas
-  iteration : Nat                -- When this goal was identified
-
-/-- Track proof context and missing pieces -/
-structure ProofContext where
-  goals : List ProofGoal := []
-  activeGoal : Option String := none
-  recentFailures : List FailedAttempt := []
-  targetConjectures : List String := []  -- High-priority conjectures to prove
-
 /-- Result of applying a heuristic or evolution step -/
 structure Discovery where
   newConcepts : List ConceptData
   modifiedConcepts : List ConceptData
   explanation : String
-
-/-- Historical concept layers for better heuristic visibility -/
-structure ConceptLayers where
-  foundational : List ConceptData := []     -- Core seed concepts + early discoveries
-  historical : List ConceptData := []       -- Concepts from 3+ iterations ago
-  recent : List ConceptData := []           -- Concepts from last 2 iterations
-  current : List ConceptData := []          -- Concepts from this iteration
-
-/-- Knowledge base containing all discovered concepts -/
-structure KnowledgeBase where
-  concepts : List ConceptData
-  layers : ConceptLayers := {}
-  recentConcepts : List ConceptData         -- Kept for backward compatibility
-  heuristics : HeuristicRegistry
-  evaluators : EvaluationRegistry
-  config : DiscoveryConfig
-  iteration : Nat
-  history : List (Nat × List String)
-  cache : ConceptCache := {}
-  failedProofs : List FailedAttempt := []
-  proofContext : ProofContext := {}         -- Goal-directed proof tracking
 
 /-- Context provided to heuristics for better discovery -/
 structure HeuristicContext where
@@ -185,41 +61,7 @@ structure HeuristicContext where
   failedProofs : List FailedAttempt       -- What didn't work before
   proofContext : ProofContext             -- Current proof goals and context
 
-
-/-- Extract concept name -/
-def getConceptName : ConceptData → String
-  | ConceptData.definition n _ _ _ _ _ => n
-  | ConceptData.theorem n _ _ _ _ => n
-  | ConceptData.conjecture n _ _ _ => n
-  | ConceptData.pattern n _ _ _ => n
-  | ConceptData.heuristicRef n _ _ => n
-  | ConceptData.taskRef n _ _ => n
-
-/-- Get concept metadata -/
-def getConceptMetadata : ConceptData → ConceptMetadata
-  | ConceptData.definition _ _ _ _ _ m => m
-  | ConceptData.theorem _ _ _ _ m => m
-  | ConceptData.conjecture _ _ _ m => m
-  | ConceptData.pattern _ _ _ m => m
-  | ConceptData.heuristicRef _ _ m => m
-  | ConceptData.taskRef _ _ m => m
-
-/-- Update concept metadata -/
-def updateConceptMetadata (c : ConceptData) (f : ConceptMetadata → ConceptMetadata) : ConceptData :=
-  match c with
-  | ConceptData.definition n t v cv d m => ConceptData.definition n t v cv d (f m)
-  | ConceptData.theorem n s p d m => ConceptData.theorem n s p d (f m)
-  | ConceptData.conjecture n s e m => ConceptData.conjecture n s e (f m)
-  | ConceptData.pattern n d i m => ConceptData.pattern n d i (f m)
-  | ConceptData.heuristicRef n d m => ConceptData.heuristicRef n d (f m)
-  | ConceptData.taskRef n g m => ConceptData.taskRef n g (f m)
-
-/-- Get concept value/statement -/
-def getConceptExpr : ConceptData → Option Expr
-  | ConceptData.definition _ _ v _ _ _ => some v
-  | ConceptData.theorem _ s _ _ _ => some s
-  | ConceptData.conjecture _ s _ _ => some s
-  | _ => none
+-- Helper functions for ConceptData are now in LeanDisco.Types
 
 /-- Extract natural number literal from expression -/
 partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
@@ -238,10 +80,7 @@ partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
     | _ => return none
   catch _ => return none
 
-def contains (s sub : String) : Bool :=
-  (List.range (s.length - sub.length + 1)).any fun i =>
-    (s.drop i |>.take sub.length) == sub
-
+-- contains function is now in LeanDisco.Types
 
 /-- Generate the next natural number -/
 def generateNextNumber (kb : KnowledgeBase) : MetaM (Option ConceptData) := do
@@ -295,51 +134,7 @@ def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
         return ConceptData.definition n t v (some v) deps metadata
   | _ => return c
 
--- Utility functions for proof goal management
-
-/-- Add a new proof goal -/
-def addProofGoal (context : ProofContext) (goal : ProofGoal) : ProofContext :=
-  { context with
-    goals := context.goals ++ [goal]
-    targetConjectures :=
-      if goal.priority > 0.8 then context.targetConjectures ++ [goal.name]
-      else context.targetConjectures }
-
-/-- Update proof goal with new information -/
-def updateProofGoal (context : ProofContext) (goalName : String) (update : ProofGoal → ProofGoal) : ProofContext :=
-  { context with
-    goals := context.goals.map fun g => if g.name = goalName then update g else g }
-
-/-- Get active proof targets -/
-def getActiveTargets (context : ProofContext) : List ProofGoal :=
-  context.goals.filter fun g => g.priority > 0.5
-
-/-- Extract sorry holes from a proof expression -/
-partial def countSorryHoles (expr : Expr) : Nat :=
-  match expr with
-  | Expr.const name _ => if name.toString = "sorry" then 1 else 0
-  | Expr.app f arg => countSorryHoles f + countSorryHoles arg
-  | Expr.lam _ _ body _ => countSorryHoles body
-  | Expr.forallE _ _ body _ => countSorryHoles body
-  | Expr.letE _ _ val body _ => countSorryHoles val + countSorryHoles body
-  | _ => 0
-
-/-- Convert high-evidence conjecture to proof goal -/
-def conjectureToProofGoal (c : ConceptData) (iteration : Nat) : Option ProofGoal :=
-  match c with
-  | ConceptData.conjecture name statement evidence metadata =>
-    if evidence > 0.7 then  -- High evidence threshold
-      some { name := name
-             statement := statement
-             evidence := evidence
-             priority := evidence
-             iteration := iteration }
-    else none
-  | _ => none
-
-/-- Check if a concept name indicates an internal proof term -/
-def isInternalProofTerm (name : String) : Bool :=
-  ((name.splitOn "._proof_").length > 1) || ((name.splitOn ".match_").length > 1)
+-- Proof goal management functions are now in LeanDisco.Prover
 
 /-- Check if two expressions are definitionally equal -/
 def exprsEqual (e1 e2 : Expr) : MetaM Bool := do
@@ -594,14 +389,7 @@ def verifyDefinition (type : Expr) (value : Expr) : MetaM Bool := do
     debugPrint false s!"[DEBUG] verifyDefinition failed"
     return false
 
-/-- Verify a theorem by checking its proof -/
-def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
-  try
-    let proofType ← inferType proof
-    isDefEq proofType statement
-  catch e =>
-    debugPrint false s!"[DEBUG] verifyTheorem failed"
-    return false
+-- verifyTheorem is now in LeanDisco.Prover
 
 def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
   try
@@ -668,50 +456,7 @@ def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float
 
   return min 1.0 evidence
 
-/-- Conjecture proving with multiple strategies -/
-def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) := do
-  -- Create proof context from knowledge base
-  let availableTheorems := kb.concepts.filter fun c => match c with
-    | ConceptData.theorem _ _ _ _ _ => true
-    | _ => false
-
-  -- Try multiple proof strategies
-  try
-    -- Strategy 1: Reflexivity
-    match stmt with
-    | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
-      if ← isDefEq lhs rhs then
-        let proof ← mkAppM ``Eq.refl #[lhs]
-        return some proof
-      else
-        -- Try reducing both sides
-        let lhs' ← reduce lhs
-        let rhs' ← reduce rhs
-        if ← isDefEq lhs' rhs' then
-          let proof ← mkAppM ``Eq.refl #[lhs']
-          return some proof
-        else
-          -- Strategy 2: Try simplification
-          let lhsSimp ← whnf lhs'
-          let rhsSimp ← whnf rhs'
-          if ← isDefEq lhsSimp rhsSimp then
-            let proof ← mkAppM ``Eq.refl #[lhsSimp]
-            return some proof
-          else
-            return none
-    | _ =>
-      -- Strategy 3: Try to find exact matching theorem
-      for thm in availableTheorems do
-        match thm with
-        | ConceptData.theorem name thmStmt _ _ _ =>
-          if ← isDefEq stmt thmStmt then
-            -- Found exact match - try to create proof term
-            return some (mkConst (Name.mkSimple name))
-          else
-            continue
-        | _ => continue
-      return none
-  catch _ => return none
+-- tryProveConjecture is now in LeanDisco.Prover
 
 /-- Check if a constant should be included based on filters -/
 def shouldIncludeConstant (name : Name) (allowedPrefixes : List String) : Bool :=
@@ -1807,223 +1552,7 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
   debugPrint false s!"[DEBUG] compositionHeuristic: returning {newConcepts.length} concepts"
   return newConcepts
 
-/-- Goal-directed concept generation heuristic - generates concepts to help prove specific goals -/
-def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
-  let mut newConcepts : List ConceptData := []
-
-  -- Extract proof context (this would come from HeuristicContext in full implementation)
-  let highEvidenceConjectures := concepts.filterMap fun c => match c with
-    | ConceptData.conjecture name statement evidence metadata =>
-      if evidence > 0.7 then some (name, statement, evidence, metadata) else none
-    | _ => none
-
-  IO.println s!"[GOAL-DIRECTED] Found {highEvidenceConjectures.length} high-evidence conjectures to target"
-
-  for (conjName, conjStatement, evidence, conjMeta) in highEvidenceConjectures.take 5 do
-    IO.println s!"[GOAL-DIRECTED] Targeting conjecture: {conjName}"
-
-    -- Strategy 1: Generate supporting lemmas for the conjecture
-    let lemmaName := s!"lemma_for_{conjName}"
-    if !concepts.any (fun c => getConceptName c == lemmaName) then
-      -- Create a supporting lemma conjecture (simplified approach)
-      newConcepts := newConcepts ++ [
-        ConceptData.conjecture lemmaName conjStatement (evidence * 0.9) {
-          name := lemmaName
-          created := 0
-          parent := some conjName
-          interestingness := evidence * 0.95
-          useCount := 0
-          successCount := 0
-          specializationDepth := conjMeta.specializationDepth + 1
-          generationMethod := "goal_directed_lemma"
-        }
-      ]
-
-    -- Strategy 2: Generate intermediate steps by analyzing the statement structure
-    match conjStatement with
-    | Expr.forallE varName varType body _ =>
-      -- For universal statements, try to create specialized instances
-      let specializedName := s!"{conjName}_specialized"
-      if !concepts.any (fun c => getConceptName c == specializedName) then
-        -- Look for suitable terms to instantiate with
-        let suitableTerms := concepts.filterMap fun c => match c with
-          | ConceptData.definition name typ _ _ _ metadata =>
-            if metadata.generationMethod == "seed" || metadata.generationMethod == "mined" then
-              -- Basic type checking - this is simplified
-              if toString typ == toString varType then some name else none
-            else none
-          | _ => none
-
-        for termName in suitableTerms.take 3 do
-          let specName := s!"{conjName}_spec_{termName}"
-          if !concepts.any (fun c => getConceptName c == specName) then
-            newConcepts := newConcepts ++ [
-              ConceptData.conjecture specName body (evidence * 0.8) {
-                name := specName
-                created := 0
-                parent := some conjName
-                interestingness := evidence * 0.85
-                useCount := 0
-                successCount := 0
-                specializationDepth := conjMeta.specializationDepth + 1
-                generationMethod := "goal_directed_specialization"
-              }
-            ]
-    | _ => pure ()
-
-    -- Strategy 3: Generate inverse or dual concepts
-    let inverseName := s!"inverse_{conjName}"
-    if !concepts.any (fun c => getConceptName c == inverseName) then
-      newConcepts := newConcepts ++ [
-        ConceptData.conjecture inverseName conjStatement (evidence * 0.7) {
-          name := inverseName
-          created := 0
-          parent := some conjName
-          interestingness := evidence * 0.8
-          useCount := 0
-          successCount := 0
-          specializationDepth := conjMeta.specializationDepth + 1
-          generationMethod := "goal_directed_inverse"
-        }
-      ]
-
-  -- Strategy 4: Generate concepts to fill gaps identified in failed proofs
-  let failedProofPatterns := concepts.filterMap fun c => match c with
-    | ConceptData.conjecture name _ evidence metadata =>
-      if evidence < 0.3 && metadata.useCount > 2 then some name else none
-    | _ => none
-
-  for failedName in failedProofPatterns.take 3 do
-    let bridgeName := s!"bridge_to_{failedName}"
-    if !concepts.any (fun c => getConceptName c == bridgeName) then
-      -- Create a bridging concept that might help prove the failed conjecture
-      newConcepts := newConcepts ++ [
-        ConceptData.definition bridgeName (Expr.sort Level.zero) (mkConst ``True) none [failedName] {
-          name := bridgeName
-          created := 0
-          parent := some failedName
-          interestingness := 0.6
-          useCount := 0
-          successCount := 0
-          specializationDepth := 1
-          generationMethod := "goal_directed_bridge"
-        }
-      ]
-
-  IO.println s!"[GOAL-DIRECTED] Generated {newConcepts.length} goal-directed concepts"
-  return newConcepts
-
-/-- Backwards reasoning heuristic - generates concepts needed to prove target theorems -/
-def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
-  let mut newConcepts : List ConceptData := []
-
-  -- Find theorems that might need intermediate steps
-  let targetTheorems := concepts.filterMap fun c => match c with
-    | ConceptData.theorem name statement _ deps metadata =>
-      if metadata.specializationDepth <= 1 && deps.length > 1 then
-        some (name, statement, deps, metadata)
-      else none
-    | _ => none
-
-  IO.println s!"[BACKWARDS] Analyzing {targetTheorems.length} target theorems for backwards reasoning"
-
-  for (thmName, statement, deps, metadata) in targetTheorems.take 3 do
-    IO.println s!"[BACKWARDS] Working backwards from theorem: {thmName}"
-
-    -- Strategy 1: Generate missing intermediate theorems
-    for dep in deps do
-      let intermediateName := s!"intermediate_for_{thmName}_via_{dep}"
-      if !concepts.any (fun c => getConceptName c == intermediateName) then
-        -- Create an intermediate theorem conjecture
-        newConcepts := newConcepts ++ [
-          ConceptData.conjecture intermediateName statement 0.8 {
-            name := intermediateName
-            created := 0
-            parent := some thmName
-            interestingness := 0.85
-            useCount := 0
-            successCount := 0
-            specializationDepth := metadata.specializationDepth + 1
-            generationMethod := "backwards_reasoning_intermediate"
-          }
-        ]
-
-    -- Strategy 2: Generate helper lemmas by analyzing statement structure
-    match statement with
-    | Expr.forallE _ _ body _ =>
-      -- For implications or universal statements, generate the antecedent as a lemma
-      let antecedentName := s!"antecedent_for_{thmName}"
-      if !concepts.any (fun c => getConceptName c == antecedentName) then
-        newConcepts := newConcepts ++ [
-          ConceptData.conjecture antecedentName body 0.7 {
-            name := antecedentName
-            created := 0
-            parent := some thmName
-            interestingness := 0.8
-            useCount := 0
-            successCount := 0
-            specializationDepth := metadata.specializationDepth + 1
-            generationMethod := "backwards_reasoning_antecedent"
-          }
-        ]
-    | Expr.app f arg =>
-      -- For applications, generate lemmas about the function and argument
-      let functionLemmaName := s!"function_lemma_for_{thmName}"
-      if !concepts.any (fun c => getConceptName c == functionLemmaName) then
-        newConcepts := newConcepts ++ [
-          ConceptData.conjecture functionLemmaName f 0.6 {
-            name := functionLemmaName
-            created := 0
-            parent := some thmName
-            interestingness := 0.75
-            useCount := 0
-            successCount := 0
-            specializationDepth := metadata.specializationDepth + 1
-            generationMethod := "backwards_reasoning_function"
-          }
-        ]
-    | _ => pure ()
-
-    -- Strategy 3: Generate dual or contrapositive statements
-    let dualName := s!"dual_of_{thmName}"
-    if !concepts.any (fun c => getConceptName c == dualName) then
-      newConcepts := newConcepts ++ [
-        ConceptData.conjecture dualName statement 0.6 {
-          name := dualName
-          created := 0
-          parent := some thmName
-          interestingness := 0.7
-          useCount := 0
-          successCount := 0
-          specializationDepth := metadata.specializationDepth + 1
-          generationMethod := "backwards_reasoning_dual"
-        }
-      ]
-
-  -- Strategy 4: Generate prerequisite concepts for failed proofs
-  let failedConjectures := concepts.filterMap fun c => match c with
-    | ConceptData.conjecture name _ evidence metadata =>
-      if evidence < 0.4 && metadata.useCount > 1 then some (name, metadata) else none
-    | _ => none
-
-  for (failedName, failedMetadata) in failedConjectures.take 2 do
-    let prereqName := s!"prerequisite_for_{failedName}"
-    if !concepts.any (fun c => getConceptName c == prereqName) then
-      newConcepts := newConcepts ++ [
-        ConceptData.definition prereqName (Expr.sort Level.zero) (mkConst ``True) none [failedName] {
-          name := prereqName
-          created := 0
-          parent := some failedName
-          interestingness := 0.65
-          useCount := 0
-          successCount := 0
-          specializationDepth := failedMetadata.specializationDepth + 1
-          generationMethod := "backwards_reasoning_prerequisite"
-        }
-      ]
-
-  IO.println s!"[BACKWARDS] Generated {newConcepts.length} backwards reasoning concepts"
-  return newConcepts
+-- Goal-directed and backwards reasoning heuristics are now in LeanDisco.Prover
 
 /-- Stochastic exploration heuristic - creates random variations to break cycles -/
 def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
@@ -2497,6 +2026,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Use discovered patterns to guide generation"
     { basicMeta with name := "pattern_guided" }
 
+  -- Proof heuristics are now in LeanDisco.Prover
   let goalDirectedHeuristicRef := ConceptData.heuristicRef
     "goal_directed"
     "Generate concepts to prove specific high-evidence conjectures"
