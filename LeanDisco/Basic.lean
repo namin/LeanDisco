@@ -2067,6 +2067,11 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     "Create variations to combat discovery convergence"
     { basicMeta with name := "concept_freshness" }
 
+  let inductionHeuristicRef := ConceptData.heuristicRef
+    "induction"
+    "Recognize inductive patterns and generate inductive theorems"
+    { basicMeta with name := "induction" }
+
   -- Create task references
   let complexityTaskRef := ConceptData.taskRef
     "complexity"
@@ -2094,6 +2099,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   heuristics := heuristics.insert "pattern_guided" patternGuidedHeuristic
   heuristics := heuristics.insert "goal_directed" goalDirectedHeuristic
   heuristics := heuristics.insert "backwards_reasoning" backwardsReasoningHeuristic
+  heuristics := heuristics.insert "induction" inductionHeuristic
   heuristics := heuristics.insert "stochastic_exploration" stochasticExplorationHeuristic
   heuristics := heuristics.insert "cross_iteration_synthesis" crossIterationSynthesisHeuristic
   heuristics := heuristics.insert "historical_memory" historicalMemoryHeuristic
@@ -2108,7 +2114,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
       patternHeuristicRef, conjectureHeuristicRef, compositionHeuristicRef,
       patternGuidedHeuristicRef, goalDirectedHeuristicRef, backwardsReasoningHeuristicRef,
-      stochasticHeuristicRef, crossIterHeuristicRef, historicalMemoryRef, conceptFreshnessRef,
+      inductionHeuristicRef, stochasticHeuristicRef, crossIterHeuristicRef, historicalMemoryRef, conceptFreshnessRef,
       complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
 

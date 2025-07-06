@@ -1,5 +1,5 @@
 === ITERATION 0 COMPLETE ===
-Total Concepts: 133 (+0 new)
+Total Concepts: 134 (+0 new)
 Patterns: 0
 Conjectures: 0
 Theorems: 39
@@ -98,7 +98,7 @@ All Theorems (39):
 
 ================================================================================
 === ITERATION 1 COMPLETE ===
-Total Concepts: 260 (+127 new)
+Total Concepts: 261 (+127 new)
 Patterns: 4
 Conjectures: 50
 Theorems: 100
@@ -430,12 +430,12 @@ All Theorems (100):
 
 ================================================================================
 === ITERATION 2 COMPLETE ===
-Total Concepts: 451 (+191 new)
+Total Concepts: 452 (+191 new)
 Patterns: 9
 Conjectures: 100
 Theorems: 181
 Top Concepts:
-  - nat_32 (score: 1.000000)
+  - nat_33 (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)
@@ -1029,12 +1029,12 @@ All Theorems (181):
 
 ================================================================================
 === ITERATION 3 COMPLETE ===
-Total Concepts: 553 (+102 new)
+Total Concepts: 554 (+102 new)
 Patterns: 10
 Conjectures: 150
 Theorems: 221
 Top Concepts:
-  - nat_32 (score: 1.000000)
+  - nat_33 (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)
@@ -1809,12 +1809,12 @@ All Theorems (221):
 
 ================================================================================
 === ITERATION 4 COMPLETE ===
-Total Concepts: 618 (+65 new)
+Total Concepts: 619 (+65 new)
 Patterns: 10
 Conjectures: 200
 Theorems: 231
 Top Concepts:
-  - nat_32 (score: 1.000000)
+  - nat_33 (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)

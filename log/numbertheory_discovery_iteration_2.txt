@@ -1,10 +1,10 @@
 === ITERATION 2 COMPLETE ===
-Total Concepts: 451 (+191 new)
+Total Concepts: 452 (+191 new)
 Patterns: 9
 Conjectures: 100
 Theorems: 181
 Top Concepts:
-  - nat_32 (score: 1.000000)
+  - nat_33 (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)

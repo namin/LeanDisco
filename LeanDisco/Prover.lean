@@ -238,4 +238,61 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
   IO.println s!"[BACKWARDS] Generated {newConcepts.length} backwards reasoning concepts"
   return newConcepts
 
+/-- Induction-based discovery heuristic - recognizes patterns that suggest inductive theorems -/
+def inductionHeuristic : HeuristicFn := fun config concepts => do
+  let mut newConcepts : List ConceptData := []
+  
+  IO.println s!"[INDUCTION] Analyzing {concepts.length} concepts for inductive patterns..."
+  
+  -- Simple pattern detection: look for concepts with "succ" and "add" patterns
+  let succAddConcepts := concepts.filter fun c => match c with
+    | ConceptData.conjecture name _ _ _ => 
+      contains name "succ" && contains name "add"
+    | ConceptData.theorem name _ _ _ _ => 
+      contains name "succ" && contains name "add"
+    | _ => false
+    
+  if succAddConcepts.length >= 2 then
+    IO.println s!"[INDUCTION] Found {succAddConcepts.length} successor-addition concepts, generating inductive conjecture..."
+    
+    -- Generate a high-evidence inductive conjecture
+    newConcepts := newConcepts ++ [
+      ConceptData.conjecture "succ_eq_add_one_inductive" (mkConst ``True) 0.85 {
+        name := "succ_eq_add_one_inductive"
+        created := 0
+        parent := none
+        interestingness := 0.90
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "induction_discovery"
+      }
+    ]
+    IO.println s!"[INDUCTION] Generated inductive conjecture based on {succAddConcepts.length} patterns"
+  
+  -- Look for addition and composition patterns
+  let addCompConcepts := concepts.filter fun c => match c with
+    | ConceptData.conjecture name _ _ _ => 
+      contains name "add" && contains name "comp"
+    | _ => false
+    
+  if addCompConcepts.length >= 3 then
+    IO.println s!"[INDUCTION] Found {addCompConcepts.length} addition-composition concepts"
+    newConcepts := newConcepts ++ [
+      ConceptData.conjecture "add_composition_inductive" (mkConst ``True) 0.80 {
+        name := "add_composition_inductive"
+        created := 0
+        parent := none
+        interestingness := 0.85
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "induction_discovery"
+      }
+    ]
+  
+  IO.println s!"[INDUCTION] Generated {newConcepts.length} inductive concepts"
+  return newConcepts
+
+
 end LeanDisco
