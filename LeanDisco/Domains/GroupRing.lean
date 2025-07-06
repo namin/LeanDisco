@@ -310,8 +310,8 @@ def dualityHeuristic : HeuristicFn := fun _config concepts => do
   -- Look for specialized theorems to dualize
   for concept in concepts do
     match concept with
-    | ConceptData.theorem name stmt proof deps meta =>
-      if meta.generationMethod == "typeclass_specialization" && contains name "_on_Nat" then
+    | ConceptData.theorem name stmt proof deps metadata =>
+      if metadata.generationMethod == "typeclass_specialization" && contains name "_on_Nat" then
         -- Try to create dual version
         for (mulName, addName, _, _) in dualMap do
           if contains name mulName then
@@ -329,9 +329,9 @@ def typeclassSpecializationHeuristic : HeuristicFn := fun config concepts => do
 
   -- Find theorems to specialize
   let polymorphicTheorems := concepts.filterMap fun c => match c with
-    | ConceptData.theorem name stmt proof _ meta =>
-      if meta.generationMethod == "mined_group" || meta.generationMethod == "mined_ring" then
-        some (name, stmt, proof, meta)
+    | ConceptData.theorem name stmt proof _ metadata =>
+      if metadata.generationMethod == "mined_group" || metadata.generationMethod == "mined_ring" then
+        some (name, stmt, proof, metadata)
       else none
     | _ => none
 
@@ -340,7 +340,7 @@ def typeclassSpecializationHeuristic : HeuristicFn := fun config concepts => do
   -- Check if we already have Nat multiplication
   let hasNatMul := concepts.any (fun c => getConceptName c == "nat_mul")
 
-  for (name, stmt, proof, meta) in polymorphicTheorems do
+  for (name, stmt, proof, metadata) in polymorphicTheorems do
     IO.println s!"[Typeclass Spec] Processing theorem: {name}"
 
     match name with
@@ -362,7 +362,7 @@ def typeclassSpecializationHeuristic : HeuristicFn := fun config concepts => do
 
           -- Check if we already have this
           if !concepts.any (fun c => getConceptName c == specName) then
-            let newMeta := { meta with
+            let newMeta := { metadata with
               name := specName
               parent := some name
               interestingness := 0.8
@@ -393,7 +393,7 @@ def typeclassSpecializationHeuristic : HeuristicFn := fun config concepts => do
           let specName := s!"{name}_on_Nat"
 
           if !concepts.any (fun c => getConceptName c == specName) then
-            let newMeta := { meta with
+            let newMeta := { metadata with
               name := specName
               parent := some name
               interestingness := 0.8
@@ -465,8 +465,8 @@ def applySpecializedTheorems : HeuristicFn := fun config concepts => do
 
   -- Find specialized theorems (with correct filter)
   let specializedTheorems := concepts.filter fun c => match c with
-    | ConceptData.theorem _ _ _ _ meta =>
-      meta.generationMethod == "typeclass_specialization"
+    | ConceptData.theorem _ _ _ _ metadata =>
+      metadata.generationMethod == "typeclass_specialization"
     | _ => false
 
   IO.println s!"[Apply Spec] Found {specializedTheorems.length} specialized theorems to apply"
@@ -481,7 +481,7 @@ def applySpecializedTheorems : HeuristicFn := fun config concepts => do
 
   for thm in specializedTheorems do
     match thm with
-    | ConceptData.theorem thmName stmt proof _ meta =>
+    | ConceptData.theorem thmName stmt proof _ metadata =>
       IO.println s!"[Apply Spec] Processing theorem: {thmName}"
 
       if contains thmName "mul_one_on_Nat" then
@@ -506,10 +506,10 @@ def applySpecializedTheorems : HeuristicFn := fun config concepts => do
 
               newConcepts := newConcepts ++ [
                 ConceptData.theorem instName concreteStmt concreteProof [thmName, valName]
-                  { meta with
+                  { metadata with
                     name := instName
                     parent := some thmName
-                    specializationDepth := meta.specializationDepth + 1
+                    specializationDepth := metadata.specializationDepth + 1
                     generationMethod := "theorem_application"
                     interestingness := 0.6 }
               ]
@@ -535,10 +535,10 @@ def applySpecializedTheorems : HeuristicFn := fun config concepts => do
 
               newConcepts := newConcepts ++ [
                 ConceptData.theorem instName concreteStmt concreteProof [thmName, valName]
-                  { meta with
+                  { metadata with
                     name := instName
                     parent := some thmName
-                    specializationDepth := meta.specializationDepth + 1
+                    specializationDepth := metadata.specializationDepth + 1
                     generationMethod := "theorem_application"
                     interestingness := 0.6 }
               ]

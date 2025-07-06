@@ -174,7 +174,7 @@ partial def discoveryLoopWithSaving
 
   for c in allConjectures do
     match c with
-    | ConceptData.conjecture name stmt _ meta =>
+    | ConceptData.conjecture name stmt _ metadata =>
       -- Check if we've failed this before
       let failedBefore := kb.failedProofs.any fun fa =>
         fa.statementStr == toString stmt && fa.attemptCount >= 3
@@ -183,11 +183,11 @@ partial def discoveryLoopWithSaving
         if let some proof ← tryProveConjecture stmt then
           IO.println s!"  ✓ Proved conjecture: {name}"
           let thm := ConceptData.theorem name stmt proof []
-            { meta with generationMethod := "conjecture_proved" }
+            { metadata with generationMethod := "conjecture_proved" }
           provenConjectures := provenConjectures ++ [thm]
 
           -- Reward parent concepts for successful proof
-          if let some parentName := meta.parent then
+          if let some parentName := metadata.parent then
             remainingConcepts := remainingConcepts.map fun c' =>
               if getConceptName c' == parentName then
                 updateConceptMetadata c' fun m =>
@@ -339,14 +339,14 @@ def runDiscoveryCustomWithSaving
   for i in [:min 20 sorted.size] do
     if h : i < sorted.size then
       let c := sorted[i]
-      let meta := getConceptMetadata c
+      let metadata := getConceptMetadata c
       match c with
       | ConceptData.conjecture name _ evidence _ =>
         IO.println s!"  {name} (CONJECTURE, evidence: {evidence}, score: {(getInterestingness c).toString})"
       | ConceptData.pattern name _ _ _ =>
         IO.println s!"  {name} (PATTERN, score: {(getInterestingness c).toString})"
       | _ =>
-        IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {meta.specializationDepth})"
+        IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {metadata.specializationDepth})"
 
   -- Save final summary
   let finalState := knowledgeBaseToState finalKb []
