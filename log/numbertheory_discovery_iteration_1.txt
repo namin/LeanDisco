@@ -1,10 +1,10 @@
 === ITERATION 1 COMPLETE ===
-Total Concepts: 290 (+169 new)
+Total Concepts: 275 (+154 new)
 Patterns: 4
 Conjectures: 53
 Theorems: 112
 Top Concepts:
-  - nat_48 (score: 1.000000)
+  - nat_32 (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)
@@ -16,7 +16,7 @@ Top Concepts:
   - mul_zero (score: 1.000000)
 Generation Methods:
   seed: 9
-  application: 20
+  application: 5
   specialization: 50
   pattern_recognition: 1
   composition: 6

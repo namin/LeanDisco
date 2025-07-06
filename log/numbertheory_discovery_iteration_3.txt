@@ -1,10 +1,10 @@
 === ITERATION 3 COMPLETE ===
-Total Concepts: 667 (+132 new)
-Patterns: 13
-Conjectures: 191
-Theorems: 252
+Total Concepts: 606 (+117 new)
+Patterns: 10
+Conjectures: 186
+Theorems: 238
 Top Concepts:
-  - nat_49 (score: 1.000000)
+  - nat_32 (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)
@@ -16,26 +16,23 @@ Top Concepts:
   - mul_zero (score: 1.000000)
 Generation Methods:
   seed: 9
-  application: 54
+  application: 15
   specialization: 140
-  pattern_recognition: 5
+  pattern_recognition: 2
   composition: 60
-  lemma_application: 61
-All Patterns (13):
+  lemma_application: 47
+All Patterns (10):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_add_assoc: Variation pattern based on theorem add_assoc
   - variation_add_comm: Variation pattern based on theorem add_comm
   - variation_add_zero: Variation pattern based on theorem add_zero
-  - succ_iteration_pattern: Repeated application of succ
   - add_iteration_pattern: Repeated application of add
-  - add1_iteration_pattern: Repeated application of add1
-  - add2_iteration_pattern: Repeated application of add2
-  - meta_pattern_application_successful: Meta-pattern: application has been successful (20 concepts)
   - meta_pattern_composition_successful: Meta-pattern: composition has been successful (6 concepts)
   - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (50 concepts)
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_add_assoc: Revived: Variation pattern based on theorem add_assoc
-All Conjectures (191):
+  - meta_pattern_application_successful: Meta-pattern: application has been successful (10 concepts)
+All Conjectures (186):
   - function_lemma_for_zero_add_zero
     Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero)
   - function_lemma_for_one_add_one_eq_two
@@ -398,27 +395,17 @@ All Conjectures (191):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 1 x))) (Nat.succ Nat.zero))
   - add1_compose_add2_compose_add2_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 2 x))) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 2 x))) (Nat.succ Nat.zero))
-  - cross_apply_one_add_one_eq_two_on_succ_applied_to_nat_1_to_zero
+  - cross_apply_two_add_one_eq_three_on_num_3_to_zero
     Statement: True
-  - cross_apply_one_add_one_eq_two_on_succ_applied_to_nat_1_to_succ
+  - cross_apply_two_add_one_eq_three_on_num_3_to_succ
     Statement: True
-  - cross_apply_one_add_one_eq_two_on_succ_applied_to_nat_1_to_one
+  - cross_apply_two_add_one_eq_three_on_num_3_to_one
     Statement: True
-  - cross_apply_one_add_one_eq_two_on_succ_applied_to_nat_1_to_two
+  - cross_apply_two_add_one_eq_three_on_num_3_to_two
     Statement: True
-  - cross_apply_one_add_one_eq_two_on_succ_applied_to_nat_1_to_add
+  - cross_apply_two_add_one_eq_three_on_num_3_to_add
     Statement: True
-  - cross_apply_one_add_one_eq_two_on_add1_applied_to_nat_1_to_zero
-    Statement: True
-  - cross_apply_one_add_one_eq_two_on_add1_applied_to_nat_1_to_succ
-    Statement: True
-  - cross_apply_one_add_one_eq_two_on_add1_applied_to_nat_1_to_one
-    Statement: True
-  - cross_apply_one_add_one_eq_two_on_add1_applied_to_nat_1_to_two
-    Statement: True
-  - cross_apply_one_add_one_eq_two_on_add1_applied_to_nat_1_to_add
-    Statement: True
-All Theorems (252):
+All Theorems (238):
   - add_assoc
     Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
   - add_comm
@@ -743,106 +730,78 @@ All Theorems (252):
     Statement: Eq.{1} Nat (Nat.gcd (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} ([mdata borrowed:1 Nat]) 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - gcd_zero_right_spec_nat_4
     Statement: Eq.{1} Nat (Nat.gcd (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4)) (OfNat.ofNat.{0} ([mdata borrowed:1 Nat]) 0 (instOfNatNat 0))) (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - fib_one_on_succ_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
-  - fib_one_on_add1_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
-  - one_add_one_eq_two_on_succ_applied_to_nat_1
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_add1_applied_to_nat_1
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
-  - one_add_one_eq_two_on_add2_applied_to_nat_0
-    Statement: Eq.{1} Nat 2 (Nat.succ (Nat.succ Nat.zero))
   - two_add_one_eq_three_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_succ_applied_to_nat_2
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add1_applied_to_nat_2
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - two_add_one_eq_three_on_add2_applied_to_nat_1
-    Statement: Eq.{1} Nat 3 (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - add_zero_spec_nat_1_on_succ_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
-  - add_zero_spec_nat_1_on_add1_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
   - add_zero_spec_nat_2_on_nat_2
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - add_zero_spec_nat_2_on_prime_2
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - add_zero_spec_nat_2_on_two
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
-  - add_zero_spec_nat_2_on_succ_applied_to_nat_1
-    Statement: Eq.{1} Nat 2 (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
-  - add_zero_spec_nat_2_on_add1_applied_to_nat_1
-    Statement: Eq.{1} Nat 2 (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
-  - add_zero_spec_nat_2_on_add2_applied_to_nat_0
-    Statement: Eq.{1} Nat 2 (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - add_zero_spec_nat_3_on_nat_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - add_zero_spec_nat_3_on_prime_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - add_zero_spec_nat_3_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
-  - add_zero_spec_nat_3_on_succ_applied_to_nat_2
-    Statement: Eq.{1} Nat 3 (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
-  - add_zero_spec_nat_3_on_add1_applied_to_nat_2
-    Statement: Eq.{1} Nat 3 (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
-  - add_zero_spec_nat_3_on_add2_applied_to_nat_1
-    Statement: Eq.{1} Nat 3 (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - add_zero_spec_nat_4_on_nat_4
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4)) (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - add_zero_spec_nat_4_on_succ_applied_to_nat_3
-    Statement: Eq.{1} Nat 4 (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - add_zero_spec_nat_4_on_add1_applied_to_nat_3
-    Statement: Eq.{1} Nat 4 (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - add_zero_spec_nat_4_on_add2_applied_to_nat_2
-    Statement: Eq.{1} Nat 4 (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - zero_add_spec_nat_1_on_succ_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
-  - zero_add_spec_nat_1_on_add1_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
   - zero_add_spec_nat_2_on_nat_2
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - zero_add_spec_nat_2_on_prime_2
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - zero_add_spec_nat_2_on_two
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
-  - zero_add_spec_nat_2_on_succ_applied_to_nat_1
-    Statement: Eq.{1} Nat 2 (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
-  - zero_add_spec_nat_2_on_add1_applied_to_nat_1
-    Statement: Eq.{1} Nat 2 (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
-  - zero_add_spec_nat_2_on_add2_applied_to_nat_0
-    Statement: Eq.{1} Nat 2 (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - zero_add_spec_nat_3_on_nat_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - zero_add_spec_nat_3_on_prime_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - zero_add_spec_nat_3_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
-  - zero_add_spec_nat_3_on_succ_applied_to_nat_2
-    Statement: Eq.{1} Nat 3 (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
-  - zero_add_spec_nat_3_on_add1_applied_to_nat_2
-    Statement: Eq.{1} Nat 3 (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
-  - zero_add_spec_nat_3_on_add2_applied_to_nat_1
-    Statement: Eq.{1} Nat 3 (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
   - zero_add_spec_nat_4_on_nat_4
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4)) (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - zero_add_spec_nat_4_on_succ_applied_to_nat_3
-    Statement: Eq.{1} Nat 4 (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - zero_add_spec_nat_4_on_add1_applied_to_nat_3
-    Statement: Eq.{1} Nat 4 (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - zero_add_spec_nat_4_on_add2_applied_to_nat_2
-    Statement: Eq.{1} Nat 4 (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
-  - mul_one_spec_nat_1_on_succ_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
-  - mul_one_spec_nat_1_on_add1_applied_to_nat_0
-    Statement: Eq.{1} Nat 1 (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))
   - mul_one_spec_nat_2_on_nat_2
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - mul_one_spec_nat_2_on_prime_2
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
   - mul_one_spec_nat_2_on_two
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
+  - mul_one_spec_nat_3_on_nat_3
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - mul_one_spec_nat_3_on_prime_3
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - mul_one_spec_nat_3_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - mul_one_spec_nat_4_on_nat_4
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4)) (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
+  - one_mul_spec_nat_2_on_nat_2
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
+  - one_mul_spec_nat_2_on_prime_2
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
+  - one_mul_spec_nat_2_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))
+  - one_mul_spec_nat_3_on_nat_3
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - one_mul_spec_nat_3_on_prime_3
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - one_mul_spec_nat_3_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3))
+  - one_mul_spec_nat_4_on_nat_4
+    Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4)) (OfNat.ofNat.{0} Nat 4 (instOfNatNat 4))
+  - two_add_one_eq_three_on_nat_3_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - two_add_one_eq_three_on_prime_3_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_add_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_two_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_one_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - intermediate_for_two_add_one_eq_three_via_succ_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - dual_of_two_add_one_eq_three_on_num_3
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - lcm_comm_spec_nat_0
     Statement: forall (n : Nat), Eq.{1} Nat (Nat.lcm (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) n) (Nat.lcm n (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))
   - lcm_comm_spec_nat_1
