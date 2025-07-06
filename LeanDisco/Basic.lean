@@ -299,15 +299,15 @@ def canonicalizeConcept (c : ConceptData) : MetaM ConceptData := do
 
 /-- Add a new proof goal -/
 def addProofGoal (context : ProofContext) (goal : ProofGoal) : ProofContext :=
-  { context with 
+  { context with
     goals := context.goals ++ [goal]
-    targetConjectures := 
+    targetConjectures :=
       if goal.priority > 0.8 then context.targetConjectures ++ [goal.name]
       else context.targetConjectures }
 
 /-- Update proof goal with new information -/
 def updateProofGoal (context : ProofContext) (goalName : String) (update : ProofGoal → ProofGoal) : ProofContext :=
-  { context with 
+  { context with
     goals := context.goals.map fun g => if g.name = goalName then update g else g }
 
 /-- Get active proof targets -/
@@ -383,19 +383,19 @@ def deduplicateWithWeakerNormalization (existing : List ConceptData) (newConcept
     let cName := getConceptName c
     let mut shouldKeep := true
     let mut keepReason := "new"
-    
+
     -- Level 1: Check for exact name duplicates
     if existingNames.contains cName then
       shouldKeep := false
       keepReason := "name_duplicate"
     -- Level 2: For patterns and non-expression concepts, only check names
     else match c with
-      | ConceptData.pattern _ _ _ _ => 
+      | ConceptData.pattern _ _ _ _ =>
         shouldKeep := true
       | ConceptData.conjecture _ _ _ _ =>
         shouldKeep := true
       | ConceptData.heuristicRef _ _ _ =>
-        shouldKeep := true  
+        shouldKeep := true
       | ConceptData.taskRef _ _ _ =>
         shouldKeep := true
       | _ =>
@@ -433,10 +433,10 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
   let mut result : List ConceptData := []
   let mut duplicateCount := 0
   let mut keepCount := 0
-  
+
   -- Build name-based lookup set (O(n) setup cost)
   let existingNames := existing.map getConceptName |>.foldl (fun acc name => acc.insert name ()) (RBMap.empty : RBMap String Unit compare)
-  
+
   -- Build expression hash lookup for existing concepts
   let mut exprHashes : RBMap UInt64 (String × Expr) compare := RBMap.empty
   for concept in existing do
@@ -449,13 +449,13 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
         -- If normalization fails, use original expression
         let exprHash := hash expr
         exprHashes := exprHashes.insert exprHash (getConceptName concept, expr)
-  
+
   -- Process each new concept with O(log n) lookups
   for c in newConcepts do
     let cName := getConceptName c
     let mut shouldKeep := true
     let mut keepReason := "new"
-    
+
     -- Level 1: O(log n) name-based duplicate check
     if existingNames.contains cName then
       shouldKeep := false
@@ -463,9 +463,9 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
     else
       -- Level 2: For concepts with expressions, check normalized form
       match c with
-      | ConceptData.pattern _ _ _ _ 
+      | ConceptData.pattern _ _ _ _
       | ConceptData.conjecture _ _ _ _
-      | ConceptData.heuristicRef _ _ _ 
+      | ConceptData.heuristicRef _ _ _
       | ConceptData.taskRef _ _ _ =>
         -- These types only need name checking
         shouldKeep := true
@@ -475,7 +475,7 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
           try
             let normalizedExpr ← whnf expr
             let exprHash := hash normalizedExpr
-            
+
             -- O(log n) hash lookup for normalized expressions
             if let some (existingName, existingExpr) := exprHashes.find? exprHash then
               -- Double-check with structural equality to handle hash collisions
@@ -496,12 +496,12 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
 
   let endTime ← IO.monoMsNow
   let duration := endTime - startTime
-  
+
   -- Summary logging
   let existingSize := existing.length
   let nameHashSize := existingNames.size
   let exprHashSize := exprHashes.size
-  
+
   if duplicateCount == newConcepts.length && newConcepts.length > 0 then
     IO.println s!"[HASH_DEDUP] WARNING: 100% rejection rate! Existing DB: {existingSize} concepts, {nameHashSize} names, {exprHashSize} expressions"
     -- Sample a few rejected concepts for analysis
@@ -516,7 +516,7 @@ def deduplicateWithHashLookup (existing : List ConceptData) (newConcepts : List 
         | ConceptData.pattern _ _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (pattern)"
         | ConceptData.heuristicRef _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (heuristic)"
         | ConceptData.taskRef _ _ _ => IO.println s!"[HASH_DEDUP] Sample rejected: {cName} (task)"
-  
+
   IO.println s!"[HASH_DEDUP] Kept {keepCount}, rejected {duplicateCount} from {newConcepts.length} candidates in {duration}ms"
   return result.reverse
 
@@ -668,7 +668,7 @@ def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float
 
   return min 1.0 evidence
 
-/-- Enhanced conjecture proving with more tactics -/
+/-- Conjecture proving -/
 def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
   try
     -- Try reflexivity for equality statements
@@ -837,7 +837,7 @@ def seedConcepts : MetaM (List ConceptData) := do
 
   return concepts
 
-/-- Enhanced concept selection based on promise and diversity -/
+/-- Concept selection based on promise and diversity -/
 def selectFocusConcepts (kb : KnowledgeBase) (maxConcepts : Nat) : List ConceptData :=
   -- Score concepts by multiple factors
   let scoredConcepts := kb.concepts.map fun c =>
@@ -893,26 +893,26 @@ def evolve (kb : KnowledgeBase) : MetaM (List Discovery) := do
     if let some newNum ← generateNextNumber kb then
       discoveries := discoveries ++ [Discovery.mk [newNum] [] "Generated next number"]
 
-  -- Enhanced visibility: Provide all concepts to heuristics instead of limited focused concepts
+  -- More visibility: Provide all concepts to heuristics instead of limited focused concepts
   -- This solves the main issue - heuristics now see the full discovery history
   let allConceptsWithLayers := kb.concepts
-  
-  IO.println s!"[DEBUG] Providing enhanced visibility to heuristics: {allConceptsWithLayers.length} total concepts (foundational={kb.layers.foundational.length}, historical={kb.layers.historical.length}, recent={kb.layers.recent.length}, current={kb.layers.current.length})"
+
+  IO.println s!"[DEBUG] Providing more visibility to heuristics: {allConceptsWithLayers.length} total concepts (foundational={kb.layers.foundational.length}, historical={kb.layers.historical.length}, recent={kb.layers.recent.length}, current={kb.layers.current.length})"
 
   -- Prioritize goal-directed heuristics over stochastic exploration
-  let prioritizedHeuristics := heuristicRefs.partition fun (name, _) => 
+  let prioritizedHeuristics := heuristicRefs.partition fun (name, _) =>
     name ∈ ["goal_directed", "backwards_reasoning", "pattern_guided", "specialization", "application"]
   let (highPriorityRefs, regularRefs) := prioritizedHeuristics
-  
+
   -- Apply high-priority (goal-directed) heuristics first
   let orderedRefs := highPriorityRefs ++ regularRefs.filter fun (name, _) => name ≠ "stochastic_exploration"
-  
+
   -- Only apply stochastic exploration if we haven't found enough concepts after 2 iterations
   let finalRefs := if kb.iteration > 2 && discoveries.length < 3 then
     orderedRefs ++ regularRefs.filter fun (name, _) => name = "stochastic_exploration"
   else
     orderedRefs
-  
+
   IO.println s!"[DEBUG] Prioritized heuristic order: {finalRefs.map Prod.fst}"
   for (name, metadata) in finalRefs do
     if let some heuristic := kb.heuristics.find? name then
@@ -1215,7 +1215,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
 /--
 Heuristic: apply any mined Eq-theorem whose left-hand side matches another concept's expression,
 producing new theorems `thName_on_targetName` via lemma application.
-Enhanced: Now has access to full discovery history through concept layers.
+Access to full discovery history through concept layers.
 -/
 def lemmaApplicationHeuristic : HeuristicFn := fun config concepts => do
   let mut out : List ConceptData := []
@@ -1638,7 +1638,7 @@ def specializationHeuristic : HeuristicFn := fun config concepts => do
 def applicationHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts := []
 
-  -- Enhanced: Separate concepts by generation method for better targeting
+  -- Separate concepts by generation method for better targeting
   let seedFunctions := concepts.filterMap fun c => match c with
     | ConceptData.definition n t v _ d m =>
       if !t.hasLooseBVars && !v.hasLooseBVars && (m.generationMethod == "seed" || m.generationMethod == "mined") && t.isForall then
@@ -1786,18 +1786,18 @@ def compositionHeuristic : HeuristicFn := fun config concepts => do
 /-- Goal-directed concept generation heuristic - generates concepts to help prove specific goals -/
 def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
-  
+
   -- Extract proof context (this would come from HeuristicContext in full implementation)
   let highEvidenceConjectures := concepts.filterMap fun c => match c with
     | ConceptData.conjecture name statement evidence metadata =>
       if evidence > 0.7 then some (name, statement, evidence, metadata) else none
     | _ => none
-  
+
   IO.println s!"[GOAL-DIRECTED] Found {highEvidenceConjectures.length} high-evidence conjectures to target"
-  
+
   for (conjName, conjStatement, evidence, conjMeta) in highEvidenceConjectures.take 5 do
     IO.println s!"[GOAL-DIRECTED] Targeting conjecture: {conjName}"
-    
+
     -- Strategy 1: Generate supporting lemmas for the conjecture
     let lemmaName := s!"lemma_for_{conjName}"
     if !concepts.any (fun c => getConceptName c == lemmaName) then
@@ -1814,7 +1814,7 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
           generationMethod := "goal_directed_lemma"
         }
       ]
-    
+
     -- Strategy 2: Generate intermediate steps by analyzing the statement structure
     match conjStatement with
     | Expr.forallE varName varType body _ =>
@@ -1829,7 +1829,7 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
               if toString typ == toString varType then some name else none
             else none
           | _ => none
-        
+
         for termName in suitableTerms.take 3 do
           let specName := s!"{conjName}_spec_{termName}"
           if !concepts.any (fun c => getConceptName c == specName) then
@@ -1846,7 +1846,7 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
               }
             ]
     | _ => pure ()
-    
+
     -- Strategy 3: Generate inverse or dual concepts
     let inverseName := s!"inverse_{conjName}"
     if !concepts.any (fun c => getConceptName c == inverseName) then
@@ -1862,13 +1862,13 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
           generationMethod := "goal_directed_inverse"
         }
       ]
-  
+
   -- Strategy 4: Generate concepts to fill gaps identified in failed proofs
   let failedProofPatterns := concepts.filterMap fun c => match c with
     | ConceptData.conjecture name _ evidence metadata =>
       if evidence < 0.3 && metadata.useCount > 2 then some name else none
     | _ => none
-  
+
   for failedName in failedProofPatterns.take 3 do
     let bridgeName := s!"bridge_to_{failedName}"
     if !concepts.any (fun c => getConceptName c == bridgeName) then
@@ -1885,14 +1885,14 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
           generationMethod := "goal_directed_bridge"
         }
       ]
-  
+
   IO.println s!"[GOAL-DIRECTED] Generated {newConcepts.length} goal-directed concepts"
   return newConcepts
 
 /-- Backwards reasoning heuristic - generates concepts needed to prove target theorems -/
 def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
-  
+
   -- Find theorems that might need intermediate steps
   let targetTheorems := concepts.filterMap fun c => match c with
     | ConceptData.theorem name statement _ deps metadata =>
@@ -1900,12 +1900,12 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
         some (name, statement, deps, metadata)
       else none
     | _ => none
-  
+
   IO.println s!"[BACKWARDS] Analyzing {targetTheorems.length} target theorems for backwards reasoning"
-  
+
   for (thmName, statement, deps, metadata) in targetTheorems.take 3 do
     IO.println s!"[BACKWARDS] Working backwards from theorem: {thmName}"
-    
+
     -- Strategy 1: Generate missing intermediate theorems
     for dep in deps do
       let intermediateName := s!"intermediate_for_{thmName}_via_{dep}"
@@ -1923,7 +1923,7 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
             generationMethod := "backwards_reasoning_intermediate"
           }
         ]
-    
+
     -- Strategy 2: Generate helper lemmas by analyzing statement structure
     match statement with
     | Expr.forallE _ _ body _ =>
@@ -1959,7 +1959,7 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
           }
         ]
     | _ => pure ()
-    
+
     -- Strategy 3: Generate dual or contrapositive statements
     let dualName := s!"dual_of_{thmName}"
     if !concepts.any (fun c => getConceptName c == dualName) then
@@ -1975,13 +1975,13 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
           generationMethod := "backwards_reasoning_dual"
         }
       ]
-  
+
   -- Strategy 4: Generate prerequisite concepts for failed proofs
   let failedConjectures := concepts.filterMap fun c => match c with
     | ConceptData.conjecture name _ evidence metadata =>
       if evidence < 0.4 && metadata.useCount > 1 then some (name, metadata) else none
     | _ => none
-  
+
   for (failedName, failedMetadata) in failedConjectures.take 2 do
     let prereqName := s!"prerequisite_for_{failedName}"
     if !concepts.any (fun c => getConceptName c == prereqName) then
@@ -1997,35 +1997,35 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
           generationMethod := "backwards_reasoning_prerequisite"
         }
       ]
-  
+
   IO.println s!"[BACKWARDS] Generated {newConcepts.length} backwards reasoning concepts"
   return newConcepts
 
 /-- Stochastic exploration heuristic - creates random variations to break cycles -/
 def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
-  
+
   -- Get a pseudo-random seed based on the number of concepts
   let seed := concepts.length % 17 + 3
-  
+
   -- Find diverse concepts to experiment with
   let experimentCandidates := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       n.length % 5 == seed % 5 && m.specializationDepth <= 2 && m.generationMethod != "stochastic_exploration"
-    | ConceptData.theorem n _ _ _ m => 
+    | ConceptData.theorem n _ _ _ m =>
       n.length % 7 == (seed + 2) % 7 && m.specializationDepth <= 1
     | _ => false
-  
+
   IO.println s!"[STOCHASTIC] Found {experimentCandidates.length} exploration candidates"
-  
+
   -- Create random variations
   for candidate in experimentCandidates.take 3 do
     let baseName := getConceptName candidate
     let metadata := getConceptMetadata candidate
-    
+
     -- Create a "twisted" version with different naming
     let twistedName := s!"twist_{seed}_{baseName}"
-    
+
     if !concepts.any (fun c => getConceptName c == twistedName) then
       match candidate with
       | ConceptData.definition _ t v cv deps _ =>
@@ -2035,11 +2035,11 @@ def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
           interestingness := 0.6 + (seed % 4).toFloat / 10.0  -- Slight randomness
           specializationDepth := metadata.specializationDepth + 1
           generationMethod := "stochastic_exploration" }
-        
+
         newConcepts := newConcepts ++ [
           ConceptData.definition twistedName t v cv deps newMeta
         ]
-        
+
       | ConceptData.theorem _ s p deps _ =>
         let newMeta := { metadata with
           name := twistedName
@@ -2047,26 +2047,26 @@ def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
           interestingness := 0.7 + (seed % 3).toFloat / 10.0
           specializationDepth := metadata.specializationDepth + 1
           generationMethod := "stochastic_exploration" }
-        
+
         newConcepts := newConcepts ++ [
           ConceptData.theorem twistedName s p deps newMeta
         ]
       | _ => pure ()
-  
+
   -- Create some "bridging" concepts that connect distant concepts
   let definitions := concepts.filterMap fun c => match c with
-    | ConceptData.definition n t v _ _ m => 
+    | ConceptData.definition n t v _ _ m =>
       if m.specializationDepth == 0 && n.length % 4 == (seed + 1) % 4 then
         some (n, t, v)
       else none
     | _ => none
-  
+
   if definitions.length >= 2 then
     let (n1, t1, v1) := definitions[0]!
     let (n2, t2, v2) := definitions[1]!
-    
+
     let bridgeName := s!"bridge_{n1}_{n2}"
-    
+
     if !concepts.any (fun c => getConceptName c == bridgeName) then
       -- Create a simple bridging concept (placeholder - uses first concept's structure)
       newConcepts := newConcepts ++ [
@@ -2081,34 +2081,34 @@ def stochasticExplorationHeuristic : HeuristicFn := fun config concepts => do
           generationMethod := "stochastic_bridging"
         }
       ]
-  
+
   IO.println s!"[STOCHASTIC] Generated {newConcepts.length} exploration concepts"
   return newConcepts
 
 /-- Cross-iteration synthesis heuristic: connects discoveries across different iteration layers -/
 def crossIterationSynthesisHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
-  
+
   -- Strategy 1: Identify underexplored successful patterns
   let successfulConcepts := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       m.successCount > 0 && m.useCount < 5
     | ConceptData.theorem n _ _ _ m =>
-      m.successCount > 0 && m.useCount < 3  
+      m.successCount > 0 && m.useCount < 3
     | _ => false
-    
+
   let foundationalConcepts := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       m.generationMethod == "seed" || m.generationMethod == "mined"
     | _ => false
-    
+
   -- Strategy 2: Cross-apply successful patterns to foundational concepts
   for successfulConcept in successfulConcepts.take 5 do
     for foundationalConcept in foundationalConcepts.take 5 do
       let successName := getConceptName successfulConcept
       let foundName := getConceptName foundationalConcept
       let synthName := s!"cross_apply_{successName}_to_{foundName}"
-      
+
       if !concepts.any (fun c => getConceptName c == synthName) then
         -- Create a conjecture about applying the successful pattern
         let baseInterest := (getConceptMetadata successfulConcept).interestingness
@@ -2125,17 +2125,17 @@ def crossIterationSynthesisHeuristic : HeuristicFn := fun config concepts => do
               specializationDepth := 1
               generationMethod := "cross_iteration_synthesis" }
         ]
-  
+
   -- Strategy 3: Explore variations of recently proven theorems
   let recentTheorems := concepts.filter fun c => match c with
     | ConceptData.theorem n _ _ _ m =>
       m.generationMethod != "mined" && m.specializationDepth <= 1
     | _ => false
-    
+
   for thm in recentTheorems.take 3 do
     let thmName := getConceptName thm
     let variationName := s!"variation_{thmName}"
-    
+
     if !concepts.any (fun c => getConceptName c == variationName) then
       newConcepts := newConcepts ++ [
         ConceptData.pattern variationName
@@ -2150,12 +2150,12 @@ def crossIterationSynthesisHeuristic : HeuristicFn := fun config concepts => do
             specializationDepth := 1
             generationMethod := "cross_iteration_synthesis" }
       ]
-      
+
   -- Strategy 4: Create meta-patterns about discovery methods
   let methodCounts := ["application", "composition", "specialization", "conjecture"].map fun method =>
     let count := concepts.filter (fun c => (getConceptMetadata c).generationMethod == method) |>.length
     (method, count)
-    
+
   for (method, count) in methodCounts do
     if count > 5 then
       let metaPatternName := s!"meta_pattern_{method}_successful"
@@ -2173,26 +2173,26 @@ def crossIterationSynthesisHeuristic : HeuristicFn := fun config concepts => do
               specializationDepth := 0
               generationMethod := "meta_pattern_recognition" }
         ]
-        
+
   IO.println s!"[CROSS-ITER] Generated {newConcepts.length} synthesis concepts (successful: {successfulConcepts.length}, foundational: {foundationalConcepts.length}, recent theorems: {recentTheorems.length})"
   return newConcepts
 
 /-- Historical memory heuristic: Uses full discovery history to find missed opportunities -/
 def historicalMemoryHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
-  
+
   -- Find concepts that have been mentioned as dependencies but not fully explored
   let allDependencies := concepts.foldl (fun acc c => match c with
     | ConceptData.definition _ _ _ _ deps _ => acc ++ deps
     | ConceptData.theorem _ _ _ deps _ => acc ++ deps
     | _ => acc
   ) []
-  
+
   let actualConcepts := concepts.map getConceptName
   let missingDependencies := allDependencies.filter (fun dep => !actualConcepts.contains dep)
-  
+
   IO.println s!"[MEMORY] Found {missingDependencies.length} missing dependencies to explore"
-  
+
   -- Create placeholder concepts for missing dependencies
   for missingDep in missingDependencies.take 5 do
     let placeholderName := s!"inferred_{missingDep}"
@@ -2210,19 +2210,19 @@ def historicalMemoryHeuristic : HeuristicFn := fun config concepts => do
             specializationDepth := 1
             generationMethod := "historical_memory" }
       ]
-  
+
   -- Find underutilized successful concepts and try to build on them
   let underutilizedSuccesses := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       m.successCount > 0 && m.useCount == 0 && m.generationMethod != "number_generation"
     | ConceptData.theorem n _ _ _ m =>
       m.successCount > 0 && m.useCount == 0
     | _ => false
-    
+
   for underutilized in underutilizedSuccesses.take 3 do
     let baseName := getConceptName underutilized
     let extensionName := s!"extension_{baseName}"
-    
+
     if !concepts.any (fun c => getConceptName c == extensionName) then
       newConcepts := newConcepts ++ [
         ConceptData.conjecture extensionName
@@ -2237,31 +2237,31 @@ def historicalMemoryHeuristic : HeuristicFn := fun config concepts => do
             specializationDepth := 1
             generationMethod := "historical_memory" }
       ]
-  
+
   IO.println s!"[MEMORY] Generated {newConcepts.length} memory-guided concepts"
   return newConcepts
 
 /-- Concept freshness heuristic: Creates variations to combat convergence -/
 def conceptFreshnessHeuristic : HeuristicFn := fun config concepts => do
   let mut newConcepts : List ConceptData := []
-  
+
   -- Strategy 1: Create semantic variations of successful definitions
   let successfulDefs := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       m.successCount > 0 && m.generationMethod != "number_generation" && !n.startsWith "variation_"
     | _ => false
-    
+
   for defConcept in successfulDefs.take 3 do
     let baseName := getConceptName defConcept
-    let variations := [s!"alt_{baseName}", s!"enhanced_{baseName}", s!"refined_{baseName}"]
-    
+    let variations := [s!"alt_{baseName}", s!"refined_{baseName}"]
+
     for varName in variations do
       if !concepts.any (fun c => getConceptName c == varName) then
         match defConcept with
         | ConceptData.definition _ defType defValue _ deps metadata =>
           newConcepts := newConcepts ++ [
             ConceptData.definition varName defType defValue none deps
-              { metadata with 
+              { metadata with
                 name := varName
                 parent := some baseName
                 interestingness := metadata.interestingness * 0.9
@@ -2269,24 +2269,24 @@ def conceptFreshnessHeuristic : HeuristicFn := fun config concepts => do
                 generationMethod := "freshness_variation" }
           ]
         | _ => pure ()
-        
+
   -- Strategy 2: Create conceptual bridges between distant concepts
   let earlySuccesses := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       m.generationMethod == "seed" && m.successCount > 0
     | _ => false
-      
+
   let recentSuccesses := concepts.filter fun c => match c with
-    | ConceptData.definition n _ _ _ _ m => 
+    | ConceptData.definition n _ _ _ _ m =>
       m.successCount > 0 && m.specializationDepth > 0
     | _ => false
-    
+
   for early in earlySuccesses.take 2 do
     for recent in recentSuccesses.take 2 do
       let earlyName := getConceptName early
       let recentName := getConceptName recent
       let bridgeName := s!"bridge_{earlyName}_{recentName}_v2"
-      
+
       if !concepts.any (fun c => getConceptName c == bridgeName) then
         newConcepts := newConcepts ++ [
           ConceptData.conjecture bridgeName
@@ -2301,17 +2301,17 @@ def conceptFreshnessHeuristic : HeuristicFn := fun config concepts => do
               specializationDepth := 1
               generationMethod := "freshness_bridge" }
         ]
-        
+
   -- Strategy 3: Revive abandoned patterns with new names
   let abandonedPatterns := concepts.filter fun c => match c with
-    | ConceptData.pattern n _ _ m => 
+    | ConceptData.pattern n _ _ m =>
       m.useCount == 0 && !n.startsWith "revived_"
     | _ => false
-    
+
   for pattern in abandonedPatterns.take 2 do
     let patternName := getConceptName pattern
     let revivedName := s!"revived_{patternName}"
-    
+
     if !concepts.any (fun c => getConceptName c == revivedName) then
       match pattern with
       | ConceptData.pattern _ desc instances metadata =>
@@ -2327,7 +2327,7 @@ def conceptFreshnessHeuristic : HeuristicFn := fun config concepts => do
               generationMethod := "freshness_revival" }
         ]
       | _ => pure ()
-      
+
   IO.println s!"[FRESHNESS] Generated {newConcepts.length} freshness concepts (successful defs: {successfulDefs.length}, early: {earlySuccesses.length}, recent: {recentSuccesses.length}, abandoned: {abandonedPatterns.length})"
   return newConcepts
 
@@ -2547,7 +2547,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
       stochasticHeuristicRef, crossIterHeuristicRef, historicalMemoryRef, conceptFreshnessRef,
       complexityTaskRef, noveltyTaskRef, patternTaskRef
     ]
-  
+
   -- Initialize concept layers with foundational concepts
   let initialLayers : ConceptLayers := {
     foundational := allConcepts
@@ -2555,7 +2555,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
     recent := allConcepts
     current := []
   }
-  
+
   return {
     concepts := allConcepts
     layers := initialLayers
@@ -2575,7 +2575,7 @@ def updateConceptLayers (layers : ConceptLayers) (newConcepts : List ConceptData
     -- Early iterations: build foundational layer
     { foundational := layers.foundational ++ newConcepts
       historical := layers.historical
-      recent := layers.recent ++ newConcepts  
+      recent := layers.recent ++ newConcepts
       current := newConcepts }
   else
     -- Later iterations: age concepts through layers
