@@ -180,7 +180,7 @@ partial def discoveryLoopWithSaving
         fa.statementStr == toString stmt && fa.attemptCount >= 3
 
       if !failedBefore then
-        if let some proof ← tryProveConjecture stmt then
+        if let some proof ← tryProveConjecture stmt kb then
           IO.println s!"  ✓ Proved conjecture: {name}"
           let thm := ConceptData.theorem name stmt proof []
             { metadata with generationMethod := "conjecture_proved" }

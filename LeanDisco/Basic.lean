@@ -668,10 +668,16 @@ def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float
 
   return min 1.0 evidence
 
-/-- Conjecture proving -/
-def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
+/-- Conjecture proving with multiple strategies -/
+def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) := do
+  -- Create proof context from knowledge base
+  let availableTheorems := kb.concepts.filter fun c => match c with
+    | ConceptData.theorem _ _ _ _ _ => true
+    | _ => false
+
+  -- Try multiple proof strategies
   try
-    -- Try reflexivity for equality statements
+    -- Strategy 1: Reflexivity
     match stmt with
     | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
       if ← isDefEq lhs rhs then
@@ -685,8 +691,26 @@ def tryProveConjecture (stmt : Expr) : MetaM (Option Expr) := do
           let proof ← mkAppM ``Eq.refl #[lhs']
           return some proof
         else
-          return none
-    | _ => return none
+          -- Strategy 2: Try simplification
+          let lhsSimp ← whnf lhs'
+          let rhsSimp ← whnf rhs'
+          if ← isDefEq lhsSimp rhsSimp then
+            let proof ← mkAppM ``Eq.refl #[lhsSimp]
+            return some proof
+          else
+            return none
+    | _ =>
+      -- Strategy 3: Try to find exact matching theorem
+      for thm in availableTheorems do
+        match thm with
+        | ConceptData.theorem name thmStmt _ _ _ =>
+          if ← isDefEq stmt thmStmt then
+            -- Found exact match - try to create proof term
+            return some (mkConst (Name.mkSimple name))
+          else
+            continue
+        | _ => continue
+      return none
   catch _ => return none
 
 /-- Check if a constant should be included based on filters -/
@@ -1152,7 +1176,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
         fa.statementStr == toString stmt && fa.attemptCount >= 3
 
       if !failedBefore then
-        if let some proof ← tryProveConjecture stmt then
+        if let some proof ← tryProveConjecture stmt kb then
           IO.println s!"  ✓ Proved conjecture: {name}"
           let thm := ConceptData.theorem name stmt proof []
             { metadata with generationMethod := "conjecture_proved" }
