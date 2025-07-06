@@ -1,7 +1,7 @@
 FINAL DISCOVERY SUMMARY
 =======================
 Total Iterations: 4
-Final Concept Count: 648
+Final Concept Count: 618
 Patterns Found: 10
 Top Scoring Concepts: [(nat_32, 1.000000), (add_assoc, 1.000000), (add_comm, 1.000000), (add_zero, 1.000000), (zero_add, 1.000000)]
 
@@ -11,4 +11,4 @@ Generation Method Distribution:
   specialization: 140
   pattern_recognition: 2
   composition: 60
-  lemma_application: 53
+  lemma_application: 52

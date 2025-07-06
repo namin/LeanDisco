@@ -1,10 +1,10 @@
 === ITERATION 1 COMPLETE ===
-Total Concepts: 266 (+136 new)
+Total Concepts: 260 (+127 new)
 Patterns: 4
-Conjectures: 53
-Theorems: 103
+Conjectures: 50
+Theorems: 100
 Top Concepts:
-  - pattern_importance (score: 1.000000)
+  - concept_freshness (score: 1.000000)
   - add_assoc (score: 1.000000)
   - add_comm (score: 1.000000)
   - add_zero (score: 1.000000)
@@ -26,13 +26,7 @@ All Patterns (4):
   - variation_add_assoc: Variation pattern based on theorem add_assoc
   - variation_add_comm: Variation pattern based on theorem add_comm
   - variation_add_zero: Variation pattern based on theorem add_zero
-All Conjectures (53):
-  - function_lemma_for_zero_add_zero
-    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero)
-  - function_lemma_for_one_add_one_eq_two
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero))
-  - function_lemma_for_two_add_one_eq_three
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero))
+All Conjectures (50):
   - add_comp_succ_eq_0
     Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.add Nat.zero)
   - add_comp_succ_eq_1
@@ -133,7 +127,7 @@ All Conjectures (53):
     Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) (Nat.gcd Nat.zero)
   - gcd_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-All Theorems (103):
+All Theorems (100):
   - add_assoc
     Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
   - add_comm
@@ -334,10 +328,4 @@ All Theorems (103):
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - two_add_one_eq_three_on_prime_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - dual_of_zero_add_zero
-    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
-  - dual_of_one_add_one_eq_two
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - dual_of_two_add_one_eq_three
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
 

@@ -175,79 +175,43 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
   for (thmName, statement, deps, metadata) in targetTheorems.take 3 do
     IO.println s!"[BACKWARDS] Working backwards from theorem: {thmName}"
 
-    -- Strategy 1: Generate missing intermediate theorems
-    for dep in deps do
-      let intermediateName := s!"intermediate_for_{thmName}_via_{dep}"
-      if !concepts.any (fun c => getConceptName c == intermediateName) then
-        -- Create an intermediate theorem conjecture
-        let isValid ← isWellFormedConjecture statement
+    -- Strategy 1: Skip generating duplicate intermediate theorems
+    -- The original logic was flawed - it just copied the original theorem statement
+    -- Instead, let's focus on more meaningful backwards reasoning strategies
+    IO.println s!"[BACKWARDS] Skipping intermediate generation for {thmName} (would create duplicates)"
+
+    -- Strategy 2: Generate helper lemmas by analyzing statement structure (FIXED)
+    match statement with
+    | Expr.forallE _ _ body _ =>
+      -- For universal statements, the body might be a meaningful subgoal
+      let antecedentName := s!"antecedent_for_{thmName}"
+      if !concepts.any (fun c => getConceptName c == antecedentName) then
+        let isValid ← isWellFormedConjecture body
         if isValid then
           newConcepts := newConcepts ++ [
-            ConceptData.conjecture intermediateName statement 0.8 {
-              name := intermediateName
+            ConceptData.conjecture antecedentName body 0.7 {
+              name := antecedentName
               created := 0
               parent := some thmName
-              interestingness := 0.85
+              interestingness := 0.8
               useCount := 0
               successCount := 0
               specializationDepth := metadata.specializationDepth + 1
-              generationMethod := "backwards_reasoning_intermediate"
+              generationMethod := "backwards_reasoning_antecedent"
             }
           ]
         else
-          IO.println s!"[BACKWARDS] Skipping malformed intermediate: {intermediateName}"
-
-    -- Strategy 2: Generate helper lemmas by analyzing statement structure
-    match statement with
-    | Expr.forallE _ _ body _ =>
-      -- For implications or universal statements, generate the antecedent as a lemma
-      let antecedentName := s!"antecedent_for_{thmName}"
-      if !concepts.any (fun c => getConceptName c == antecedentName) then
-        newConcepts := newConcepts ++ [
-          ConceptData.conjecture antecedentName body 0.7 {
-            name := antecedentName
-            created := 0
-            parent := some thmName
-            interestingness := 0.8
-            useCount := 0
-            successCount := 0
-            specializationDepth := metadata.specializationDepth + 1
-            generationMethod := "backwards_reasoning_antecedent"
-          }
-        ]
+          IO.println s!"[BACKWARDS] Skipping malformed antecedent: {antecedentName}"
     | Expr.app f arg =>
-      -- For applications, generate lemmas about the function and argument
-      let functionLemmaName := s!"function_lemma_for_{thmName}"
-      if !concepts.any (fun c => getConceptName c == functionLemmaName) then
-        newConcepts := newConcepts ++ [
-          ConceptData.conjecture functionLemmaName f 0.6 {
-            name := functionLemmaName
-            created := 0
-            parent := some thmName
-            interestingness := 0.75
-            useCount := 0
-            successCount := 0
-            specializationDepth := metadata.specializationDepth + 1
-            generationMethod := "backwards_reasoning_function"
-          }
-        ]
+      -- REMOVED: This was generating malformed conjectures by using bare functions
+      -- A function `f` by itself is not a valid proposition
+      IO.println s!"[BACKWARDS] Skipping function lemma generation for {thmName} (functions are not propositions)"
     | _ => pure ()
 
-    -- Strategy 3: Generate dual or contrapositive statements
-    let dualName := s!"dual_of_{thmName}"
-    if !concepts.any (fun c => getConceptName c == dualName) then
-      newConcepts := newConcepts ++ [
-        ConceptData.conjecture dualName statement 0.6 {
-          name := dualName
-          created := 0
-          parent := some thmName
-          interestingness := 0.7
-          useCount := 0
-          successCount := 0
-          specializationDepth := metadata.specializationDepth + 1
-          generationMethod := "backwards_reasoning_dual"
-        }
-      ]
+    -- Strategy 3: REMOVED - was generating duplicates
+    -- The original "dual" generation just copied the same statement, creating duplicates
+    -- Real dual/contrapositive generation would require sophisticated logical manipulation
+    IO.println s!"[BACKWARDS] Skipping dual generation for {thmName} (would create duplicates)"
 
   -- Strategy 4: Generate prerequisite concepts for failed proofs
   let failedConjectures := concepts.filterMap fun c => match c with

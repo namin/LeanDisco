@@ -1,8 +1,8 @@
 === ITERATION 3 COMPLETE ===
-Total Concepts: 583 (+107 new)
+Total Concepts: 553 (+102 new)
 Patterns: 10
-Conjectures: 176
-Theorems: 225
+Conjectures: 150
+Theorems: 221
 Top Concepts:
   - nat_32 (score: 1.000000)
   - add_assoc (score: 1.000000)
@@ -20,7 +20,7 @@ Generation Methods:
   specialization: 140
   pattern_recognition: 2
   composition: 60
-  lemma_application: 43
+  lemma_application: 42
 All Patterns (10):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_add_assoc: Variation pattern based on theorem add_assoc
@@ -32,13 +32,7 @@ All Patterns (10):
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_add_assoc: Revived: Variation pattern based on theorem add_assoc
   - meta_pattern_application_successful: Meta-pattern: application has been successful (10 concepts)
-All Conjectures (176):
-  - function_lemma_for_zero_add_zero
-    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero)
-  - function_lemma_for_one_add_one_eq_two
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero))
-  - function_lemma_for_two_add_one_eq_three
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero))
+All Conjectures (150):
   - add_comp_succ_eq_0
     Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.add Nat.zero)
   - add_comp_succ_eq_1
@@ -239,42 +233,6 @@ All Conjectures (176):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
   - succ_compose_add1_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
-  - cross_apply_zero_add_zero_to_zero
-    Statement: True
-  - cross_apply_zero_add_zero_to_succ
-    Statement: True
-  - cross_apply_zero_add_zero_to_one
-    Statement: True
-  - cross_apply_zero_add_zero_to_two
-    Statement: True
-  - cross_apply_zero_add_zero_to_add
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_zero
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_succ
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_one
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_two
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_add
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_zero
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_succ
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_one
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_two
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_add
-    Statement: True
-  - extension_zero_add_zero
-    Statement: True
-  - extension_one_add_one_eq_two
-    Statement: True
-  - extension_two_add_one_eq_three
-    Statement: True
   - succ_compose_add2_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
   - add1_compose_succ_preserves_add_assoc_spec_nat_0_maybe
@@ -375,17 +333,7 @@ All Conjectures (176):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 1 x))) (Nat.succ Nat.zero))
   - add1_compose_add2_compose_add2_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 2 x))) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 2 x))) (Nat.succ Nat.zero))
-  - cross_apply_two_add_one_eq_three_on_num_3_to_zero
-    Statement: True
-  - cross_apply_two_add_one_eq_three_on_num_3_to_succ
-    Statement: True
-  - cross_apply_two_add_one_eq_three_on_num_3_to_one
-    Statement: True
-  - cross_apply_two_add_one_eq_three_on_num_3_to_two
-    Statement: True
-  - cross_apply_two_add_one_eq_three_on_num_3_to_add
-    Statement: True
-All Theorems (225):
+All Theorems (221):
   - add_assoc
     Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
   - add_comm
@@ -586,12 +534,6 @@ All Theorems (225):
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - two_add_one_eq_three_on_prime_3
     Statement: Eq.{1} Nat (OfNat.ofNat.{0} Nat 3 (instOfNatNat 3)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - dual_of_zero_add_zero
-    Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero) Nat.zero
-  - dual_of_one_add_one_eq_two
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
-  - dual_of_two_add_one_eq_three
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ (Nat.succ Nat.zero)) (Nat.succ Nat.zero)) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - left_distrib_spec_nat_0
     Statement: forall (m : Nat) (k : Nat), Eq.{1} Nat (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) m) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) k))
   - left_distrib_spec_nat_1
@@ -753,8 +695,6 @@ All Theorems (225):
   - two_add_one_eq_three_on_nat_3_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - two_add_one_eq_three_on_prime_3_on_num_3
-    Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
-  - dual_of_two_add_one_eq_three_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - lcm_comm_spec_nat_0
     Statement: forall (n : Nat), Eq.{1} Nat (Nat.lcm (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) n) (Nat.lcm n (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))
