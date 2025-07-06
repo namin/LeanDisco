@@ -238,6 +238,129 @@ def backwardsReasoningHeuristic : HeuristicFn := fun config concepts => do
   IO.println s!"[BACKWARDS] Generated {newConcepts.length} backwards reasoning concepts"
   return newConcepts
 
+/-- Helper functions to construct theorem expressions -/
+
+-- Helper to create forall expressions
+def mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
+  Expr.forallE (Name.mkSimple varName) varType body (BinderInfo.default)
+
+-- Helper to create equality expressions
+def mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
+  mkApp3 (mkConst ``Eq [levelOne]) type left right
+
+-- Helper to create List Nat type
+def mkListNatType : Expr :=
+  mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+
+-- Helper to create Nat type
+def mkNatType : Expr := mkConst ``Nat
+
+-- Helper to create List.length application
+def mkListLengthApp (list : Expr) : Expr :=
+  mkApp2 (mkConst ``List.length [levelZero]) (mkConst ``Nat) list
+
+-- Helper to create List.append application
+def mkListAppendApp (list1 : Expr) (list2 : Expr) : Expr :=
+  mkApp3 (mkConst ``List.append [levelZero]) (mkConst ``Nat) list1 list2
+
+-- Helper to create Nat.add application
+def mkNatAddApp (n1 : Expr) (n2 : Expr) : Expr :=
+  mkApp2 (mkConst ``Nat.add) n1 n2
+
+-- Helper to create List.reverse application
+def mkListReverseApp (list : Expr) : Expr :=
+  mkApp2 (mkConst ``List.reverse [levelZero]) (mkConst ``Nat) list
+
+-- Helper to create List.map application
+def mkListMapApp (func : Expr) (list : Expr) : Expr :=
+  mkApp4 (mkConst ``List.map [levelZero, levelZero]) (mkConst ``Nat) (mkConst ``Nat) func list
+
+-- Create length-append theorem: ∀ l1 l2 : List Nat, length (l1 ++ l2) = length l1 + length l2
+def mkLengthAppendTheorem : MetaM Expr := do
+  let l1Var := mkFVar (FVarId.mk (Name.mkSimple "l1"))
+  let l2Var := mkFVar (FVarId.mk (Name.mkSimple "l2"))
+  
+  let lhsExpr := mkListLengthApp (mkListAppendApp l1Var l2Var)
+  let rhsExpr := mkNatAddApp (mkListLengthApp l1Var) (mkListLengthApp l2Var)
+  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkNatType
+  
+  let l2ForallExpr := mkForallExpr "l2" mkListNatType equalityExpr
+  let l1ForallExpr := mkForallExpr "l1" mkListNatType l2ForallExpr
+  
+  return l1ForallExpr
+
+-- Create reverse-reverse theorem: ∀ l : List Nat, reverse (reverse l) = l
+def mkReverseReverseTheorem : MetaM Expr := do
+  let lVar := mkFVar (FVarId.mk (Name.mkSimple "l"))
+  
+  let lhsExpr := mkListReverseApp (mkListReverseApp lVar)
+  let rhsExpr := lVar
+  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkListNatType
+  
+  let forallExpr := mkForallExpr "l" mkListNatType equalityExpr
+  
+  return forallExpr
+
+-- Create map-append theorem: ∀ f : Nat → Nat, ∀ l1 l2 : List Nat, map f (l1 ++ l2) = map f l1 ++ map f l2
+def mkMapAppendTheorem : MetaM Expr := do
+  let fVar := mkFVar (FVarId.mk (Name.mkSimple "f"))
+  let l1Var := mkFVar (FVarId.mk (Name.mkSimple "l1"))
+  let l2Var := mkFVar (FVarId.mk (Name.mkSimple "l2"))
+  let natToNatType := Expr.forallE (Name.mkSimple "_") mkNatType mkNatType (BinderInfo.default)
+  
+  let lhsExpr := mkListMapApp fVar (mkListAppendApp l1Var l2Var)
+  let rhsExpr := mkListAppendApp (mkListMapApp fVar l1Var) (mkListMapApp fVar l2Var)
+  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkListNatType
+  
+  let l2ForallExpr := mkForallExpr "l2" mkListNatType equalityExpr
+  let l1ForallExpr := mkForallExpr "l1" mkListNatType l2ForallExpr
+  let fForallExpr := mkForallExpr "f" natToNatType l1ForallExpr
+  
+  return fForallExpr
+
+-- Create length-reverse theorem: ∀ l : List Nat, length (reverse l) = length l
+def mkLengthReverseTheorem : MetaM Expr := do
+  let lVar := mkFVar (FVarId.mk (Name.mkSimple "l"))
+  
+  let lhsExpr := mkListLengthApp (mkListReverseApp lVar)
+  let rhsExpr := mkListLengthApp lVar
+  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkNatType
+  
+  let forallExpr := mkForallExpr "l" mkListNatType equalityExpr
+  
+  return forallExpr
+
+-- Create append-associativity theorem: ∀ l1 l2 l3 : List Nat, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
+def mkAppendAssocTheorem : MetaM Expr := do
+  let l1Var := mkFVar (FVarId.mk (Name.mkSimple "l1"))
+  let l2Var := mkFVar (FVarId.mk (Name.mkSimple "l2"))
+  let l3Var := mkFVar (FVarId.mk (Name.mkSimple "l3"))
+  
+  let lhsExpr := mkListAppendApp (mkListAppendApp l1Var l2Var) l3Var
+  let rhsExpr := mkListAppendApp l1Var (mkListAppendApp l2Var l3Var)
+  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkListNatType
+  
+  let l3ForallExpr := mkForallExpr "l3" mkListNatType equalityExpr
+  let l2ForallExpr := mkForallExpr "l2" mkListNatType l3ForallExpr
+  let l1ForallExpr := mkForallExpr "l1" mkListNatType l2ForallExpr
+  
+  return l1ForallExpr
+
+-- Create length-map theorem: ∀ f : Nat → Nat, ∀ l : List Nat, length (map f l) = length l
+def mkLengthMapTheorem : MetaM Expr := do
+  let fVar := mkFVar (FVarId.mk (Name.mkSimple "f"))
+  let lVar := mkFVar (FVarId.mk (Name.mkSimple "l"))
+  let natToNatType := Expr.forallE (Name.mkSimple "_") mkNatType mkNatType (BinderInfo.default)
+  
+  let lhsExpr := mkListLengthApp (mkListMapApp fVar lVar)
+  let rhsExpr := mkListLengthApp lVar
+  let equalityExpr := mkEqualityExpr lhsExpr rhsExpr mkNatType
+  
+  let lForallExpr := mkForallExpr "l" mkListNatType equalityExpr
+  let fForallExpr := mkForallExpr "f" natToNatType lForallExpr
+  
+  return fForallExpr
+
 /-- Detect base cases and inductive steps -/
 def detectInductiveStructure (concepts : List ConceptData) : MetaM (List (String × Bool × List Expr)) := do
   let mut inductiveStructures : List (String × Bool × List Expr) := []
@@ -294,8 +417,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
     IO.println s!"[INDUCTION] Strong evidence for length-append inductive theorem!"
     IO.println s!"[INDUCTION] Base cases: {baseCases.length}, Inductive steps: {inductiveSteps.length}"
     
+    let lengthAppendThm ← mkLengthAppendTheorem
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "length_append_inductive" (mkConst ``True) 0.95 {
+      ConceptData.conjecture "length_append_inductive" lengthAppendThm 0.95 {
         name := "length_append_inductive"
         created := 0
         parent := none
@@ -306,7 +430,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: length(l1++l2) = length(l1)+length(l2)"
+    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l1 l2 : List Nat, length (l1 ++ l2) = length l1 + length l2"
   
   -- Strategy 4: Reverse-reverse patterns
   let reverseReverseConcepts := concepts.filter fun c => match c with
@@ -321,8 +445,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
   if reverseReverseConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
     IO.println s!"[INDUCTION] Strong evidence for reverse-reverse inductive theorem!"
     
+    let reverseReverseThm ← mkReverseReverseTheorem
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "reverse_reverse_inductive" (mkConst ``True) 0.95 {
+      ConceptData.conjecture "reverse_reverse_inductive" reverseReverseThm 0.95 {
         name := "reverse_reverse_inductive"
         created := 0
         parent := none
@@ -333,7 +458,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: reverse(reverse(l)) = l"
+    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l : List Nat, reverse (reverse l) = l"
   
   -- Strategy 5: Map-append patterns
   let mapAppendConcepts := concepts.filter fun c => match c with
@@ -348,8 +473,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
   if mapAppendConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
     IO.println s!"[INDUCTION] Strong evidence for map-append inductive theorem!"
     
+    let mapAppendThm ← mkMapAppendTheorem
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "map_append_inductive" (mkConst ``True) 0.95 {
+      ConceptData.conjecture "map_append_inductive" mapAppendThm 0.95 {
         name := "map_append_inductive"
         created := 0
         parent := none
@@ -360,7 +486,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: map f (l1++l2) = map f l1 ++ map f l2"
+    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ f : Nat → Nat, ∀ l1 l2 : List Nat, map f (l1 ++ l2) = map f l1 ++ map f l2"
   
   -- Strategy 6: Length-reverse patterns (length(reverse(l)) = length(l))
   let lengthReverseConcepts := concepts.filter fun c => match c with
@@ -375,8 +501,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
   if lengthReverseConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
     IO.println s!"[INDUCTION] Strong evidence for length-reverse inductive theorem!"
     
+    let lengthReverseThm ← mkLengthReverseTheorem
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "length_reverse_inductive" (mkConst ``True) 0.95 {
+      ConceptData.conjecture "length_reverse_inductive" lengthReverseThm 0.95 {
         name := "length_reverse_inductive"
         created := 0
         parent := none
@@ -387,7 +514,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: length(reverse(l)) = length(l)"
+    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l : List Nat, length (reverse l) = length l"
   
   -- Strategy 7: Append associativity patterns ((l1++l2)++l3 = l1++(l2++l3))
   let appendAssocConcepts := concepts.filter fun c => match c with
@@ -402,8 +529,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
   if appendAssocConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
     IO.println s!"[INDUCTION] Strong evidence for append-associativity inductive theorem!"
     
+    let appendAssocThm ← mkAppendAssocTheorem
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "append_assoc_inductive" (mkConst ``True) 0.95 {
+      ConceptData.conjecture "append_assoc_inductive" appendAssocThm 0.95 {
         name := "append_assoc_inductive"
         created := 0
         parent := none
@@ -414,7 +542,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: (l1++l2)++l3 = l1++(l2++l3)"
+    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ l1 l2 l3 : List Nat, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)"
   
   -- Strategy 8: Filter-append patterns (filter p (l1++l2) = filter p l1 ++ filter p l2)
   let filterAppendConcepts := concepts.filter fun c => match c with
@@ -427,21 +555,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
     | _ => false
     
   if filterAppendConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for filter-append inductive theorem!"
-    
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "filter_append_inductive" (mkConst ``True) 0.95 {
-        name := "filter_append_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: filter p (l1++l2) = filter p l1 ++ filter p l2"
+    IO.println s!"[INDUCTION] Skipping filter-append theorem (complex expression construction needed)"
+    -- TODO: Implement filter-append theorem construction
+    -- This requires predicate variables and more sophisticated expression building
   
   -- Strategy 9: Map composition patterns (map f (map g l) = map (f ∘ g) l)
   let mapMapConcepts := concepts.filter fun c => match c with
@@ -454,21 +570,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
     | _ => false
     
   if mapMapConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
-    IO.println s!"[INDUCTION] Strong evidence for map-composition inductive theorem!"
-    
-    newConcepts := newConcepts ++ [
-      ConceptData.conjecture "map_map_inductive" (mkConst ``True) 0.95 {
-        name := "map_map_inductive"
-        created := 0
-        parent := none
-        interestingness := 0.95
-        useCount := 0
-        successCount := 0
-        specializationDepth := 0
-        generationMethod := "induction_discovery"
-      }
-    ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: map f (map g l) = map (f ∘ g) l"
+    IO.println s!"[INDUCTION] Skipping map-composition theorem (requires function composition)"
+    -- TODO: Implement map f (map g l) = map (f ∘ g) l
+    -- This requires function composition operator and more complex type handling
   
   -- Strategy 10: Length-map patterns (length(map f l) = length(l))
   let lengthMapConcepts := concepts.filter fun c => match c with
@@ -483,8 +587,9 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
   if lengthMapConcepts.length >= 2 && baseCases.length >= 1 && inductiveSteps.length >= 1 then
     IO.println s!"[INDUCTION] Strong evidence for length-map inductive theorem!"
     
+    let lengthMapThm ← mkLengthMapTheorem
     newConcepts := newConcepts ++ [
-      ConceptData.conjecture "length_map_inductive" (mkConst ``True) 0.95 {
+      ConceptData.conjecture "length_map_inductive" lengthMapThm 0.95 {
         name := "length_map_inductive"
         created := 0
         parent := none
@@ -495,7 +600,7 @@ def inductionHeuristic : HeuristicFn := fun config concepts => do
         generationMethod := "induction_discovery"
       }
     ]
-    IO.println s!"[INDUCTION] Generated inductive theorem: length(map f l) = length(l)"
+    IO.println s!"[INDUCTION] Generated inductive theorem: ∀ f : Nat → Nat, ∀ l : List Nat, length (map f l) = length l"
   
   -- Strategy 11: Direct theorem pattern detection (strongest evidence)
   let directTheoremConcepts := concepts.filter fun c => match c with
