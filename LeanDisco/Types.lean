@@ -194,13 +194,13 @@ def isWellFormedConjecture (stmt : Expr) : MetaM Bool := do
   try
     -- Check if the statement has metavariables (incomplete)
     if stmt.hasExprMVar then return false
-    
+
     -- Check for basic well-formedness: no loose bound variables
     if stmt.hasLooseBVars then return false
-    
+
     -- Check that it's not just a constant True/False
     if stmt.isConstOf ``True || stmt.isConstOf ``False then return false
-    
+
     -- Special check for Eq expressions (common malformation)
     match stmt with
     | Expr.app (Expr.app (Expr.app eq_const typ) lhs) rhs =>
@@ -221,60 +221,92 @@ def isWellFormedConjecture (stmt : Expr) : MetaM Bool := do
     | _ =>
       -- Try to infer the type for other expressions
       let type ← inferType stmt
-      
+
       -- Check if it's a proposition (Sort 0)
       let isProp ← isType type
-      if !isProp then 
+      if !isProp then
         IO.println s!"[VALIDATION] Rejecting non-proposition: {stmt}"
         return false
-      
+
       return true
-  catch _ => 
+  catch _ =>
     IO.println s!"[VALIDATION] Rejecting due to error: {stmt}"
     return false
 
-/-- Conjecture proving with multiple strategies -/
+-- Helper function for aggressive term normalization
+def normalizeTerm (expr : Expr) : MetaM Expr := do
+  -- Apply multiple normalization strategies
+  let reduced1 ← reduce expr
+  let whnfReduced ← whnf reduced1
+  return whnfReduced
+
+/-- Conjecture proving with multiple powerful strategies -/
 def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) := do
   -- Create proof context from knowledge base
   let availableTheorems := kb.concepts.filter fun c => match c with
     | ConceptData.theorem _ _ _ _ _ => true
     | _ => false
 
-  -- Try multiple proof strategies
+  -- Try multiple proof strategies in order of likelihood
   try
-    -- Strategy 1: Reflexivity
+    -- Strategy 1: Computational proofs for concrete arithmetic
     match stmt with
+    | .app (.app (.app (.const ``Eq _) (.const ``Nat _)) lhs) rhs =>
+      -- Try reducing/computing both sides for Nat equalities
+      let lhs' ← reduce lhs
+      let rhs' ← reduce rhs
+      if ← isDefEq lhs' rhs' then
+        let proof ← mkAppM ``Eq.refl #[lhs']
+        return some proof
+
+      -- Try normalizing more aggressively
+      let lhsNorm ← normalizeTerm lhs
+      let rhsNorm ← normalizeTerm rhs
+      if ← isDefEq lhsNorm rhsNorm then
+        let proof ← mkAppM ``Eq.refl #[lhsNorm]
+        return some proof
+
+      return none
+
     | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
+      -- General equality - try all reduction strategies
       if ← isDefEq lhs rhs then
         let proof ← mkAppM ``Eq.refl #[lhs]
         return some proof
-      else
-        -- Try reducing both sides
-        let lhs' ← reduce lhs
-        let rhs' ← reduce rhs
-        if ← isDefEq lhs' rhs' then
-          let proof ← mkAppM ``Eq.refl #[lhs']
-          return some proof
-        else
-          -- Strategy 2: Try simplification
-          let lhsSimp ← whnf lhs'
-          let rhsSimp ← whnf rhs'
-          if ← isDefEq lhsSimp rhsSimp then
-            let proof ← mkAppM ``Eq.refl #[lhsSimp]
-            return some proof
-          else
-            return none
+
+      -- Try strong reduction (unfold definitions)
+      let lhsReduced ← whnf lhs
+      let rhsReduced ← whnf rhs
+      if ← isDefEq lhsReduced rhsReduced then
+        let proof ← mkAppM ``Eq.refl #[lhsReduced]
+        return some proof
+
+      return none
+
     | _ =>
-      -- Strategy 3: Try to find exact matching theorem
+      -- Strategy 2: Exact theorem matching
       for thm in availableTheorems do
         match thm with
         | ConceptData.theorem name thmStmt _ _ _ =>
           if ← isDefEq stmt thmStmt then
-            -- Found exact match - try to create proof term
             return some (mkConst (Name.mkSimple name))
           else
             continue
         | _ => continue
+
+      -- Strategy 3: Aggressive computational proving
+      for thm in availableTheorems do
+        match thm with
+        | ConceptData.theorem name thmStmt _ _ _ =>
+          -- Try to match theorem by reducing both sides heavily
+          try
+            let stmtReduced ← normalizeTerm stmt
+            let thmReduced ← normalizeTerm thmStmt
+            if ← isDefEq stmtReduced thmReduced then
+              return some (mkConst (Name.mkSimple name))
+          catch _ => continue
+        | _ => continue
+
       return none
   catch _ => return none
 

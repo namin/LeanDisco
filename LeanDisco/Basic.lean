@@ -1237,8 +1237,14 @@ def conjectureGenerationHeuristic : HeuristicFn := fun config concepts => do
                 let natTy := mkConst ``Nat
                 let z     := mkConst ``Nat.zero
                 let one   := mkApp (mkConst ``Nat.succ) z
-                let comp0 := mkApp v₁ (mkApp v₂ z)
-                let candidates : List (Nat × Expr) := [ (0, mkApp v₁ z), (1, mkApp v₂ z), (2, z), (3, one) ]
+                -- Generate smarter candidates that are more likely to be true
+                let comp0 := mkApp v₁ (mkApp v₂ z)  -- f₁(f₂(0))
+                let candidates : List (Nat × Expr) := [
+                  (0, comp0),  -- f₁(f₂(0)) = f₁(f₂(0)) - always true (reflexivity)
+                  (1, mkApp v₂ z),  -- f₁(f₂(0)) = f₂(0) - sometimes true
+                  (2, mkApp v₁ z)   -- f₁(f₂(0)) = f₁(0) - sometimes true  
+                  -- Removed obviously false candidates like f₁(f₂(0)) = 0
+                ]
                 for (idx, cand) in candidates do
                   let stmt := mkApp3 (mkConst ``Eq [levelOne]) natTy comp0 cand
                   let isValid ← isWellFormedConjecture stmt

@@ -33,198 +33,114 @@ All Patterns (10):
   - revived_variation_add_assoc: Revived: Variation pattern based on theorem add_assoc
   - meta_pattern_application_successful: Meta-pattern: application has been successful (10 concepts)
 All Conjectures (200):
-  - add_comp_succ_eq_0
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.add Nat.zero)
   - add_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - add_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) Nat.zero
-  - add_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.add Nat.zero)
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.add Nat.zero)
   - add_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - add_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - add_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - add_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.add Nat.zero)
+    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.add Nat.zero)
   - add_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - add_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - add_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - mul_comp_succ_eq_0
-    Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero)) (Nat.mul Nat.zero)
+    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.add Nat.zero)
   - mul_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - mul_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero)) Nat.zero
-  - mul_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - mul_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.mul Nat.zero)
+    Statement: Eq.{1} Nat (Nat.mul (Nat.succ Nat.zero)) (Nat.mul Nat.zero)
   - mul_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - mul_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - mul_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - mul_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.mul Nat.zero)
+    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.mul Nat.zero)
   - mul_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - mul_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - mul_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - sub_comp_succ_eq_0
-    Statement: Eq.{1} Nat (Nat.sub (Nat.succ Nat.zero)) (Nat.sub Nat.zero)
+    Statement: Eq.{1} Nat (Nat.mul ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.mul Nat.zero)
   - sub_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.sub (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - sub_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.sub (Nat.succ Nat.zero)) Nat.zero
-  - sub_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.sub (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - sub_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.sub Nat.zero)
+    Statement: Eq.{1} Nat (Nat.sub (Nat.succ Nat.zero)) (Nat.sub Nat.zero)
   - sub_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - sub_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - sub_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - sub_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.sub Nat.zero)
+    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.sub Nat.zero)
   - sub_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - sub_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - sub_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - mod_comp_succ_eq_0
-    Statement: Eq.{1} Nat (Nat.mod (Nat.succ Nat.zero)) (Nat.mod Nat.zero)
+    Statement: Eq.{1} Nat (Nat.sub ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.sub Nat.zero)
   - mod_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.mod (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - mod_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.mod (Nat.succ Nat.zero)) Nat.zero
-  - mod_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.mod (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - mod_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.mod Nat.zero)
+    Statement: Eq.{1} Nat (Nat.mod (Nat.succ Nat.zero)) (Nat.mod Nat.zero)
   - mod_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - mod_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - mod_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - mod_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.mod Nat.zero)
+    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.mod Nat.zero)
   - mod_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - mod_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - mod_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - gcd_comp_succ_eq_0
-    Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) (Nat.gcd Nat.zero)
+    Statement: Eq.{1} Nat (Nat.mod ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.mod Nat.zero)
   - gcd_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - gcd_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) Nat.zero
-  - gcd_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - gcd_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.gcd Nat.zero)
+    Statement: Eq.{1} Nat (Nat.gcd (Nat.succ Nat.zero)) (Nat.gcd Nat.zero)
   - gcd_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - gcd_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - gcd_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - gcd_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.gcd Nat.zero)
+    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.gcd Nat.zero)
   - gcd_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - gcd_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - gcd_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - lcm_comp_succ_eq_0
-    Statement: Eq.{1} Nat (Nat.lcm (Nat.succ Nat.zero)) (Nat.lcm Nat.zero)
+    Statement: Eq.{1} Nat (Nat.gcd ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.gcd Nat.zero)
   - lcm_comp_succ_eq_1
     Statement: Eq.{1} Nat (Nat.lcm (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - lcm_comp_succ_eq_2
-    Statement: Eq.{1} Nat (Nat.lcm (Nat.succ Nat.zero)) Nat.zero
-  - lcm_comp_succ_eq_3
-    Statement: Eq.{1} Nat (Nat.lcm (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - lcm_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.lcm Nat.zero)
+    Statement: Eq.{1} Nat (Nat.lcm (Nat.succ Nat.zero)) (Nat.lcm Nat.zero)
   - lcm_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - lcm_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - lcm_comp_add1_eq_3
-    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - lcm_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.lcm Nat.zero)
+    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.lcm Nat.zero)
   - lcm_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - lcm_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - lcm_comp_add2_eq_3
-    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - succ_comp_add1_eq_0
-    Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
+    Statement: Eq.{1} Nat (Nat.lcm ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.lcm Nat.zero)
   - succ_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - succ_comp_add1_eq_2
-    Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - succ_comp_add1_eq_3
     Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
-  - succ_comp_add2_eq_0
-    Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
   - succ_comp_add2_eq_1
     Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - succ_comp_add2_eq_2
-    Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - succ_comp_add2_eq_3
     Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - add1_comp_succ_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
+  - add_comp_succ_eq_1
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
+  - add_comp_succ_eq_2
+    Statement: Eq.{1} Nat (Nat.add (Nat.succ Nat.zero)) (Nat.add Nat.zero)
+  - add_comp_add1_eq_1
+    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
+  - add_comp_add1_eq_2
+    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.add Nat.zero)
+  - add_comp_add2_eq_1
+    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
+  - add_comp_add2_eq_2
+    Statement: Eq.{1} Nat (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.add Nat.zero)
   - add1_comp_succ_eq_1
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - add1_comp_succ_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) Nat.zero
-  - add1_comp_succ_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add1_comp_add2_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - add1_comp_add2_eq_1
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - add1_comp_add2_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) Nat.zero
-  - add1_comp_add2_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_succ_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - add2_comp_succ_eq_1
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
   - add2_comp_succ_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) Nat.zero
-  - add2_comp_succ_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) (Nat.succ Nat.zero)
-  - add2_comp_add1_eq_0
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - add2_comp_add1_eq_1
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - add2_comp_add1_eq_2
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) Nat.zero
-  - add2_comp_add1_eq_3
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) (Nat.succ Nat.zero)
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero)
   - succ_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
   - add1_preserves_add_assoc_spec_nat_0_maybe
@@ -243,6 +159,80 @@ All Conjectures (200):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
   - add2_compose_add1_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
+  - add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero))
+  - add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
+  - succ_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_compose_add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add1_compose_succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - add1_compose_add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
+  - add1_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero))
+  - add2_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
+  - succ_compose_add1_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_compose_add2_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add1_compose_succ_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - add1_compose_add2_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_succ_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_add1_preserves_add_assoc_spec_nat_2_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
+  - add1_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero))
+  - add2_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
+  - succ_compose_add1_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_compose_add2_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add1_compose_succ_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - add1_compose_add2_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_succ_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_add1_preserves_add_assoc_spec_nat_3_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
+  - add1_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero))
+  - add2_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
+  - succ_compose_add1_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_compose_add2_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add1_compose_succ_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - add1_compose_add2_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_succ_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
+  - add2_compose_add1_preserves_add_assoc_spec_nat_4_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) (Nat.succ Nat.zero))
+  - succ_preserves_add_comm_spec_nat_0_maybe
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
   - succ_compose_succ_compose_add1_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 x))) (Nat.succ Nat.zero))
   - succ_compose_succ_compose_add2_preserves_add_assoc_spec_nat_0_maybe
@@ -351,24 +341,6 @@ All Conjectures (200):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 1 (Nat.add 1 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 1 (Nat.add 1 x)))) (Nat.succ Nat.zero))
   - add2_compose_add1_compose_add1_compose_add2_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 (Nat.add 1 (Nat.add 2 x)))) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 (Nat.add 1 (Nat.add 2 x)))) (Nat.succ Nat.zero))
-  - succ_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.succ (Nat.succ Nat.zero))
-  - add1_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) (Nat.succ Nat.zero))
-  - add2_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
-  - succ_compose_add1_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
-  - succ_compose_add2_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
-  - add1_compose_succ_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
-  - add1_compose_add2_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 x)) (Nat.succ Nat.zero))
-  - add2_compose_succ_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 x)) (Nat.succ Nat.zero))
-  - add2_compose_add1_preserves_add_assoc_spec_nat_1_maybe
-    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.add 2 (Nat.add 1 x)) (Nat.succ Nat.zero))
   - succ_compose_succ_compose_add1_preserves_add_assoc_spec_nat_1_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 x))) (Nat.succ Nat.zero))
   - succ_compose_succ_compose_add2_preserves_add_assoc_spec_nat_1_maybe
@@ -433,6 +405,34 @@ All Conjectures (200):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 2 (Nat.add 1 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 2 (Nat.add 1 x)))) (Nat.succ Nat.zero))
   - succ_compose_add2_compose_add1_compose_add2_preserves_add_assoc_spec_nat_1_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 1 (Nat.add 2 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 1 (Nat.add 2 x)))) (Nat.succ Nat.zero))
+  - succ_compose_add2_compose_add2_compose_succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 2 (Nat.add 2 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 2 (Nat.add 2 x)))) (Nat.succ Nat.zero))
+  - succ_compose_add2_compose_add2_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 2 (Nat.add 1 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 2 (Nat.add 2 (Nat.add 1 x)))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 x))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 1 x))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 x))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_succ_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 1 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 1 x)))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_succ_compose_add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_add1_compose_add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 1 (Nat.add 2 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 1 (Nat.add 2 x)))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_add2_compose_succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) (Nat.succ Nat.zero))
+  - add1_compose_succ_compose_add2_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 (Nat.add 1 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 (Nat.add 1 x)))) (Nat.succ Nat.zero))
+  - add1_compose_add2_compose_succ_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 x))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 x))) (Nat.succ Nat.zero))
+  - add1_compose_add2_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 1 x))) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 1 x))) (Nat.succ Nat.zero))
+  - add1_compose_add2_compose_add2_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 2 x))) Nat.zero) ((fun (x : Nat) => Nat.add 1 (Nat.add 2 (Nat.add 2 x))) (Nat.succ Nat.zero))
+  - add1_compose_add2_compose_succ_compose_add1_preserves_add_assoc_spec_nat_1_maybe
+    Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 (Nat.add 1 x)))) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 (Nat.add 2 (Nat.add 1 x)))) (Nat.succ Nat.zero))
 All Theorems (231):
   - add_assoc
     Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
