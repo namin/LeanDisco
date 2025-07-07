@@ -5,6 +5,7 @@ import Lean.Elab.Command
 import LeanDisco.Types
 import LeanDisco.Basic
 import LeanDisco.IncrementalSave
+import LeanDisco.SimpleTactics
 
 set_option autoImplicit false
 set_option linter.unusedVariables false
@@ -651,6 +652,8 @@ def runListsDiscovery (discoveryConfig : DiscoveryConfig) (maxIterations : Nat) 
   IO.println "- All operations are recursive"
   IO.println "- Theorems require induction to prove"
   IO.println ""
+  
+  -- Note: Simple tactic system is now used by the prover automatically
   
   let initialConcepts ← listsInitialConcepts
   IO.println s!"Starting with {initialConcepts.length} list concepts..."

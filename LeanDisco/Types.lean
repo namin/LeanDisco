@@ -1,11 +1,12 @@
 import Lean
 import Lean.Meta.Basic
 import Lean.Elab.Command
+import Lean.Elab.Tactic.Basic
 
 set_option autoImplicit false
 set_option linter.unusedVariables false
 
-open Lean Meta Elab
+open Lean Meta Elab Tactic
 
 namespace LeanDisco
 
@@ -81,6 +82,7 @@ abbrev HeuristicFn := DiscoveryConfig → List ConceptData → MetaM (List Conce
 
 /-- Type for evaluation functions -/
 abbrev EvaluationFn := List ConceptData → MetaM Float
+
 
 /-- Extract concept name -/
 def getConceptName : ConceptData → String

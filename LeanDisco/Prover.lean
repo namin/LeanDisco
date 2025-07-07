@@ -1,4 +1,5 @@
 import LeanDisco.Types
+import LeanDisco.SimpleTactics
 import Lean.Elab.Tactic.Induction
 import Lean.Elab.Tactic.Basic
 import Lean.Elab.Tactic.Simp
@@ -714,66 +715,29 @@ def trySpecializedTactics (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := 
   catch _ =>
     return false
 
-/-- Try enhanced tactics for solving induction subgoals -/
+/-- Try enhanced tactics for solving induction subgoals using the simple tactic system -/
 def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
   try
     let goalType ← goalMVar.getType
     IO.println s!"[TACTICS] Trying to solve: {goalType}"
     
-    -- Try reflexivity first
-    try
-      let _ ← goalMVar.refl
-      IO.println s!"[TACTICS] ✓ Solved with reflexivity"
+    -- Use the simple tactic system
+    let tactics := getSimpleTactics
+    let solved ← trySimpleTactics tactics goalMVar
+    if solved then
+      IO.println s!"[TACTICS] ✓ Solved with simple tactics"
       return true
-    catch _ => pure ()
     
-    -- Try trivial cases
-    if goalType.isConstOf ``True then
-      try
-        let _ ← goalMVar.apply (mkConst ``True.intro)
-        IO.println s!"[TACTICS] ✓ Solved trivial True goal"
-        return true
-      catch _ => pure ()
-    
-    -- Try assumption (for inductive hypotheses)
-    try
-      let _ ← goalMVar.assumption
-      IO.println s!"[TACTICS] ✓ Solved with assumption"
+    -- Fallback: try some legacy specialized tactics if the simple tactics didn't work
+    let legacySolved ← trySpecializedTactics goalMVar goalType
+    if legacySolved then
+      IO.println s!"[TACTICS] ✓ Solved with legacy tactics"
       return true
-    catch _ => pure ()
-    
-    -- Try definitional equality check
-    try
-      match goalType with
-      | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
-        if lhs == rhs then
-          let _ ← goalMVar.refl
-          IO.println s!"[TACTICS] ✓ Solved definitional equality with refl"
-          return true
-        else
-          -- Try to prove by definitional unfolding
-          let success ← tryDefinitionalUnfolding goalMVar lhs rhs
-          if success then
-            IO.println s!"[TACTICS] ✓ Solved with definitional unfolding"
-            return true
-      | _ => pure ()
-    catch _ => pure ()
-    
-    -- Try specialized tactics for common patterns
-    let solved ← trySpecializedTactics goalMVar goalType
-    if solved then return true
-    
-    -- Try constructor for simple types
-    try
-      let _ ← goalMVar.constructor
-      IO.println s!"[TACTICS] ✓ Solved with constructor"
-      return true
-    catch _ => pure ()
     
     IO.println s!"[TACTICS] ✗ Could not solve goal"
     return false
   catch e =>
-    IO.println s!"[TACTICS] Error in basic tactics: {← e.toMessageData.toString}"
+    IO.println s!"[TACTICS] Error in tactics: {← e.toMessageData.toString}"
     return false
 
 
