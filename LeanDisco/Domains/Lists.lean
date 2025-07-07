@@ -780,4 +780,84 @@ def generateListSelfInverseTheorem (op : String) : MetaM (Option (String × Expr
   catch e =>
     return none
 
+/-- Domain-specific theorem statement creation for Lists -/
+def createListTheoremStatement (pattern : String) : MetaM Expr := do
+  -- Helper functions
+  let mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
+    Expr.forallE (Name.mkSimple varName) varType body (BinderInfo.default)
+  
+  let mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
+    mkApp3 (mkConst ``Eq [levelOne]) type left right
+  
+  match pattern with
+  | "length_append" | "length" => 
+    -- Generate: ∀ l1 l2, length(l1 ++ l2) = length(l1) + length(l2)
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
+    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+      -- length(l1 ++ l2)
+      let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
+      let leftSide := mkApp (mkConst ``List.length [levelZero]) append
+      
+      -- length(l1) + length(l2)
+      let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
+      let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
+      let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
+      
+      -- Equality
+      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
+      let forallL2 := mkForallExpr "l2" listType equality
+      let forallL1 := mkForallExpr "l1" listType forallL2
+      
+      return forallL1
+    
+  | "append" =>
+    -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)  
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
+    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+    withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
+      -- (l1 ++ l2) ++ l3
+      let l1l2 := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
+      let leftSide := mkApp2 (mkConst ``List.append [levelZero]) l1l2 l3Var
+      
+      -- l1 ++ (l2 ++ l3)
+      let l2l3 := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
+      let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2l3
+      
+      -- Equality
+      let equality := mkEqualityExpr leftSide rightSide listType
+      let forallL3 := mkForallExpr "l3" listType equality
+      let forallL2 := mkForallExpr "l2" listType forallL3
+      let forallL1 := mkForallExpr "l1" listType forallL2
+      
+      return forallL1
+    
+  | "reverse" =>
+    -- Generate: ∀ l, reverse(reverse(l)) = l
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
+      -- reverse(reverse(l))
+      let rev1 := mkApp (mkConst ``List.reverse [levelZero]) lVar
+      let leftSide := mkApp (mkConst ``List.reverse [levelZero]) rev1
+      
+      -- l
+      let rightSide := lVar
+      
+      -- Equality
+      let equality := mkEqualityExpr leftSide rightSide listType
+      let forallL := mkForallExpr "l" listType equality
+      
+      return forallL
+    
+  | _ =>
+    -- Fallback
+    IO.println s!"[LISTS] No specific theorem template for pattern: {pattern}"
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    let body := mkConst ``True
+    return mkForallExpr s!"{pattern}_var" listType body
+
 end LeanDisco.Domains.Lists

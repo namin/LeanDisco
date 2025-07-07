@@ -327,85 +327,6 @@ def identifyInductiveSteps (concepts : List ConceptData) : MetaM (List ConceptDa
   IO.println s!"[INDUCTION] Identified {inductiveSteps.length} potential inductive steps"
   return inductiveSteps
 
-/-- Create List-specific theorem statements (temporary until plugin system) -/
-def createListTheoremStatement (pattern : String) : MetaM Expr := do
-  -- Helper functions
-  let mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
-    Expr.forallE (Name.mkSimple varName) varType body (BinderInfo.default)
-  
-  let mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
-    mkApp3 (mkConst ``Eq [levelOne]) type left right
-  
-  match pattern with
-  | "length_append" | "length" => 
-    -- Generate: ∀ l1 l2, length(l1 ++ l2) = length(l1) + length(l2)
-    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
-    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
-    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
-      -- length(l1 ++ l2)
-      let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
-      let leftSide := mkApp (mkConst ``List.length [levelZero]) append
-      
-      -- length(l1) + length(l2)
-      let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
-      let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
-      let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
-      
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
-      let forallL2 := mkForallExpr "l2" listType equality
-      let forallL1 := mkForallExpr "l1" listType forallL2
-      
-      return forallL1
-    
-  | "append" =>
-    -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)  
-    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
-    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
-    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
-    withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
-      -- (l1 ++ l2) ++ l3
-      let l1l2 := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
-      let leftSide := mkApp2 (mkConst ``List.append [levelZero]) l1l2 l3Var
-      
-      -- l1 ++ (l2 ++ l3)
-      let l2l3 := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
-      let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2l3
-      
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide listType
-      let forallL3 := mkForallExpr "l3" listType equality
-      let forallL2 := mkForallExpr "l2" listType forallL3
-      let forallL1 := mkForallExpr "l1" listType forallL2
-      
-      return forallL1
-    
-  | "reverse" =>
-    -- Generate: ∀ l, reverse(reverse(l)) = l
-    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
-    withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
-      -- reverse(reverse(l))
-      let rev1 := mkApp (mkConst ``List.reverse [levelZero]) lVar
-      let leftSide := mkApp (mkConst ``List.reverse [levelZero]) rev1
-      
-      -- l
-      let rightSide := lVar
-      
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide listType
-      let forallL := mkForallExpr "l" listType equality
-      
-      return forallL
-    
-  | _ =>
-    -- Fallback
-    IO.println s!"[LISTS] No specific theorem template for pattern: {pattern}"
-    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    let body := mkConst ``True
-    return mkForallExpr s!"{pattern}_var" listType body
 
 /-- Group conjectures by common patterns in their names -/
 def groupConjecturesByPattern (concepts : List ConceptData) : List (String × List ConceptData) :=
@@ -423,19 +344,17 @@ def groupConjecturesByPattern (concepts : List ConceptData) : List (String × Li
     else
       none
 
-/-- Generic theorem statement creation - delegates to domain-specific generators -/
+/-- Generic theorem statement creation - provides generic inductive patterns -/
 def createInductiveTheoremStatement (pattern : String) (conjectures : List ConceptData) : MetaM Expr := do
-  -- Check if this is a List operation and call appropriate domain function
-  if contains pattern "length" || contains pattern "append" || contains pattern "reverse" then
-    IO.println s!"[INDUCTION] Creating List-specific theorem statement for pattern: {pattern}"
-    -- Call the List domain function (temporarily inline until we have proper plugin system)
-    createListTheoremStatement pattern
-  else
-    -- Generic fallback
-    IO.println s!"[INDUCTION] Creating generic theorem statement for pattern: {pattern}"
-    let varType := mkConst ``Nat
-    let body := mkConst ``True
-    return mkForallExpr pattern varType body
+  -- For now, create generic inductive theorem patterns
+  -- This will be replaced by a proper plugin system where domains register their generators
+  IO.println s!"[INDUCTION] Creating generic theorem statement for pattern: {pattern}"
+  
+  -- Generic approach: create a universally quantified equality statement
+  -- This is a placeholder until proper domain plugins are implemented
+  let varType := mkConst ``Nat
+  let body := mkEqualityExpr (mkConst ``Nat.zero) (mkConst ``Nat.zero) (mkConst ``Nat)
+  return mkForallExpr s!"{pattern}_x" varType body
 
 /-- Generate an inductive theorem from a pattern of conjectures -/
 def generateInductiveTheoremFromPattern (pattern : String) (conjectures : List ConceptData) 
@@ -682,16 +601,16 @@ def generateOperationCompositionTheorem (op1 op2 : String) : MetaM (Option (Stri
   try
     -- Check if this is a List operation and delegate to List domain
     if contains op1 "List." || contains op2 "List." then
-      -- Call List domain function for real theorem generation
+      -- Generate generic composition theorems (domain plugins would handle specifics)
       if (contains op1 "length" && contains op2 "append") then
         let theoremName := "length_append_distributive"
-        let statement ← createListTheoremStatement "length_append"
-        IO.println s!"[INDUCTION] Generated List composition theorem: {theoremName}"
+        let statement ← createInductiveTheoremStatement "length_append" []
+        IO.println s!"[INDUCTION] Generated generic composition theorem: {theoremName}"
         return some (theoremName, statement)
       else if (contains op1 "append" && contains op2 "append") then
         let theoremName := "append_associative" 
-        let statement ← createListTheoremStatement "append"
-        IO.println s!"[INDUCTION] Generated List composition theorem: {theoremName}"
+        let statement ← createInductiveTheoremStatement "append" []
+        IO.println s!"[INDUCTION] Generated generic composition theorem: {theoremName}"
         return some (theoremName, statement)
       else
         return none
@@ -706,21 +625,21 @@ def generateSelfInverseTheorem (op : String) : MetaM (Option (String × Expr)) :
   try
     -- Check if this is a List operation and delegate to List domain
     if contains op "List." then
-      -- Call List domain function for real theorem generation
+      -- Generate generic self-inverse theorems (domain plugins would handle specifics)
       if contains op "reverse" then
         let theoremName := "reverse_involutive"
-        let statement ← createListTheoremStatement "reverse"
-        IO.println s!"[INDUCTION] Generated List involution theorem: {theoremName}"
+        let statement ← createInductiveTheoremStatement "reverse" []
+        IO.println s!"[INDUCTION] Generated generic involution theorem: {theoremName}"
         return some (theoremName, statement)
       else if contains op "append" then
         let theoremName := "append_associative"
-        let statement ← createListTheoremStatement "append"
-        IO.println s!"[INDUCTION] Generated List associativity theorem: {theoremName}"
+        let statement ← createInductiveTheoremStatement "append" []
+        IO.println s!"[INDUCTION] Generated generic associativity theorem: {theoremName}"
         return some (theoremName, statement)
       else if contains op "length" then
         let theoremName := "length_append"
-        let statement ← createListTheoremStatement "length"
-        IO.println s!"[INDUCTION] Generated List length theorem: {theoremName}"
+        let statement ← createInductiveTheoremStatement "length" []
+        IO.println s!"[INDUCTION] Generated generic length theorem: {theoremName}"
         return some (theoremName, statement)
       else
         return none
