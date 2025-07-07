@@ -1,9 +1,12 @@
 import LeanDisco.Types
+import Lean.Elab.Tactic.Induction
+import Lean.Elab.Tactic.Basic
+import Lean.Elab.Tactic.Simp
 
 set_option autoImplicit false
 set_option linter.unusedVariables false
 
-open Lean Meta Elab
+open Lean Meta Elab Tactic
 
 namespace LeanDisco
 
@@ -350,11 +353,77 @@ def createInductiveTheoremStatement (pattern : String) (conjectures : List Conce
   -- This will be replaced by a proper plugin system where domains register their generators
   IO.println s!"[INDUCTION] Creating generic theorem statement for pattern: {pattern}"
   
-  -- Generic approach: create a universally quantified equality statement
-  -- This is a placeholder until proper domain plugins are implemented
-  let varType := mkConst ``Nat
-  let body := mkEqualityExpr (mkConst ``Nat.zero) (mkConst ``Nat.zero) (mkConst ``Nat)
-  return mkForallExpr s!"{pattern}_x" varType body
+  -- Create meaningful theorem statements based on the pattern
+  match pattern with
+  | "length_append" => do
+    -- ∀ l1 l2 : List α, length (l1 ++ l2) = length l1 + length l2
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
+    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+      -- length(l1 ++ l2)
+      let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
+      let leftSide := mkApp (mkConst ``List.length [levelZero]) append
+      
+      -- length(l1) + length(l2)
+      let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
+      let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
+      let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
+      
+      -- Equality
+      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
+      let forallL2 := mkForallExpr "l2" listType equality
+      let forallL1 := mkForallExpr "l1" listType forallL2
+      
+      return forallL1
+      
+  | "reverse" => do
+    -- ∀ l : List α, reverse (reverse l) = l
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
+      let reverseOnce := mkApp (mkConst ``List.reverse [levelZero]) lVar
+      let reverseTwice := mkApp (mkConst ``List.reverse [levelZero]) reverseOnce
+      let equality := mkEqualityExpr reverseTwice lVar listType
+      return mkForallExpr "l" listType equality
+      
+  | "append" => do
+    -- ∀ l1 l2 l3 : List α, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
+    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+    withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
+      let leftAppend := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
+      let leftSide := mkApp2 (mkConst ``List.append [levelZero]) leftAppend l3Var
+      
+      let rightAppend := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
+      let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var rightAppend
+      
+      let equality := mkEqualityExpr leftSide rightSide listType
+      let forallL3 := mkForallExpr "l3" listType equality
+      let forallL2 := mkForallExpr "l2" listType forallL3
+      let forallL1 := mkForallExpr "l1" listType forallL2
+      
+      return forallL1
+      
+  | "length" => do
+    -- ∀ l : List α, length (reverse l) = length l
+    let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    
+    withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
+      let reversedList := mkApp (mkConst ``List.reverse [levelZero]) lVar
+      let leftSide := mkApp (mkConst ``List.length [levelZero]) reversedList
+      let rightSide := mkApp (mkConst ``List.length [levelZero]) lVar
+      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
+      return mkForallExpr "l" listType equality
+      
+  | _ => do
+    -- Generic fallback for unknown patterns - create a simple property
+    IO.println s!"[INDUCTION] Unknown pattern {pattern}, creating generic statement"
+    let natType := mkConst ``Nat
+    let body := mkEqualityExpr (mkConst ``Nat.zero) (mkConst ``Nat.zero) natType
+    return mkForallExpr s!"{pattern}_x" natType body
 
 /-- Generate an inductive theorem from a pattern of conjectures -/
 def generateInductiveTheoremFromPattern (pattern : String) (conjectures : List ConceptData) 
@@ -414,61 +483,213 @@ def isLikelyProvable (goalType : Expr) : Bool :=
   | Expr.const ``True _ => true  -- Trivially true
   | _ => false
 
+/-- Check if a type is inductive (List, Nat, etc.) -/
+def isInductiveType (type : Expr) : Bool :=
+  match type with
+  | Expr.const ``Nat _ => true
+  | Expr.app (Expr.const ``List _) _ => true
+  | Expr.app (Expr.const ``Array _) _ => true
+  | _ => false
+
+/-- Try basic non-inductive tactics including simp -/
+def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
+  try
+    let goalType ← goalMVar.getType
+    IO.println s!"[TACTICS] Trying to solve: {goalType}"
+    
+    -- Try reflexivity first
+    try
+      let _ ← goalMVar.refl
+      IO.println s!"[TACTICS] ✓ Solved with reflexivity"
+      return true
+    catch _ => pure ()
+    
+    -- Try trivial cases
+    if goalType.isConstOf ``True then
+      try
+        let _ ← goalMVar.apply (mkConst ``True.intro)
+        IO.println s!"[TACTICS] ✓ Solved trivial True goal"
+        return true
+      catch _ => pure ()
+    
+    -- Try assumption (for inductive hypotheses)
+    try
+      let _ ← goalMVar.assumption
+      IO.println s!"[TACTICS] ✓ Solved with assumption"
+      return true
+    catch _ => pure ()
+    
+    -- Try simp for simplification (simplified approach for now)
+    try
+      goalMVar.withContext do
+        -- For now, skip simp due to API complexity
+        IO.println s!"[TACTICS] Skipping simp (API complexity)"
+        pure ()
+    catch _ => 
+      IO.println s!"[TACTICS] Simp failed"
+      pure ()
+    
+    -- Check if it's a definitionally equal equality
+    try
+      match goalType with
+      | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
+        if lhs == rhs then
+          let _ ← goalMVar.refl
+          IO.println s!"[TACTICS] ✓ Solved definitional equality with refl"
+          return true
+      | _ => pure ()
+    catch _ => pure ()
+    
+    -- Try constructor for simple types
+    try
+      let _ ← goalMVar.constructor
+      IO.println s!"[TACTICS] ✓ Solved with constructor"
+      return true
+    catch _ => pure ()
+    
+    IO.println s!"[TACTICS] ✗ Could not solve goal"
+    return false
+  catch e =>
+    IO.println s!"[TACTICS] Error in basic tactics: {← e.toMessageData.toString}"
+    return false
+
+/-- Apply real Lean induction tactic to a goal -/
+def applyInductionTactic (goalMVar : MVarId) (varName : Name) (varType : Expr) : MetaM Bool := do
+  try
+    IO.println s!"[INDUCTION] Attempting real induction on variable {varName}"
+    
+    -- We need to find the FVarId for the variable name within the goal context
+    let goalType ← goalMVar.getType
+    goalMVar.withContext do
+      let localCtx ← getLCtx
+      let fvarId? := localCtx.findFromUserName? varName
+      
+      match fvarId? with
+      | some localDecl => do
+        let fvarId := localDecl.fvarId
+        IO.println s!"[INDUCTION] Found variable {varName} as FVar, applying real induction"
+        
+        try
+          -- Use Lean's actual induction tactic
+          IO.println s!"[INDUCTION] Calling MVarId.induction on {varName} of type {varType}"
+          
+          -- Apply induction using Lean's built-in induction
+          -- Get the recursor name for the inductive type
+          let inductType ← inferType (mkFVar fvarId)
+          let recursorName? := match inductType with
+            | Expr.const name _ => some (name.str "rec")
+            | Expr.app (Expr.const name _) _ => some (name.str "rec")
+            | _ => none
+          
+          match recursorName? with
+          | some recursorName => do
+            let inductionResult ← goalMVar.induction fvarId recursorName
+            
+            IO.println s!"[INDUCTION] Induction generated {inductionResult.size} subgoals"
+            
+            -- Try to solve each subgoal generated by induction
+            let mut allSolved := true
+            for i in [0:inductionResult.size] do
+              let subgoal := inductionResult[i]!
+              IO.println s!"[INDUCTION] Solving subgoal {i + 1}/{inductionResult.size}"
+              
+              let solved ← tryBasicTactics subgoal.mvarId
+              if !solved then
+                allSolved := false
+                IO.println s!"[INDUCTION] ✗ Failed to solve subgoal {i + 1}"
+              else
+                IO.println s!"[INDUCTION] ✓ Solved subgoal {i + 1}"
+            
+            if allSolved then
+              IO.println s!"[INDUCTION] ✓ Successfully completed real induction proof!"
+            else
+              IO.println s!"[INDUCTION] ✗ Induction generated subgoals but couldn't solve them all"
+            
+            return allSolved
+          | none => do
+            IO.println s!"[INDUCTION] Could not determine recursor for type {inductType}"
+            return false
+          
+        catch e =>
+          IO.println s!"[INDUCTION] Real induction tactic failed: {← e.toMessageData.toString}"
+          -- Fallback: try to solve the goal directly with basic tactics
+          let solved ← tryBasicTactics goalMVar
+          return solved
+          
+      | none => do
+        IO.println s!"[INDUCTION] Could not find variable {varName} in goal context"
+        return false
+      
+  catch e =>
+    IO.println s!"[INDUCTION] Error applying induction tactic: {← e.toMessageData.toString}"
+    return false
+
+/-- Attempt to prove a goal by induction -/
+def attemptInductionProof (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := do
+  try
+    IO.println s!"[INDUCTION] Attempting induction on goal type: {goalType}"
+    
+    -- First, we need to introduce quantified variables using the intro tactic
+    let goalAfterIntros ← goalMVar.intros
+    let (introducedVars, newGoal) := goalAfterIntros
+    
+    if introducedVars.size > 0 then
+      IO.println s!"[INDUCTION] Introduced {introducedVars.size} variables"
+      
+      -- Look for inductive variables among the introduced ones
+      newGoal.withContext do
+        let localCtx ← getLCtx
+        for fvarId in introducedVars do
+          let localDecl := localCtx.get! fvarId
+          let varName := localDecl.userName
+          let varType ← inferType (mkFVar fvarId)
+          
+          IO.println s!"[INDUCTION] Checking introduced variable {varName} of type {varType}"
+          
+          -- Check if this variable has an inductive type
+          if isInductiveType varType then
+            IO.println s!"[INDUCTION] Variable {varName} has inductive type {varType}, applying induction"
+            
+            -- Apply induction on this variable
+            let result ← applyInductionTactic newGoal varName varType
+            return result
+        
+        -- If no inductive variables found, try basic tactics on the simplified goal
+        IO.println s!"[INDUCTION] No inductive variables found, trying basic tactics"
+        let result ← tryBasicTactics newGoal
+        return result
+    else
+      IO.println s!"[INDUCTION] No variables to introduce, trying basic tactics directly"
+      let result ← tryBasicTactics goalMVar
+      return result
+      
+  catch e =>
+    IO.println s!"[INDUCTION] Error during induction attempt"
+    return false
+
+
 /-- Try a simple proof attempt using basic tactics -/
 def trySimpleProofAttempt (goalMVar : MVarId) (statement : Expr) : MetaM Bool := do
   try
-    IO.println s!"[INDUCTION] Attempting real proof of goal"
+    IO.println s!"[INDUCTION] Attempting real proof by induction"
     
-    -- Try different basic proof strategies
-    let tactics := [
-      "rfl",           -- reflexivity
-      "simp",          -- simplification
-      "trivial",       -- trivial proofs
-      "decide"         -- decidable instances
-    ]
-    
-    for tacticName in tactics do
-      try
-        IO.println s!"[INDUCTION] Trying tactic: {tacticName}"
-        
-        -- Try to apply the tactic
-        match tacticName with
-        | "rfl" => do
-          -- Try reflexivity
-          let _ ← goalMVar.refl
-          IO.println s!"[INDUCTION] ✓ Solved with reflexivity!"
-          return true
-        | "simp" => do
-          -- Try simplification (basic version)
-          -- For now, just check if the goal is already simplified
-          let goalType ← goalMVar.getType
-          if goalType.isConstOf ``True then
-            let _ ← goalMVar.apply (mkConst ``True.intro)
-            IO.println s!"[INDUCTION] ✓ Solved with simp!"
-            return true
-        | "trivial" => do
-          -- Check if it's a trivial goal (like True)
-          let goalType ← goalMVar.getType
-          if goalType.isConstOf ``True then
-            let _ ← goalMVar.apply (mkConst ``True.intro)
-            IO.println s!"[INDUCTION] ✓ Solved trivial goal!"
-            return true
-        | _ => pure ()
-      catch e =>
-        IO.println s!"[INDUCTION] Tactic {tacticName} failed"
-        continue
-    
-    -- If all basic tactics fail, try a more sophisticated approach
     let goalType ← goalMVar.getType
     IO.println s!"[INDUCTION] Goal type: {goalType}"
     
-    -- Check if this looks like a theorem we might be able to prove
-    if isLikelyProvable goalType then
-      IO.println s!"[INDUCTION] Goal appears potentially provable, claiming success"
+    -- Try to identify the inductive structure and apply induction
+    let success ← attemptInductionProof goalMVar goalType
+    if success then
+      IO.println s!"[INDUCTION] ✓ Successfully proved by induction!"
       return true
-    else
-      IO.println s!"[INDUCTION] Could not prove goal with basic tactics"
-      return false
+    
+    -- If induction fails, try basic tactics as fallback
+    let basicSuccess ← tryBasicTactics goalMVar
+    if basicSuccess then
+      IO.println s!"[INDUCTION] ✓ Solved with basic tactics!"
+      return true
+    
+    IO.println s!"[INDUCTION] Could not prove goal"
+    return false
       
   catch e =>
     IO.println s!"[INDUCTION] Error during proof attempt"
@@ -515,31 +736,6 @@ def attemptRealInductiveProof (theoremName : String) (statement : Expr) : MetaM 
     return none
 
 
-/-- Try basic tactics to solve simple goals -/
-def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
-  try
-    -- Try reflexivity, assumption, etc.
-    IO.println s!"[INDUCTION] Trying basic tactics on subgoal"
-    
-    -- Use the more sophisticated proof attempt
-    let success ← trySimpleProofAttempt goalMVar (← goalMVar.getType)
-    return success
-    
-  catch e =>
-    return false
-
-/-- Apply induction tactic to a goal -/
-def applyInductionTactic (goalMVar : MVarId) (inductiveVar : Name) (inductiveType : Name) : MetaM (List MVarId) := do
-  -- This is where we'd actually apply Lean's induction tactic
-  -- For now, simulate creating base case and inductive step subgoals
-  
-  IO.println s!"[INDUCTION] Applying induction on {inductiveVar} of type {inductiveType}"
-  
-  -- Create mock subgoals (in real implementation, use actual induction tactic)
-  let baseGoal ← mkFreshExprMVar (Expr.sort Level.zero)
-  let inductiveGoal ← mkFreshExprMVar (Expr.sort Level.zero)
-  
-  return [baseGoal.mvarId!, inductiveGoal.mvarId!]
 
 /-- Find inductive structure in a statement -/
 def findInductiveStructure (statement : Expr) : MetaM (Option Name × Option Name) := do
@@ -563,38 +759,6 @@ def findInductiveStructure (statement : Expr) : MetaM (Option Name × Option Nam
     | _ => return (none, none)
   | _ => return (none, none)
 
-/-- Try to prove a goal by induction -/
-def tryProveByInduction (goalMVar : MVarId) (statement : Expr) : MetaM Bool := do
-  try
-    -- Analyze the statement to identify the inductive type and variable
-    let (inductiveType, inductiveVar) ← findInductiveStructure statement
-    
-    match inductiveType, inductiveVar with
-    | some indType, some indVar =>
-      IO.println s!"[INDUCTION] Found inductive type: {indType}, variable: {indVar}"
-      
-      -- Apply induction tactic
-      let subgoals ← applyInductionTactic goalMVar indVar indType
-      
-      IO.println s!"[INDUCTION] Induction created {subgoals.length} subgoals"
-      
-      -- Try to solve each subgoal
-      let mut allSolved := true
-      for subgoal in subgoals do
-        let solved ← tryBasicTactics subgoal
-        if solved = false then
-          allSolved := false
-          IO.println s!"[INDUCTION] Failed to solve subgoal"
-      
-      return allSolved
-      
-    | _, _ =>
-      IO.println s!"[INDUCTION] Could not identify inductive structure"
-      return false
-      
-  catch e =>
-    IO.println s!"[INDUCTION] Error in induction attempt"
-    return false
 
 /-- Generate theorem about operation composition - delegates to domain-specific generators -/
 def generateOperationCompositionTheorem (op1 op2 : String) : MetaM (Option (String × Expr)) := do
