@@ -1,13 +1,13 @@
 === ITERATION 1 COMPLETE ===
-Total Concepts: 118 (+43 new)
+Total Concepts: 114 (+39 new)
 Patterns: 4
-Conjectures: 62
+Conjectures: 57
 Theorems: 7
 Top Concepts:
-  - two_add_one_eq_three (score: 1.000000)
+  - zero_add_zero (score: 1.000000)
   - empty_list (score: 1.000000)
   - two (score: 1.000000)
-  - specialization (score: 1.000000)
+  - one_add_one_eq_two (score: 1.000000)
   - application (score: 1.000000)
   - add (score: 1.000000)
   - theorem_length_append_inductive (score: 1.000000)
@@ -19,13 +19,13 @@ Generation Methods:
   pattern_recognition: 1
   composition: 6
   lemma_application: 1
-  induction_discovery: 5
+  induction_discovery: 1
 All Patterns (4):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
   - variation_add_comm: Variation pattern based on theorem add_comm
   - variation_zero_add_zero: Variation pattern based on theorem zero_add_zero
-All Conjectures (62):
+All Conjectures (57):
   - length_append_example_1
     Statement: True
   - length_append_example_2
@@ -140,16 +140,6 @@ All Conjectures (62):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) Nat.zero
   - add2_homomorphism
     Statement: forall (x : Nat) (y : Nat), Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.add x y)) (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) y))
-  - inductive_theorem_length
-    Statement: Prop -> True
-  - inductive_theorem_append
-    Statement: Prop -> True
-  - inductive_theorem_reverse
-    Statement: Prop -> True
-  - inductive_theorem_map
-    Statement: Prop -> True
-  - inductive_theorem_filter
-    Statement: Prop -> True
 All Theorems (7):
   - zero_eq_zero
     Statement: Eq.{1} Nat Nat.zero Nat.zero

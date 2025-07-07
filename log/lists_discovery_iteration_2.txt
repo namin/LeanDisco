@@ -1,7 +1,7 @@
 === ITERATION 2 COMPLETE ===
-Total Concepts: 186 (+68 new)
+Total Concepts: 182 (+68 new)
 Patterns: 7
-Conjectures: 74
+Conjectures: 69
 Theorems: 9
 Top Concepts:
   - two_add_one_eq_three (score: 1.000000)
@@ -19,7 +19,7 @@ Generation Methods:
   pattern_recognition: 1
   composition: 56
   lemma_application: 3
-  induction_discovery: 5
+  induction_discovery: 1
 All Patterns (7):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
@@ -28,7 +28,7 @@ All Patterns (7):
   - meta_pattern_composition_successful: Meta-pattern: composition has been successful (6 concepts)
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_zero_eq_zero: Revived: Variation pattern based on theorem zero_eq_zero
-All Conjectures (74):
+All Conjectures (69):
   - length_append_example_1
     Statement: True
   - length_append_example_2
@@ -143,16 +143,6 @@ All Conjectures (74):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) Nat.zero
   - add2_homomorphism
     Statement: forall (x : Nat) (y : Nat), Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.add x y)) (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) y))
-  - inductive_theorem_length
-    Statement: Prop -> True
-  - inductive_theorem_append
-    Statement: Prop -> True
-  - inductive_theorem_reverse
-    Statement: Prop -> True
-  - inductive_theorem_map
-    Statement: Prop -> True
-  - inductive_theorem_filter
-    Statement: Prop -> True
   - succ_compose_add1_fixed_point_zero
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) Nat.zero
   - succ_compose_add1_homomorphism
