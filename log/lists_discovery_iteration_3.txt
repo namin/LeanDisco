@@ -1,24 +1,24 @@
 === ITERATION 3 COMPLETE ===
-Total Concepts: 237 (+55 new)
+Total Concepts: 242 (+55 new)
 Patterns: 7
-Conjectures: 113
-Theorems: 16
+Conjectures: 100
+Theorems: 34
 Top Concepts:
-  - theorem_length_reverse_inductive (score: 1.000000)
-  - zero_eq_zero (score: 1.000000)
   - specialization (score: 1.000000)
+  - zero_eq_zero (score: 1.000000)
+  - two_add_one_eq_three (score: 1.000000)
   - empty_list (score: 1.000000)
   - theorem_length_append_inductive (score: 1.000000)
   - theorem_reverse_reverse_inductive (score: 1.000000)
   - theorem_map_append_inductive (score: 1.000000)
   - theorem_append_assoc_inductive (score: 1.000000)
+  - theorem_length_reverse_inductive (score: 1.000000)
   - zero (score: 1.000000)
-  - succ (score: 1.000000)
 Generation Methods:
-  seed: 46
+  seed: 33
   pattern_recognition: 1
   composition: 60
-  lemma_application: 4
+  lemma_application: 9
 All Patterns (7):
   - natural_number_sequence: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
@@ -27,53 +27,27 @@ All Patterns (7):
   - meta_pattern_composition_successful: Meta-pattern: composition has been successful (6 concepts)
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_zero_eq_zero: Revived: Variation pattern based on theorem zero_eq_zero
-All Conjectures (113):
-  - length_reverse_example_1
-    Statement: True
-  - length_reverse_example_2
-    Statement: True
-  - length_reverse_example_3
-    Statement: True
-  - append_assoc_example_1
-    Statement: True
-  - append_assoc_example_2
-    Statement: True
-  - append_assoc_example_3
-    Statement: True
-  - filter_append_example_1
-    Statement: True
-  - filter_append_example_2
-    Statement: True
-  - map_map_example_1
-    Statement: True
-  - map_map_example_2
-    Statement: True
-  - length_map_example_1
-    Statement: True
-  - length_map_example_2
-    Statement: True
+All Conjectures (100):
   - length_append_base_case
-    Statement: True
-  - reverse_reverse_base_case
-    Statement: True
+    Statement: forall (l : List.{0} Nat), Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.nil.{0} Nat) l)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (List.length.{0} Nat (List.nil.{0} Nat)) (List.length.{0} Nat l))
   - map_append_base_case
-    Statement: True
+    Statement: forall (f : Nat -> Nat) (l : List.{0} Nat), Eq.{1} (List.{0} Nat) (List.map.{0, 0} Nat Nat f (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.nil.{0} Nat) l)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.map.{0, 0} Nat Nat f (List.nil.{0} Nat)) (List.map.{0, 0} Nat Nat f l))
   - length_append_inductive_step
-    Statement: True
+    Statement: forall (h : Nat) (t : List.{0} Nat) (l : List.{0} Nat), (Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) t l)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (List.length.{0} Nat t) (List.length.{0} Nat l))) -> (Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat h t) l)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (List.length.{0} Nat (List.cons.{0} Nat h t)) (List.length.{0} Nat l)))
   - reverse_reverse_inductive_step
-    Statement: True
+    Statement: forall (h : Nat) (t : List.{0} Nat), (Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat t)) t) -> (Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat h t))) (List.cons.{0} Nat h t))
   - map_append_inductive_step
-    Statement: True
+    Statement: forall (f : Nat -> Nat) (h : Nat) (t : List.{0} Nat) (l : List.{0} Nat), (Eq.{1} (List.{0} Nat) (List.map.{0, 0} Nat Nat f (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) t l)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.map.{0, 0} Nat Nat f t) (List.map.{0, 0} Nat Nat f l))) -> (Eq.{1} (List.{0} Nat) (List.map.{0, 0} Nat Nat f (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat h t) l)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.map.{0, 0} Nat Nat f (List.cons.{0} Nat h t)) (List.map.{0, 0} Nat Nat f l)))
   - theorem_length_append_inductive
-    Statement: True
+    Statement: forall (l1 : List.{0} Nat) (l2 : List.{0} Nat), Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) l1 l2)) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (List.length.{0} Nat l1) (List.length.{0} Nat l2))
   - theorem_reverse_reverse_inductive
-    Statement: True
+    Statement: forall (l : List.{0} Nat), Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat l)) l
   - theorem_map_append_inductive
-    Statement: True
+    Statement: forall (f : Nat -> Nat) (l1 : List.{0} Nat) (l2 : List.{0} Nat), Eq.{1} (List.{0} Nat) (List.map.{0, 0} Nat Nat f (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) l1 l2)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.map.{0, 0} Nat Nat f l1) (List.map.{0, 0} Nat Nat f l2))
   - theorem_append_assoc_inductive
-    Statement: True
+    Statement: forall (l1 : List.{0} Nat) (l2 : List.{0} Nat) (l3 : List.{0} Nat), Eq.{1} (List.{0} Nat) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) l1 l2) l3) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) l1 (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) l2 l3))
   - theorem_length_reverse_inductive
-    Statement: True
+    Statement: forall (l : List.{0} Nat), Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat l)) (List.length.{0} Nat l)
   - succ_comp_add1_eq_1
     Statement: Eq.{1} Nat (Nat.succ ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)) ((fun (x : Nat) => Nat.add (Nat.succ Nat.zero) x) Nat.zero)
   - succ_comp_add1_eq_2
@@ -254,7 +228,7 @@ All Conjectures (113):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) Nat.zero) Nat.zero
   - succ_compose_add1_compose_add2_compose_succ_homomorphism
     Statement: forall (x : Nat) (y : Nat), Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) (Nat.add x y)) (Nat.add ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) x) ((fun (x : Nat) => Nat.succ (Nat.succ (Nat.add 1 (Nat.add 2 x)))) y))
-All Theorems (16):
+All Theorems (34):
   - zero_eq_zero
     Statement: Eq.{1} Nat Nat.zero Nat.zero
   - add_comm
@@ -268,16 +242,42 @@ All Theorems (16):
   - one_add_one_eq_two_on_two
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (Nat.succ (Nat.succ Nat.zero))
   - length_append_example_1
-    Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ Nat.zero))
+    Statement: Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ Nat.zero))
   - length_append_example_2
-    Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+    Statement: Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - length_append_example_3
-    Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.nil.{0} Nat) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (Nat.succ (Nat.succ Nat.zero))
+    Statement: Eq.{1} Nat (List.length.{0} Nat (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.nil.{0} Nat) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (Nat.succ (Nat.succ Nat.zero))
   - reverse_reverse_example_1
     Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat))
   - reverse_reverse_example_2
     Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))
   - reverse_reverse_example_3
+    Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.nil.{0} Nat))) (List.nil.{0} Nat)
+  - length_reverse_example_1
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))
+  - length_reverse_example_2
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
+  - length_reverse_example_3
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat (List.nil.{0} Nat))) (List.length.{0} Nat (List.nil.{0} Nat))
+  - append_assoc_example_1
+    Statement: Eq.{1} (List.{0} Nat) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat))))
+  - append_assoc_example_2
+    Statement: Eq.{1} (List.{0} Nat) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.nil.{0} Nat) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat))) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.nil.{0} Nat) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
+  - append_assoc_example_3
+    Statement: Eq.{1} (List.{0} Nat) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.nil.{0} Nat) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat))))
+  - filter_append_example_1
+    Statement: Eq.{1} (List.{0} Nat) (List.filter.{0} Nat (fun (x : Nat) => Decidable.decide (Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (instDecidableEqNat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.filter.{0} Nat (fun (x : Nat) => Decidable.decide (Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (instDecidableEqNat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat))) (List.filter.{0} Nat (fun (x : Nat) => Decidable.decide (Eq.{1} Nat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (instDecidableEqNat (HMod.hMod.{0, 0, 0} Nat Nat Nat (instHMod.{0} Nat Nat.instMod) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)))) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
+  - filter_append_example_2
+    Statement: Eq.{1} (List.{0} Nat) (List.filter.{0} Nat (fun (x : Nat) => Decidable.decide (GT.gt.{0} Nat instLTNat x (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (Nat.decLt (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) x)) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.nil.{0} Nat))) (HAppend.hAppend.{0, 0, 0} (List.{0} Nat) (List.{0} Nat) (List.{0} Nat) (instHAppendOfAppend.{0} (List.{0} Nat) (List.instAppend.{0} Nat)) (List.filter.{0} Nat (fun (x : Nat) => Decidable.decide (GT.gt.{0} Nat instLTNat x (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (Nat.decLt (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) x)) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))) (List.filter.{0} Nat (fun (x : Nat) => Decidable.decide (GT.gt.{0} Nat instLTNat x (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0))) (Nat.decLt (OfNat.ofNat.{0} Nat 0 (instOfNatNat 0)) x)) (List.nil.{0} Nat)))
+  - map_map_example_1
+    Statement: Eq.{1} (List.{0} Nat) (List.map.{0, 0} Nat Nat (fun (x : Nat) => HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (List.map.{0, 0} Nat Nat (fun (x : Nat) => HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))) (List.map.{0, 0} Nat Nat (fun (x : Nat) => HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (OfNat.ofNat.{0} Nat 1 (instOfNatNat 1))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))
+  - map_map_example_2
+    Statement: Eq.{1} (List.{0} Nat) (List.map.{0, 0} Nat Nat Nat.succ (List.map.{0, 0} Nat Nat Nat.succ (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (List.map.{0, 0} Nat Nat (fun (x : Nat) => HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
+  - length_map_example_1
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.map.{0, 0} Nat Nat Nat.succ (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))
+  - length_map_example_2
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.map.{0, 0} Nat Nat (fun (x : Nat) => HMul.hMul.{0, 0, 0} Nat Nat Nat (instHMul.{0} Nat instMulNat) x (OfNat.ofNat.{0} Nat 2 (instOfNatNat 2))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
+  - reverse_reverse_base_case
     Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.nil.{0} Nat))) (List.nil.{0} Nat)
   - add_comm_zero_one
     Statement: Eq.{1} Nat (Nat.add Nat.zero (Nat.succ Nat.zero)) (Nat.add (Nat.succ Nat.zero) Nat.zero)
@@ -285,6 +285,16 @@ All Theorems (16):
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - length_append_example_2_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - length_reverse_example_1_on_one
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))
+  - length_reverse_example_2_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
+  - length_reverse_example_3_on_zero
+    Statement: Eq.{1} Nat Nat.zero (List.length.{0} Nat (List.nil.{0} Nat))
+  - length_map_example_1_on_one
+    Statement: Eq.{1} Nat (Nat.succ Nat.zero) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))
+  - length_map_example_2_on_two
+    Statement: Eq.{1} Nat (Nat.succ (Nat.succ Nat.zero)) (List.length.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))
   - add_comm_zero_one_on_one
     Statement: Eq.{1} Nat (Nat.succ Nat.zero) (Nat.add (Nat.succ Nat.zero) Nat.zero)
 
