@@ -1,10 +1,10 @@
 === ITERATION 1 COMPLETE ===
-Total Concepts: 117 (+45 new)
+Total Concepts: 113 (+48 new)
 Patterns: 4
-Conjectures: 58
-Theorems: 10
+Conjectures: 51
+Theorems: 13
 Top Concepts:
-  - lemma_application (score: 1.000000)
+  - goal_directed (score: 1.000000)
   - add (score: 1.000000)
   - two_add_one_eq_three (score: 1.000000)
   - empty_list (score: 1.000000)
@@ -15,7 +15,7 @@ Top Concepts:
   - theorem_length_reverse_inductive (score: 1.000000)
   - zero (score: 1.000000)
 Generation Methods:
-  seed: 53
+  seed: 46
   pattern_recognition: 1
   composition: 6
   lemma_application: 1
@@ -24,21 +24,7 @@ All Patterns (4):
   - variation_zero_eq_zero: Variation pattern based on theorem zero_eq_zero
   - variation_add_comm: Variation pattern based on theorem add_comm
   - variation_zero_add_zero: Variation pattern based on theorem zero_add_zero
-All Conjectures (58):
-  - reverse_reverse_example_1
-    Statement: True
-  - reverse_reverse_example_2
-    Statement: True
-  - reverse_reverse_example_3
-    Statement: True
-  - map_append_example_1
-    Statement: True
-  - map_append_example_2
-    Statement: True
-  - map_append_example_3
-    Statement: True
-  - map_append_example_4
-    Statement: True
+All Conjectures (51):
   - length_reverse_example_1
     Statement: True
   - length_reverse_example_2
@@ -134,14 +120,14 @@ All Conjectures (58):
   - add2_homomorphism
     Statement: forall (x : Nat) (y : Nat), Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.add x y)) (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) y))
   - length_append_distributive
-    Statement: (List.{0} Nat) -> (List.{0} Nat) -> (Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat _uniq.714 _uniq.715)) (Nat.add (List.length.{0} Nat _uniq.714) (List.length.{0} Nat _uniq.715)))
+    Statement: (List.{0} Nat) -> (List.{0} Nat) -> (Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat _uniq.744 _uniq.745)) (Nat.add (List.length.{0} Nat _uniq.744) (List.length.{0} Nat _uniq.745)))
   - length_append
-    Statement: (List.{0} Nat) -> (Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat _uniq.716)) (List.length.{0} Nat _uniq.716))
+    Statement: (List.{0} Nat) -> (Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat _uniq.746)) (List.length.{0} Nat _uniq.746))
   - append_associative
-    Statement: (List.{0} Nat) -> (List.{0} Nat) -> (List.{0} Nat) -> (Eq.{1} (List.{0} Nat) (List.append.{0} Nat (List.append.{0} Nat _uniq.717 _uniq.718) _uniq.719) (List.append.{0} Nat _uniq.717 (List.append.{0} Nat _uniq.718 _uniq.719)))
+    Statement: (List.{0} Nat) -> (List.{0} Nat) -> (List.{0} Nat) -> (Eq.{1} (List.{0} Nat) (List.append.{0} Nat (List.append.{0} Nat _uniq.747 _uniq.748) _uniq.749) (List.append.{0} Nat _uniq.747 (List.append.{0} Nat _uniq.748 _uniq.749)))
   - reverse_involutive
-    Statement: (List.{0} Nat) -> (Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat _uniq.720)) _uniq.720)
-All Theorems (10):
+    Statement: (List.{0} Nat) -> (Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat _uniq.750)) _uniq.750)
+All Theorems (13):
   - zero_eq_zero
     Statement: Eq.{1} Nat Nat.zero Nat.zero
   - add_comm
@@ -160,6 +146,12 @@ All Theorems (10):
     Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - length_append_example_3
     Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.nil.{0} Nat) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (Nat.succ (Nat.succ Nat.zero))
+  - reverse_reverse_example_1
+    Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat))
+  - reverse_reverse_example_2
+    Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))
+  - reverse_reverse_example_3
+    Statement: Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat (List.nil.{0} Nat))) (List.nil.{0} Nat)
   - add_comm_zero_one
     Statement: Eq.{1} Nat (Nat.add Nat.zero (Nat.succ Nat.zero)) (Nat.add (Nat.succ Nat.zero) Nat.zero)
 

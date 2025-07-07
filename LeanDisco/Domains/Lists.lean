@@ -314,8 +314,23 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
   ]
   
   -- Reverse-reverse pattern conjectures (trigger induction)
+  let revStmt1 := mkApp3 (mkConst ``Eq [levelOne]) listNatType
+    (mkApp2 (mkConst ``List.reverse [levelZero]) natType
+      (mkApp2 (mkConst ``List.reverse [levelZero]) natType list1))
+    list1
+  
+  let revStmt2 := mkApp3 (mkConst ``Eq [levelOne]) listNatType
+    (mkApp2 (mkConst ``List.reverse [levelZero]) natType
+      (mkApp2 (mkConst ``List.reverse [levelZero]) natType list12))
+    list12
+  
+  let revStmt3 := mkApp3 (mkConst ``Eq [levelOne]) listNatType
+    (mkApp2 (mkConst ``List.reverse [levelZero]) natType
+      (mkApp2 (mkConst ``List.reverse [levelZero]) natType nil))
+    nil
+
   concepts := concepts ++ [
-    ConceptData.conjecture "reverse_reverse_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "reverse_reverse_example_1" revStmt1 0.8 {
       name := "reverse_reverse_example_1"
       created := 0
       parent := none
@@ -325,7 +340,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "reverse_reverse_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "reverse_reverse_example_2" revStmt2 0.8 {
       name := "reverse_reverse_example_2"
       created := 0
       parent := none
@@ -335,7 +350,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "reverse_reverse_example_3" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "reverse_reverse_example_3" revStmt3 0.8 {
       name := "reverse_reverse_example_3"
       created := 0
       parent := none
@@ -347,49 +362,8 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
     }
   ]
   
-  -- Map-append pattern conjectures (trigger induction)
-  concepts := concepts ++ [
-    ConceptData.conjecture "map_append_example_1" (mkConst ``True) 0.8 {
-      name := "map_append_example_1"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    },
-    ConceptData.conjecture "map_append_example_2" (mkConst ``True) 0.8 {
-      name := "map_append_example_2"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    },
-    ConceptData.conjecture "map_append_example_3" (mkConst ``True) 0.8 {
-      name := "map_append_example_3"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    },
-    ConceptData.conjecture "map_append_example_4" (mkConst ``True) 0.8 {
-      name := "map_append_example_4"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    }
-  ]
+  -- Map-append pattern conjectures (complex, skip for now)
+  -- Note: Map operations are more complex to construct properly
   
   -- Advanced pattern conjectures (challenging the heuristic)
   
