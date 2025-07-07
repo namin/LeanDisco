@@ -253,8 +253,35 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
   -- These patterns match what the induction heuristic looks for
   
   -- Length-append pattern conjectures (trigger induction)
+  -- length([1] ++ [2]) = 2  
+  let natType := mkConst ``Nat
+  let listNatType := mkApp (mkConst ``List [levelZero]) natType
+  let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)
+  let two := mkApp (mkConst ``Nat.succ) one
+  let three := mkApp (mkConst ``Nat.succ) two
+  let nil := mkApp (mkConst ``List.nil [levelZero]) natType
+  let list1 := mkApp3 (mkConst ``List.cons [levelZero]) natType one nil
+  let list2 := mkApp3 (mkConst ``List.cons [levelZero]) natType two nil  
+  let list3 := mkApp3 (mkConst ``List.cons [levelZero]) natType three nil
+  let list12 := mkApp3 (mkConst ``List.cons [levelZero]) natType one (mkApp3 (mkConst ``List.cons [levelZero]) natType two nil)
+  
+  let stmt1 := mkApp3 (mkConst ``Eq [levelOne]) natType 
+    (mkApp2 (mkConst ``List.length [levelZero]) natType 
+      (mkApp3 (mkConst ``List.append [levelZero]) natType list1 list2))
+    two
+  
+  let stmt2 := mkApp3 (mkConst ``Eq [levelOne]) natType
+    (mkApp2 (mkConst ``List.length [levelZero]) natType
+      (mkApp3 (mkConst ``List.append [levelZero]) natType list12 list3))
+    three
+  
+  let stmt3 := mkApp3 (mkConst ``Eq [levelOne]) natType
+    (mkApp2 (mkConst ``List.length [levelZero]) natType
+      (mkApp3 (mkConst ``List.append [levelZero]) natType nil list12))
+    two
+
   concepts := concepts ++ [
-    ConceptData.conjecture "length_append_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_append_example_1" stmt1 0.8 {
       name := "length_append_example_1"
       created := 0
       parent := none
@@ -264,7 +291,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_append_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_append_example_2" stmt2 0.8 {
       name := "length_append_example_2"
       created := 0
       parent := none
@@ -274,7 +301,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_append_example_3" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_append_example_3" stmt3 0.8 {
       name := "length_append_example_3"
       created := 0
       parent := none

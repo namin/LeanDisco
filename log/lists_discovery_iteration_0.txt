@@ -18,11 +18,11 @@ Generation Methods:
   seed: 56
 All Conjectures (33):
   - length_append_example_1
-    Statement: True
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.nil.{0} Nat)) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ Nat.zero))
   - length_append_example_2
-    Statement: True
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))) (List.cons.{0} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (List.nil.{0} Nat)))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - length_append_example_3
-    Statement: True
+    Statement: Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat (List.nil.{0} Nat) (List.cons.{0} Nat (Nat.succ Nat.zero) (List.cons.{0} Nat (Nat.succ (Nat.succ Nat.zero)) (List.nil.{0} Nat))))) (Nat.succ (Nat.succ Nat.zero))
   - reverse_reverse_example_1
     Statement: True
   - reverse_reverse_example_2
