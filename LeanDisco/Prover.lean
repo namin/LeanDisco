@@ -86,21 +86,28 @@ def goalDirectedHeuristic : HeuristicFn := fun config concepts => do
       let specializedName := s!"{conjName}_specialized"
       if !concepts.any (fun c => getConceptName c == specializedName) then
         -- Look for suitable terms to instantiate with
-        let suitableTerms := concepts.filterMap fun c => match c with
-          | ConceptData.definition name typ _ _ _ metadata =>
-            if metadata.generationMethod == "seed" || metadata.generationMethod == "mined" then
-              -- Basic type checking - this is simplified
-              if toString typ == toString varType then some name else none
-            else none
-          | _ => none
+        let suitableTerms ← concepts.filterMapM fun c => match c with
+          | ConceptData.definition name typ defValue _ _ metadata =>
+            if metadata.generationMethod == "seed" || metadata.generationMethod == "mined" then do
+              -- Proper type checking using isDefEq
+              let defType ← inferType defValue
+              if ← isDefEq defType varType then
+                return some (name, defValue)
+              else
+                return none
+            else
+              return none
+          | _ => return none
 
-        for termName in suitableTerms.take 3 do
+        for (termName, termValue) in suitableTerms.take 3 do
           let specName := s!"{conjName}_spec_{termName}"
           if !concepts.any (fun c => getConceptName c == specName) then
-            let isValid ← isWellFormedConjecture body
+            -- Instantiate the body with the actual term value
+            let instantiatedBody := body.instantiate1 termValue
+            let isValid ← isWellFormedConjecture instantiatedBody
             if isValid then
               newConcepts := newConcepts ++ [
-                ConceptData.conjecture specName body (evidence * 0.8) {
+                ConceptData.conjecture specName instantiatedBody (evidence * 0.8) {
                   name := specName
                   created := 0
                   parent := some conjName
@@ -362,12 +369,13 @@ def createInductiveTheoremStatement (pattern : String) (conjectures : List Conce
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
     withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
       -- length(l1 ++ l2)
-      let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
-      let leftSide := mkApp (mkConst ``List.length [levelZero]) append
+      let natType := mkConst ``Nat
+      let append := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var l2Var
+      let leftSide := mkApp2 (mkConst ``List.length [levelZero]) natType append
       
       -- length(l1) + length(l2)
-      let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
-      let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
+      let len1 := mkApp2 (mkConst ``List.length [levelZero]) natType l1Var
+      let len2 := mkApp2 (mkConst ``List.length [levelZero]) natType l2Var
       let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
       
       -- Equality
@@ -382,8 +390,9 @@ def createInductiveTheoremStatement (pattern : String) (conjectures : List Conce
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
     
     withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
-      let reverseOnce := mkApp (mkConst ``List.reverse [levelZero]) lVar
-      let reverseTwice := mkApp (mkConst ``List.reverse [levelZero]) reverseOnce
+      let natType := mkConst ``Nat
+      let reverseOnce := mkApp2 (mkConst ``List.reverse [levelZero]) natType lVar
+      let reverseTwice := mkApp2 (mkConst ``List.reverse [levelZero]) natType reverseOnce
       let equality := mkEqualityExpr reverseTwice lVar listType
       return mkForallExpr "l" listType equality
       
@@ -394,11 +403,12 @@ def createInductiveTheoremStatement (pattern : String) (conjectures : List Conce
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
     withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
     withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
-      let leftAppend := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
-      let leftSide := mkApp2 (mkConst ``List.append [levelZero]) leftAppend l3Var
+      let natType := mkConst ``Nat
+      let leftAppend := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var l2Var
+      let leftSide := mkApp3 (mkConst ``List.append [levelZero]) natType leftAppend l3Var
       
-      let rightAppend := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
-      let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var rightAppend
+      let rightAppend := mkApp3 (mkConst ``List.append [levelZero]) natType l2Var l3Var
+      let rightSide := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var rightAppend
       
       let equality := mkEqualityExpr leftSide rightSide listType
       let forallL3 := mkForallExpr "l3" listType equality
@@ -412,9 +422,10 @@ def createInductiveTheoremStatement (pattern : String) (conjectures : List Conce
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
     
     withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
-      let reversedList := mkApp (mkConst ``List.reverse [levelZero]) lVar
-      let leftSide := mkApp (mkConst ``List.length [levelZero]) reversedList
-      let rightSide := mkApp (mkConst ``List.length [levelZero]) lVar
+      let natType := mkConst ``Nat
+      let reversedList := mkApp2 (mkConst ``List.reverse [levelZero]) natType lVar
+      let leftSide := mkApp2 (mkConst ``List.length [levelZero]) natType reversedList
+      let rightSide := mkApp2 (mkConst ``List.length [levelZero]) natType lVar
       let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
       return mkForallExpr "l" listType equality
       
@@ -491,7 +502,219 @@ def isInductiveType (type : Expr) : Bool :=
   | Expr.app (Expr.const ``Array _) _ => true
   | _ => false
 
-/-- Try basic non-inductive tactics including simp -/
+
+/-- Helper functions for pattern matching -/
+def isLengthOfEmptyList (expr : Expr) : Bool :=
+  match expr with
+  | Expr.app (Expr.const ``List.length _) arg => arg.isAppOf ``List.nil
+  | _ => false
+
+def isLengthOfAppend (expr : Expr) : Bool :=
+  match expr with
+  | Expr.app (Expr.const ``List.length _) arg => arg.isAppOf ``List.append
+  | _ => false
+
+def isAppendWithEmptyList (expr : Expr) : Bool :=
+  match expr with
+  | Expr.app (Expr.app (Expr.const ``List.append _) arg1) arg2 =>
+    arg1.isAppOf ``List.nil || arg2.isAppOf ``List.nil
+  | _ => false
+
+def isAppendAssocPattern (lhs rhs : Expr) : Bool :=
+  -- This is a simplified check - a full implementation would do deeper pattern matching
+  match lhs.find? (fun e => e.isConstOf ``List.append), rhs.find? (fun e => e.isConstOf ``List.append) with
+  | some _, some _ => true
+  | _, _ => false
+
+def isReverseOfEmptyList (expr : Expr) : Bool :=
+  match expr with
+  | Expr.app (Expr.const ``List.reverse _) arg => arg.isAppOf ``List.nil
+  | _ => false
+
+def isReverseReverse (expr : Expr) : Bool :=
+  match expr with
+  | Expr.app (Expr.const ``List.reverse _) inner =>
+    inner.isAppOf ``List.reverse
+  | _ => false
+
+def containsEmptyList (expr : Expr) : Bool :=
+  expr.find? (fun e => e.isAppOf ``List.nil) |>.isSome
+
+/-- Check if expression contains List.length -/
+def containsListLength (expr : Expr) : Bool :=
+  expr.find? (fun e => e.isConstOf ``List.length) |>.isSome
+
+/-- Check if expression contains List.append -/
+def containsListAppend (expr : Expr) : Bool :=
+  expr.find? (fun e => e.isConstOf ``List.append) |>.isSome
+
+/-- Check if expression contains List.reverse -/
+def containsListReverse (expr : Expr) : Bool :=
+  expr.find? (fun e => e.isConstOf ``List.reverse) |>.isSome
+
+/-- Try definitional unfolding for equality goals -/
+def tryDefinitionalUnfolding (goalMVar : MVarId) (lhs rhs : Expr) : MetaM Bool := do
+  try
+    goalMVar.withContext do
+      -- Try to unfold definitions and check if they become equal
+      let lhsWhnf ← whnf lhs
+      let rhsWhnf ← whnf rhs
+      
+      if lhsWhnf == rhsWhnf then
+        let _ ← goalMVar.refl
+        return true
+      else
+        -- Try using isDefEq for more sophisticated definitional equality
+        let isEqual ← isDefEq lhsWhnf rhsWhnf
+        if isEqual then
+          let _ ← goalMVar.refl
+          return true
+        else
+          return false
+  catch _ =>
+    return false
+
+/-- Try tactics for base cases (empty lists, zero, etc.) -/
+def tryBaseCaseTactics (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := do
+  try
+    goalMVar.withContext do
+      match goalType with
+      | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
+        -- Pattern: f [] = something simple
+        if containsEmptyList lhs then
+          -- Try common base case lemmas
+          let baseCaseLemmas := [
+            ``List.length_nil, ``List.reverse_nil, ``List.append_nil,
+            ``List.nil_append, ``Nat.zero_add, ``Nat.add_zero
+          ]
+          
+          for lemma in baseCaseLemmas do
+            try
+              let _ ← goalMVar.apply (mkConst lemma)
+              IO.println s!"[TACTICS] ✓ Solved with {lemma}"
+              return true
+            catch _ => pure ()
+      | _ => pure ()
+      
+      return false
+  catch _ =>
+    return false
+
+/-- Try tactics specific to List.length -/
+def tryListLengthTactics (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := do
+  try
+    goalMVar.withContext do
+      -- Look for patterns like length [] = 0
+      match goalType with
+      | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
+        -- Check if lhs is length of empty list
+        if isLengthOfEmptyList lhs && rhs.isConstOf ``Nat.zero then
+          -- Apply List.length_nil
+          try
+            let _ ← goalMVar.apply (mkConst ``List.length_nil)
+            IO.println s!"[TACTICS] ✓ Solved with List.length_nil"
+            return true
+          catch _ => pure ()
+        
+        -- Check for length append patterns
+        if isLengthOfAppend lhs then
+          try
+            let _ ← goalMVar.apply (mkConst ``List.length_append)
+            IO.println s!"[TACTICS] ✓ Solved with List.length_append"
+            return true
+          catch _ => pure ()
+      | _ => pure ()
+      
+      return false
+  catch _ =>
+    return false
+
+/-- Try tactics specific to List.append -/
+def tryListAppendTactics (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := do
+  try
+    goalMVar.withContext do
+      match goalType with
+      | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
+        -- Check for append with empty list patterns
+        if isAppendWithEmptyList lhs then
+          try
+            let _ ← goalMVar.apply (mkConst ``List.nil_append)
+            IO.println s!"[TACTICS] ✓ Solved with List.nil_append"
+            return true
+          catch _ =>
+            try
+              let _ ← goalMVar.apply (mkConst ``List.append_nil)
+              IO.println s!"[TACTICS] ✓ Solved with List.append_nil"
+              return true
+            catch _ => pure ()
+        
+        -- Check for associativity patterns
+        if isAppendAssocPattern lhs rhs then
+          try
+            let _ ← goalMVar.apply (mkConst ``List.append_assoc)
+            IO.println s!"[TACTICS] ✓ Solved with List.append_assoc"
+            return true
+          catch _ => pure ()
+      | _ => pure ()
+      
+      return false
+  catch _ =>
+    return false
+
+/-- Try tactics specific to List.reverse -/
+def tryListReverseTactics (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := do
+  try
+    goalMVar.withContext do
+      match goalType with
+      | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
+        -- Check for reverse of empty list
+        if isReverseOfEmptyList lhs && rhs.isAppOf ``List.nil then
+          try
+            let _ ← goalMVar.apply (mkConst ``List.reverse_nil)
+            IO.println s!"[TACTICS] ✓ Solved with List.reverse_nil"
+            return true
+          catch _ => pure ()
+        
+        -- Check for reverse reverse pattern
+        if isReverseReverse lhs then
+          try
+            let _ ← goalMVar.apply (mkConst ``List.reverse_reverse)
+            IO.println s!"[TACTICS] ✓ Solved with List.reverse_reverse"
+            return true
+          catch _ => pure ()
+      | _ => pure ()
+      
+      return false
+  catch _ =>
+    return false
+
+/-- Try specialized tactics for common mathematical patterns -/
+def trySpecializedTactics (goalMVar : MVarId) (goalType : Expr) : MetaM Bool := do
+  try
+    -- Handle List.length patterns
+    if containsListLength goalType then
+      let solved ← tryListLengthTactics goalMVar goalType
+      if solved then return true
+    
+    -- Handle List.append patterns
+    if containsListAppend goalType then
+      let solved ← tryListAppendTactics goalMVar goalType
+      if solved then return true
+    
+    -- Handle List.reverse patterns
+    if containsListReverse goalType then
+      let solved ← tryListReverseTactics goalMVar goalType
+      if solved then return true
+    
+    -- Handle base case patterns (empty list, zero)
+    let solved ← tryBaseCaseTactics goalMVar goalType
+    if solved then return true
+    
+    return false
+  catch _ =>
+    return false
+
+/-- Try enhanced tactics for solving induction subgoals -/
 def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
   try
     let goalType ← goalMVar.getType
@@ -519,17 +742,7 @@ def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
       return true
     catch _ => pure ()
     
-    -- Try simp for simplification (simplified approach for now)
-    try
-      goalMVar.withContext do
-        -- For now, skip simp due to API complexity
-        IO.println s!"[TACTICS] Skipping simp (API complexity)"
-        pure ()
-    catch _ => 
-      IO.println s!"[TACTICS] Simp failed"
-      pure ()
-    
-    -- Check if it's a definitionally equal equality
+    -- Try definitional equality check
     try
       match goalType with
       | Expr.app (Expr.app (Expr.app (Expr.const ``Eq _) _) lhs) rhs =>
@@ -537,8 +750,18 @@ def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
           let _ ← goalMVar.refl
           IO.println s!"[TACTICS] ✓ Solved definitional equality with refl"
           return true
+        else
+          -- Try to prove by definitional unfolding
+          let success ← tryDefinitionalUnfolding goalMVar lhs rhs
+          if success then
+            IO.println s!"[TACTICS] ✓ Solved with definitional unfolding"
+            return true
       | _ => pure ()
     catch _ => pure ()
+    
+    -- Try specialized tactics for common patterns
+    let solved ← trySpecializedTactics goalMVar goalType
+    if solved then return true
     
     -- Try constructor for simple types
     try
@@ -552,6 +775,7 @@ def tryBasicTactics (goalMVar : MVarId) : MetaM Bool := do
   catch e =>
     IO.println s!"[TACTICS] Error in basic tactics: {← e.toMessageData.toString}"
     return false
+
 
 /-- Apply real Lean induction tactic to a goal -/
 def applyInductionTactic (goalMVar : MVarId) (varName : Name) (varType : Expr) : MetaM Bool := do
@@ -590,10 +814,26 @@ def applyInductionTactic (goalMVar : MVarId) (varName : Name) (varType : Expr) :
             -- Try to solve each subgoal generated by induction
             let mut allSolved := true
             for i in [0:inductionResult.size] do
-              let subgoal := inductionResult[i]!
+              let inductionCase := inductionResult[i]!
               IO.println s!"[INDUCTION] Solving subgoal {i + 1}/{inductionResult.size}"
               
-              let solved ← tryBasicTactics subgoal.mvarId
+              -- For the base case (i == 0), we need to handle it specially
+              let solved ← if i == 0 then
+                -- Base case: try to instantiate metavariables and solve
+                inductionCase.mvarId.withContext do
+                  let goalType ← inductionCase.mvarId.getType
+                  IO.println s!"[INDUCTION] Base case goal: {goalType}"
+                  
+                  -- Try to instantiate any remaining metavariables with the base case value
+                  let instantiated ← instantiateMVars goalType
+                  if instantiated != goalType then
+                    IO.println s!"[INDUCTION] Instantiated goal: {instantiated}"
+                  
+                  tryBasicTactics inductionCase.mvarId
+              else
+                -- Inductive case: use the inductive hypothesis
+                tryBasicTactics inductionCase.mvarId
+                
               if !solved then
                 allSolved := false
                 IO.println s!"[INDUCTION] ✗ Failed to solve subgoal {i + 1}"
