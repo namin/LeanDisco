@@ -1,6 +1,7 @@
 import Lean
 import Lean.Meta.Basic
 import Lean.Elab.Command
+import Qq
 
 import LeanDisco.Types
 import LeanDisco.Basic
@@ -9,7 +10,7 @@ import LeanDisco.IncrementalSave
 set_option autoImplicit false
 set_option linter.unusedVariables false
 
-open Lean Meta Elab
+open Lean Meta Elab Qq
 open LeanDisco.IncrementalSave
 
 namespace LeanDisco.Domains.Lists
@@ -41,7 +42,7 @@ def listTriple (n m k : Nat) : List Nat := [n, m, k]
 
 -- Some basic concrete lists for discovery
 def list_0 : List Nat := [0]
-def list_1 : List Nat := [1] 
+def list_1 : List Nat := [1]
 def list_01 : List Nat := [0, 1]
 def list_10 : List Nat := [1, 0]
 def list_012 : List Nat := [0, 1, 2]
@@ -177,13 +178,13 @@ def length_map_example_4 : Nat := List.length ([] : List Nat)
 
 -- These concrete examples should trigger the induction heuristic to discover:
 -- 1. length(l1 ++ l2) = length(l1) + length(l2) for all lists l1, l2
--- 2. reverse(reverse(l)) = l for all lists l  
+-- 2. reverse(reverse(l)) = l for all lists l
 -- 3. map f (l1 ++ l2) = map f l1 ++ map f l2 for all f, l1, l2
 
 -- Create initial concept list for Lists domain
 def listsInitialConcepts : MetaM (List ConceptData) := do
   let mut concepts : List ConceptData := []
-  
+
   -- Basic list constructors
   concepts := concepts ++ [
     ConceptData.definition "empty_list" (Expr.const ``List.nil [levelZero]) (Expr.const ``List.nil [levelZero]) none [] {
@@ -197,7 +198,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Concrete lists
   let list_exprs := [
     ("list_0", mkApp (mkConst ``List.cons [levelZero]) (mkConst ``Nat.zero)),
@@ -206,7 +207,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
     ("list_10", mkConst ``list_10),
     ("list_012", mkConst ``list_012)
   ]
-  
+
   for (name, expr) in list_exprs do
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
     concepts := concepts ++ [
@@ -221,7 +222,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
         generationMethod := "seed"
       }
     ]
-  
+
   -- Core list operations
   let operations := [
     ("List.length", "Calculate the length of a list"),
@@ -233,7 +234,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
     ("List.head?", "Get the first element if it exists"),
     ("List.tail", "Get all elements except the first")
   ]
-  
+
   for (op_name, description) in operations do
     concepts := concepts ++ [
       ConceptData.heuristicRef op_name description {
@@ -247,13 +248,38 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
         generationMethod := "seed"
       }
     ]
-  
+
   -- Seed specific conjectures that will trigger induction heuristic
   -- These patterns match what the induction heuristic looks for
-  
+
   -- Length-append pattern conjectures (trigger induction)
+  -- First build basic components with manual construction for reuse
+  let natType := mkConst ``Nat
+  let one := mkApp (mkConst ``Nat.succ) (mkConst ``Nat.zero)
+  let two := mkApp (mkConst ``Nat.succ) one
+  let three := mkApp (mkConst ``Nat.succ) two
+  let nil := mkApp (mkConst ``List.nil [levelZero]) natType
+  let list1 := mkApp3 (mkConst ``List.cons [levelZero]) natType one nil
+  let list2 := mkApp3 (mkConst ``List.cons [levelZero]) natType two nil
+  let list3 := mkApp3 (mkConst ``List.cons [levelZero]) natType three nil
+  let list12 := mkApp3 (mkConst ``List.cons [levelZero]) natType one (mkApp3 (mkConst ``List.cons [levelZero]) natType two nil)
+
+  -- Convert to Q types for quotation
+  have list1' : Q(List Nat) := list1
+  have list2' : Q(List Nat) := list2
+  have list3' : Q(List Nat) := list3
+  have list12' : Q(List Nat) := list12
+  have nil' : Q(List Nat) := nil
+  have two' : Q(Nat) := two
+  have three' : Q(Nat) := three
+
+  -- Use clean quotation syntax
+  let stmt1 : Q(Prop) := q(List.length ($list1' ++ $list2') = $two')
+  let stmt2 : Q(Prop) := q(List.length ($list12' ++ $list3') = $three')
+  let stmt3 : Q(Prop) := q(List.length ($nil' ++ $list12') = $two')
+
   concepts := concepts ++ [
-    ConceptData.conjecture "length_append_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_append_example_1" stmt1 0.8 {
       name := "length_append_example_1"
       created := 0
       parent := none
@@ -263,7 +289,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_append_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_append_example_2" stmt2 0.8 {
       name := "length_append_example_2"
       created := 0
       parent := none
@@ -273,7 +299,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_append_example_3" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_append_example_3" stmt3 0.8 {
       name := "length_append_example_3"
       created := 0
       parent := none
@@ -284,10 +310,14 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Reverse-reverse pattern conjectures (trigger induction)
+  let revStmt1 : Q(Prop) := q(List.reverse (List.reverse $list1') = $list1')
+  let revStmt2 : Q(Prop) := q(List.reverse (List.reverse $list12') = $list12')
+  let revStmt3 : Q(Prop) := q(List.reverse (List.reverse $nil') = $nil')
+
   concepts := concepts ++ [
-    ConceptData.conjecture "reverse_reverse_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "reverse_reverse_example_1" revStmt1 0.8 {
       name := "reverse_reverse_example_1"
       created := 0
       parent := none
@@ -297,7 +327,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "reverse_reverse_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "reverse_reverse_example_2" revStmt2 0.8 {
       name := "reverse_reverse_example_2"
       created := 0
       parent := none
@@ -307,7 +337,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "reverse_reverse_example_3" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "reverse_reverse_example_3" revStmt3 0.8 {
       name := "reverse_reverse_example_3"
       created := 0
       parent := none
@@ -318,56 +348,16 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
-  -- Map-append pattern conjectures (trigger induction)
-  concepts := concepts ++ [
-    ConceptData.conjecture "map_append_example_1" (mkConst ``True) 0.8 {
-      name := "map_append_example_1"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    },
-    ConceptData.conjecture "map_append_example_2" (mkConst ``True) 0.8 {
-      name := "map_append_example_2"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    },
-    ConceptData.conjecture "map_append_example_3" (mkConst ``True) 0.8 {
-      name := "map_append_example_3"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    },
-    ConceptData.conjecture "map_append_example_4" (mkConst ``True) 0.8 {
-      name := "map_append_example_4"
-      created := 0
-      parent := none
-      interestingness := 0.85
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "seed"
-    }
-  ]
-  
+
   -- Advanced pattern conjectures (challenging the heuristic)
-  
+
   -- Length-reverse patterns
+  let lengthRevStmt1 : Q(Prop) := q(List.length (List.reverse $list1') = List.length $list1')
+  let lengthRevStmt2 : Q(Prop) := q(List.length (List.reverse $list12') = List.length $list12')
+  let lengthRevStmt3 : Q(Prop) := q(List.length (List.reverse $nil') = List.length $nil')
+
   concepts := concepts ++ [
-    ConceptData.conjecture "length_reverse_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_reverse_example_1" lengthRevStmt1 0.8 {
       name := "length_reverse_example_1"
       created := 0
       parent := none
@@ -377,7 +367,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_reverse_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_reverse_example_2" lengthRevStmt2 0.8 {
       name := "length_reverse_example_2"
       created := 0
       parent := none
@@ -387,7 +377,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_reverse_example_3" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_reverse_example_3" lengthRevStmt3 0.8 {
       name := "length_reverse_example_3"
       created := 0
       parent := none
@@ -398,10 +388,14 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Append associativity patterns
+  let assocStmt1 : Q(Prop) := q(($list1' ++ $list2') ++ $list3' = $list1' ++ ($list2' ++ $list3'))
+  let assocStmt2 : Q(Prop) := q(($nil' ++ $list1') ++ $list2' = $nil' ++ ($list1' ++ $list2'))
+  let assocStmt3 : Q(Prop) := q(($list12' ++ $nil') ++ $list3' = $list12' ++ ($nil' ++ $list3'))
+
   concepts := concepts ++ [
-    ConceptData.conjecture "append_assoc_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "append_assoc_example_1" assocStmt1 0.8 {
       name := "append_assoc_example_1"
       created := 0
       parent := none
@@ -411,7 +405,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "append_assoc_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "append_assoc_example_2" assocStmt2 0.8 {
       name := "append_assoc_example_2"
       created := 0
       parent := none
@@ -421,7 +415,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "append_assoc_example_3" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "append_assoc_example_3" assocStmt3 0.8 {
       name := "append_assoc_example_3"
       created := 0
       parent := none
@@ -432,10 +426,13 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
-  -- Filter-append patterns
+
+  -- Filter-append patterns (using simple even/odd predicates)
+  let filterStmt1 : Q(Prop) := q(List.filter (fun x => x % 2 = 0) ($list1' ++ $list2') = List.filter (fun x => x % 2 = 0) $list1' ++ List.filter (fun x => x % 2 = 0) $list2')
+  let filterStmt2 : Q(Prop) := q(List.filter (fun x => x > 0) ($list12' ++ $nil') = List.filter (fun x => x > 0) $list12' ++ List.filter (fun x => x > 0) $nil')
+
   concepts := concepts ++ [
-    ConceptData.conjecture "filter_append_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "filter_append_example_1" filterStmt1 0.8 {
       name := "filter_append_example_1"
       created := 0
       parent := none
@@ -445,7 +442,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "filter_append_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "filter_append_example_2" filterStmt2 0.8 {
       name := "filter_append_example_2"
       created := 0
       parent := none
@@ -456,10 +453,13 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Map-map composition patterns
+  let mapMapStmt1 : Q(Prop) := q(List.map (fun x => x + 1) (List.map (fun x => x * 2) $list1') = List.map (fun x => x * 2 + 1) $list1')
+  let mapMapStmt2 : Q(Prop) := q(List.map Nat.succ (List.map Nat.succ $list12') = List.map (fun x => x + 2) $list12')
+
   concepts := concepts ++ [
-    ConceptData.conjecture "map_map_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "map_map_example_1" mapMapStmt1 0.8 {
       name := "map_map_example_1"
       created := 0
       parent := none
@@ -469,7 +469,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "map_map_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "map_map_example_2" mapMapStmt2 0.8 {
       name := "map_map_example_2"
       created := 0
       parent := none
@@ -480,10 +480,13 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Length-map patterns
+  let lengthMapStmt1 : Q(Prop) := q(List.length (List.map Nat.succ $list1') = List.length $list1')
+  let lengthMapStmt2 : Q(Prop) := q(List.length (List.map (fun x => x * 2) $list12') = List.length $list12')
+
   concepts := concepts ++ [
-    ConceptData.conjecture "length_map_example_1" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_map_example_1" lengthMapStmt1 0.8 {
       name := "length_map_example_1"
       created := 0
       parent := none
@@ -493,7 +496,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "length_map_example_2" (mkConst ``True) 0.8 {
+    ConceptData.conjecture "length_map_example_2" lengthMapStmt2 0.8 {
       name := "length_map_example_2"
       created := 0
       parent := none
@@ -506,10 +509,14 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
   ]
 
   -- Direct inductive theorem seeds (the actual inductive statements)
-  
+
   -- Base cases for key inductive theorems
+  let lengthAppendBase : Q(Prop) := q(∀ l : List Nat, List.length ($nil' ++ l) = List.length $nil' + List.length l)
+  let reverseReverseBase : Q(Prop) := q(List.reverse (List.reverse $nil') = $nil')
+  let mapAppendBase : Q(Prop) := q(∀ (f : Nat → Nat) (l : List Nat), List.map f ($nil' ++ l) = List.map f $nil' ++ List.map f l)
+
   concepts := concepts ++ [
-    ConceptData.conjecture "length_append_base_case" (mkConst ``True) 0.9 {
+    ConceptData.conjecture "length_append_base_case" lengthAppendBase 0.9 {
       name := "length_append_base_case"
       created := 0
       parent := none
@@ -519,7 +526,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "reverse_reverse_base_case" (mkConst ``True) 0.9 {
+    ConceptData.conjecture "reverse_reverse_base_case" reverseReverseBase 0.9 {
       name := "reverse_reverse_base_case"
       created := 0
       parent := none
@@ -529,7 +536,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "map_append_base_case" (mkConst ``True) 0.9 {
+    ConceptData.conjecture "map_append_base_case" mapAppendBase 0.9 {
       name := "map_append_base_case"
       created := 0
       parent := none
@@ -540,10 +547,14 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Inductive steps for key theorems
+  let lengthAppendStep : Q(Prop) := q(∀ (h : Nat) (t l : List Nat), List.length (t ++ l) = List.length t + List.length l → List.length ((h :: t) ++ l) = List.length (h :: t) + List.length l)
+  let reverseReverseStep : Q(Prop) := q(∀ (h : Nat) (t : List Nat), List.reverse (List.reverse t) = t → List.reverse (List.reverse (h :: t)) = h :: t)
+  let mapAppendStep : Q(Prop) := q(∀ (f : Nat → Nat) (h : Nat) (t l : List Nat), List.map f (t ++ l) = List.map f t ++ List.map f l → List.map f ((h :: t) ++ l) = List.map f (h :: t) ++ List.map f l)
+
   concepts := concepts ++ [
-    ConceptData.conjecture "length_append_inductive_step" (mkConst ``True) 0.9 {
+    ConceptData.conjecture "length_append_inductive_step" lengthAppendStep 0.9 {
       name := "length_append_inductive_step"
       created := 0
       parent := none
@@ -553,7 +564,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "reverse_reverse_inductive_step" (mkConst ``True) 0.9 {
+    ConceptData.conjecture "reverse_reverse_inductive_step" reverseReverseStep 0.9 {
       name := "reverse_reverse_inductive_step"
       created := 0
       parent := none
@@ -563,7 +574,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "map_append_inductive_step" (mkConst ``True) 0.9 {
+    ConceptData.conjecture "map_append_inductive_step" mapAppendStep 0.9 {
       name := "map_append_inductive_step"
       created := 0
       parent := none
@@ -574,10 +585,16 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   -- Full inductive theorems (what we want the system to discover)
+  let theoremLengthAppend : Q(Prop) := q(∀ l1 l2 : List Nat, List.length (l1 ++ l2) = List.length l1 + List.length l2)
+  let theoremReverseReverse : Q(Prop) := q(∀ l : List Nat, List.reverse (List.reverse l) = l)
+  let theoremMapAppend : Q(Prop) := q(∀ (f : Nat → Nat) (l1 l2 : List Nat), List.map f (l1 ++ l2) = List.map f l1 ++ List.map f l2)
+  let theoremAppendAssoc : Q(Prop) := q(∀ l1 l2 l3 : List Nat, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3))
+  let theoremLengthReverse : Q(Prop) := q(∀ l : List Nat, List.length (List.reverse l) = List.length l)
+
   concepts := concepts ++ [
-    ConceptData.conjecture "theorem_length_append_inductive" (mkConst ``True) 0.95 {
+    ConceptData.conjecture "theorem_length_append_inductive" theoremLengthAppend 0.95 {
       name := "theorem_length_append_inductive"
       created := 0
       parent := none
@@ -587,7 +604,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "theorem_reverse_reverse_inductive" (mkConst ``True) 0.95 {
+    ConceptData.conjecture "theorem_reverse_reverse_inductive" theoremReverseReverse 0.95 {
       name := "theorem_reverse_reverse_inductive"
       created := 0
       parent := none
@@ -597,7 +614,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "theorem_map_append_inductive" (mkConst ``True) 0.95 {
+    ConceptData.conjecture "theorem_map_append_inductive" theoremMapAppend 0.95 {
       name := "theorem_map_append_inductive"
       created := 0
       parent := none
@@ -607,7 +624,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "theorem_append_assoc_inductive" (mkConst ``True) 0.95 {
+    ConceptData.conjecture "theorem_append_assoc_inductive" theoremAppendAssoc 0.95 {
       name := "theorem_append_assoc_inductive"
       created := 0
       parent := none
@@ -617,7 +634,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       specializationDepth := 0
       generationMethod := "seed"
     },
-    ConceptData.conjecture "theorem_length_reverse_inductive" (mkConst ``True) 0.95 {
+    ConceptData.conjecture "theorem_length_reverse_inductive" theoremLengthReverse 0.95 {
       name := "theorem_length_reverse_inductive"
       created := 0
       parent := none
@@ -628,7 +645,7 @@ def listsInitialConcepts : MetaM (List ConceptData) := do
       generationMethod := "seed"
     }
   ]
-  
+
   return concepts
 
 -- Discovery configuration optimized for lists
@@ -651,11 +668,11 @@ def runListsDiscovery (discoveryConfig : DiscoveryConfig) (maxIterations : Nat) 
   IO.println "- All operations are recursive"
   IO.println "- Theorems require induction to prove"
   IO.println ""
-  
+
   let initialConcepts ← listsInitialConcepts
   IO.println s!"Starting with {initialConcepts.length} list concepts..."
   IO.println ""
-  
+
   IO.println "Key patterns the induction heuristic should discover:"
   IO.println "1. length(l1 ++ l2) = length(l1) + length(l2)"
   IO.println "2. reverse(reverse(l)) = l"
@@ -663,7 +680,7 @@ def runListsDiscovery (discoveryConfig : DiscoveryConfig) (maxIterations : Nat) 
   IO.println "4. length(reverse(l)) = length(l)"
   IO.println "5. map f (map g l) = map (f ∘ g) l"
   IO.println ""
-  
+
   -- Run the discovery with our seeded concepts
   let _ ← runDiscoveryCustomWithSaving "lists_discovery" initialConcepts [] [] maxIterations false discoveryConfig "log/lists_discovery"
 
@@ -672,75 +689,75 @@ def createListInductiveTheoremStatement (pattern : String) : MetaM Expr := do
   -- Helper to create forall expressions
   let mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
     Expr.forallE (Name.mkSimple varName) varType body (BinderInfo.default)
-  
+
   -- Helper to create equality expressions
   let mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
     mkApp3 (mkConst ``Eq [levelOne]) type left right
-  
+
   match pattern with
-  | "length" | "length_append" => 
+  | "length" | "length_append" =>
     -- Generate: ∀ l1 l2, length(l1 ++ l2) = length(l1) + length(l2)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
+
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
     withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
       -- length(l1 ++ l2)
       let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
       let leftSide := mkApp (mkConst ``List.length [levelZero]) append
-      
+
       -- length(l1) + length(l2)
       let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
       let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
       let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
-      
+
       -- Equality
       let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
       let forallL2 := mkForallExpr "l2" listType equality
       let forallL1 := mkForallExpr "l1" listType forallL2
-      
+
       return forallL1
-    
+
   | "append" =>
-    -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)  
+    -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
+
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
     withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
     withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
       -- (l1 ++ l2) ++ l3
       let l1l2 := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
       let leftSide := mkApp2 (mkConst ``List.append [levelZero]) l1l2 l3Var
-      
+
       -- l1 ++ (l2 ++ l3)
       let l2l3 := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
       let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2l3
-      
+
       -- Equality
       let equality := mkEqualityExpr leftSide rightSide listType
       let forallL3 := mkForallExpr "l3" listType equality
       let forallL2 := mkForallExpr "l2" listType forallL3
       let forallL1 := mkForallExpr "l1" listType forallL2
-      
+
       return forallL1
-    
+
   | "reverse" =>
     -- Generate: ∀ l, reverse(reverse(l)) = l
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
+
     withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
       -- reverse(reverse(l))
       let rev1 := mkApp (mkConst ``List.reverse [levelZero]) lVar
       let leftSide := mkApp (mkConst ``List.reverse [levelZero]) rev1
-      
+
       -- l
       let rightSide := lVar
-      
+
       -- Equality
       let equality := mkEqualityExpr leftSide rightSide listType
       let forallL := mkForallExpr "l" listType equality
-      
+
       return forallL
-    
+
   | _ =>
     -- Fallback for other patterns
     IO.println s!"[LISTS] No specific theorem template for pattern: {pattern}"
@@ -785,74 +802,74 @@ def createListTheoremStatement (pattern : String) : MetaM Expr := do
   -- Helper functions
   let mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
     Expr.forallE (Name.mkSimple varName) varType body (BinderInfo.default)
-  
+
   let mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
     mkApp3 (mkConst ``Eq [levelOne]) type left right
-  
+
   match pattern with
-  | "length_append" | "length" => 
+  | "length_append" | "length" =>
     -- Generate: ∀ l1 l2, length(l1 ++ l2) = length(l1) + length(l2)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
+
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
     withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
       -- length(l1 ++ l2)
       let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
       let leftSide := mkApp (mkConst ``List.length [levelZero]) append
-      
+
       -- length(l1) + length(l2)
       let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
       let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
       let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
-      
+
       -- Equality
       let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
       let forallL2 := mkForallExpr "l2" listType equality
       let forallL1 := mkForallExpr "l1" listType forallL2
-      
+
       return forallL1
-    
+
   | "append" =>
-    -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)  
+    -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
+
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
     withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
     withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
       -- (l1 ++ l2) ++ l3
       let l1l2 := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
       let leftSide := mkApp2 (mkConst ``List.append [levelZero]) l1l2 l3Var
-      
+
       -- l1 ++ (l2 ++ l3)
       let l2l3 := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
       let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2l3
-      
+
       -- Equality
       let equality := mkEqualityExpr leftSide rightSide listType
       let forallL3 := mkForallExpr "l3" listType equality
       let forallL2 := mkForallExpr "l2" listType forallL3
       let forallL1 := mkForallExpr "l1" listType forallL2
-      
+
       return forallL1
-    
+
   | "reverse" =>
     -- Generate: ∀ l, reverse(reverse(l)) = l
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    
+
     withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
       -- reverse(reverse(l))
       let rev1 := mkApp (mkConst ``List.reverse [levelZero]) lVar
       let leftSide := mkApp (mkConst ``List.reverse [levelZero]) rev1
-      
+
       -- l
       let rightSide := lVar
-      
+
       -- Equality
       let equality := mkEqualityExpr leftSide rightSide listType
       let forallL := mkForallExpr "l" listType equality
-      
+
       return forallL
-    
+
   | _ =>
     -- Fallback
     IO.println s!"[LISTS] No specific theorem template for pattern: {pattern}"
