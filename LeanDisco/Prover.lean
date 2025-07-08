@@ -365,76 +365,86 @@ def createInductiveTheoremStatement (pattern : String) (conjectures : List Conce
   | "length_append" => do
     -- ∀ l1 l2 : List α, length (l1 ++ l2) = length l1 + length l2
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    let natType := mkConst ``Nat
     
+    -- Create the theorem using mkForall helper
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
-    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
-      -- length(l1 ++ l2)
-      let natType := mkConst ``Nat
-      let append := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var l2Var
-      let leftSide := mkApp2 (mkConst ``List.length [levelZero]) natType append
-      
-      -- length(l1) + length(l2)
-      let len1 := mkApp2 (mkConst ``List.length [levelZero]) natType l1Var
-      let len2 := mkApp2 (mkConst ``List.length [levelZero]) natType l2Var
-      let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
-      
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
-      let forallL2 := mkForallExpr "l2" listType equality
-      let forallL1 := mkForallExpr "l1" listType forallL2
-      
-      return forallL1
+      withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+        -- length(l1 ++ l2)
+        let append := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var l2Var
+        let leftSide := mkApp2 (mkConst ``List.length [levelZero]) natType append
+        
+        -- length(l1) + length(l2)
+        let len1 := mkApp2 (mkConst ``List.length [levelZero]) natType l1Var
+        let len2 := mkApp2 (mkConst ``List.length [levelZero]) natType l2Var
+        let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
+        
+        -- Build the equality
+        let equality := mkEqualityExpr leftSide rightSide natType
+        
+        -- Use mkForall to properly abstract the variables
+        mkForallFVars #[l1Var, l2Var] equality
       
   | "reverse" => do
     -- ∀ l : List α, reverse (reverse l) = l
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    let natType := mkConst ``Nat
     
+    -- Create the theorem using mkForall helper
     withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
-      let natType := mkConst ``Nat
       let reverseOnce := mkApp2 (mkConst ``List.reverse [levelZero]) natType lVar
       let reverseTwice := mkApp2 (mkConst ``List.reverse [levelZero]) natType reverseOnce
       let equality := mkEqualityExpr reverseTwice lVar listType
-      return mkForallExpr "l" listType equality
+      
+      -- Use mkForall to properly abstract the variables
+      mkForallFVars #[lVar] equality
       
   | "append" => do
     -- ∀ l1 l2 l3 : List α, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    let natType := mkConst ``Nat
     
+    -- Create the theorem using mkForall helper
     withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
-    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
-    withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
-      let natType := mkConst ``Nat
-      let leftAppend := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var l2Var
-      let leftSide := mkApp3 (mkConst ``List.append [levelZero]) natType leftAppend l3Var
-      
-      let rightAppend := mkApp3 (mkConst ``List.append [levelZero]) natType l2Var l3Var
-      let rightSide := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var rightAppend
-      
-      let equality := mkEqualityExpr leftSide rightSide listType
-      let forallL3 := mkForallExpr "l3" listType equality
-      let forallL2 := mkForallExpr "l2" listType forallL3
-      let forallL1 := mkForallExpr "l1" listType forallL2
-      
-      return forallL1
+      withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+        withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
+          let leftAppend := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var l2Var
+          let leftSide := mkApp3 (mkConst ``List.append [levelZero]) natType leftAppend l3Var
+          
+          let rightAppend := mkApp3 (mkConst ``List.append [levelZero]) natType l2Var l3Var
+          let rightSide := mkApp3 (mkConst ``List.append [levelZero]) natType l1Var rightAppend
+          
+          let equality := mkEqualityExpr leftSide rightSide listType
+          
+          -- Use mkForall to properly abstract the variables
+          mkForallFVars #[l1Var, l2Var, l3Var] equality
       
   | "length" => do
     -- ∀ l : List α, length (reverse l) = length l
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
+    let natType := mkConst ``Nat
     
+    -- Create the theorem using mkForall helper
     withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
-      let natType := mkConst ``Nat
       let reversedList := mkApp2 (mkConst ``List.reverse [levelZero]) natType lVar
       let leftSide := mkApp2 (mkConst ``List.length [levelZero]) natType reversedList
       let rightSide := mkApp2 (mkConst ``List.length [levelZero]) natType lVar
-      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
-      return mkForallExpr "l" listType equality
+      let equality := mkEqualityExpr leftSide rightSide natType
+      
+      -- Use mkForall to properly abstract the variables
+      mkForallFVars #[lVar] equality
       
   | _ => do
     -- Generic fallback for unknown patterns - create a simple property
     IO.println s!"[INDUCTION] Unknown pattern {pattern}, creating generic statement"
     let natType := mkConst ``Nat
-    let body := mkEqualityExpr (mkConst ``Nat.zero) (mkConst ``Nat.zero) natType
-    return mkForallExpr s!"{pattern}_x" natType body
+    
+    -- Create the theorem using mkForall helper
+    withLocalDeclD (Name.mkSimple s!"{pattern}_x") natType fun xVar => do
+      let body := mkEqualityExpr (mkConst ``Nat.zero) (mkConst ``Nat.zero) natType
+      
+      -- Use mkForall to properly abstract the variables
+      mkForallFVars #[xVar] body
 
 /-- Generate an inductive theorem from a pattern of conjectures -/
 def generateInductiveTheoremFromPattern (pattern : String) (conjectures : List ConceptData) 

@@ -97,13 +97,13 @@ All Conjectures (100):
   - add2_homomorphism
     Statement: forall (x : Nat) (y : Nat), Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.add x y)) (Nat.add ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) x) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) y))
   - length_append_distributive
-    Statement: (List.{0} Nat) -> (List.{0} Nat) -> (Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat _uniq.744 _uniq.745)) (Nat.add (List.length.{0} Nat _uniq.744) (List.length.{0} Nat _uniq.745)))
+    Statement: forall (l1 : List.{0} Nat) (l2 : List.{0} Nat), Eq.{1} Nat (List.length.{0} Nat (List.append.{0} Nat l1 l2)) (Nat.add (List.length.{0} Nat l1) (List.length.{0} Nat l2))
   - length_append
-    Statement: (List.{0} Nat) -> (Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat _uniq.746)) (List.length.{0} Nat _uniq.746))
+    Statement: forall (l : List.{0} Nat), Eq.{1} Nat (List.length.{0} Nat (List.reverse.{0} Nat l)) (List.length.{0} Nat l)
   - append_associative
-    Statement: (List.{0} Nat) -> (List.{0} Nat) -> (List.{0} Nat) -> (Eq.{1} (List.{0} Nat) (List.append.{0} Nat (List.append.{0} Nat _uniq.747 _uniq.748) _uniq.749) (List.append.{0} Nat _uniq.747 (List.append.{0} Nat _uniq.748 _uniq.749)))
+    Statement: forall (l1 : List.{0} Nat) (l2 : List.{0} Nat) (l3 : List.{0} Nat), Eq.{1} (List.{0} Nat) (List.append.{0} Nat (List.append.{0} Nat l1 l2) l3) (List.append.{0} Nat l1 (List.append.{0} Nat l2 l3))
   - reverse_involutive
-    Statement: (List.{0} Nat) -> (Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat _uniq.750)) _uniq.750)
+    Statement: forall (l : List.{0} Nat), Eq.{1} (List.{0} Nat) (List.reverse.{0} Nat (List.reverse.{0} Nat l)) l
   - succ_compose_add1_fixed_point_zero
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) Nat.zero
   - succ_compose_add1_homomorphism

@@ -686,10 +686,6 @@ def runListsDiscovery (discoveryConfig : DiscoveryConfig) (maxIterations : Nat) 
 
 /-- List-specific inductive theorem statement generation -/
 def createListInductiveTheoremStatement (pattern : String) : MetaM Expr := do
-  -- Helper to create forall expressions
-  let mkForallExpr (varName : String) (varType : Expr) (body : Expr) : Expr :=
-    Expr.forallE (Name.mkSimple varName) varType body (BinderInfo.default)
-
   -- Helper to create equality expressions
   let mkEqualityExpr (left : Expr) (right : Expr) (type : Expr) : Expr :=
     mkApp3 (mkConst ``Eq [levelOne]) type left right
@@ -699,52 +695,57 @@ def createListInductiveTheoremStatement (pattern : String) : MetaM Expr := do
     -- Generate: ∀ l1 l2, length(l1 ++ l2) = length(l1) + length(l2)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
 
-    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
-    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
-      -- length(l1 ++ l2)
-      let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
-      let leftSide := mkApp (mkConst ``List.length [levelZero]) append
+    -- Build the body expression within the proper local context
+    let bodyExpr ← withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
+      withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+        -- length(l1 ++ l2)
+        let append := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
+        let leftSide := mkApp (mkConst ``List.length [levelZero]) append
 
-      -- length(l1) + length(l2)
-      let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
-      let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
-      let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
+        -- length(l1) + length(l2)
+        let len1 := mkApp (mkConst ``List.length [levelZero]) l1Var
+        let len2 := mkApp (mkConst ``List.length [levelZero]) l2Var
+        let rightSide := mkApp2 (mkConst ``Nat.add) len1 len2
 
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide (mkConst ``Nat)
-      let forallL2 := mkForallExpr "l2" listType equality
-      let forallL1 := mkForallExpr "l1" listType forallL2
+        -- Return the equality
+        return mkEqualityExpr leftSide rightSide (mkConst ``Nat)
 
-      return forallL1
+    -- Build proper forall quantification
+    let forallL2 := Expr.forallE (Name.mkSimple "l2") listType bodyExpr (BinderInfo.default)
+    let forallL1 := Expr.forallE (Name.mkSimple "l1") listType forallL2 (BinderInfo.default)
+    return forallL1
 
   | "append" =>
     -- Generate: ∀ l1 l2 l3, (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3)
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
 
-    withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
-    withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
-    withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
-      -- (l1 ++ l2) ++ l3
-      let l1l2 := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
-      let leftSide := mkApp2 (mkConst ``List.append [levelZero]) l1l2 l3Var
+    -- Build the body expression within the proper local context
+    let bodyExpr ← withLocalDeclD (Name.mkSimple "l1") listType fun l1Var => do
+      withLocalDeclD (Name.mkSimple "l2") listType fun l2Var => do
+        withLocalDeclD (Name.mkSimple "l3") listType fun l3Var => do
+          -- (l1 ++ l2) ++ l3
+          let l1l2 := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2Var
+          let leftSide := mkApp2 (mkConst ``List.append [levelZero]) l1l2 l3Var
 
-      -- l1 ++ (l2 ++ l3)
-      let l2l3 := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
-      let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2l3
+          -- l1 ++ (l2 ++ l3)
+          let l2l3 := mkApp2 (mkConst ``List.append [levelZero]) l2Var l3Var
+          let rightSide := mkApp2 (mkConst ``List.append [levelZero]) l1Var l2l3
 
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide listType
-      let forallL3 := mkForallExpr "l3" listType equality
-      let forallL2 := mkForallExpr "l2" listType forallL3
-      let forallL1 := mkForallExpr "l1" listType forallL2
+          -- Return the equality
+          return mkEqualityExpr leftSide rightSide listType
 
-      return forallL1
+    -- Build proper forall quantification
+    let forallL3 := Expr.forallE (Name.mkSimple "l3") listType bodyExpr (BinderInfo.default)
+    let forallL2 := Expr.forallE (Name.mkSimple "l2") listType forallL3 (BinderInfo.default)
+    let forallL1 := Expr.forallE (Name.mkSimple "l1") listType forallL2 (BinderInfo.default)
+    return forallL1
 
   | "reverse" =>
     -- Generate: ∀ l, reverse(reverse(l)) = l
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
 
-    withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
+    -- Build the body expression within the proper local context
+    let bodyExpr ← withLocalDeclD (Name.mkSimple "l") listType fun lVar => do
       -- reverse(reverse(l))
       let rev1 := mkApp (mkConst ``List.reverse [levelZero]) lVar
       let leftSide := mkApp (mkConst ``List.reverse [levelZero]) rev1
@@ -752,18 +753,24 @@ def createListInductiveTheoremStatement (pattern : String) : MetaM Expr := do
       -- l
       let rightSide := lVar
 
-      -- Equality
-      let equality := mkEqualityExpr leftSide rightSide listType
-      let forallL := mkForallExpr "l" listType equality
+      -- Return the equality
+      return mkEqualityExpr leftSide rightSide listType
 
-      return forallL
+    -- Build proper forall quantification
+    return Expr.forallE (Name.mkSimple "l") listType bodyExpr (BinderInfo.default)
 
   | _ =>
     -- Fallback for other patterns
     IO.println s!"[LISTS] No specific theorem template for pattern: {pattern}"
     let listType := mkApp (mkConst ``List [levelZero]) (mkConst ``Nat)
-    let body := mkConst ``True
-    return mkForallExpr s!"{pattern}_var" listType body
+    
+    -- Build the body expression within the proper local context
+    let bodyExpr ← withLocalDeclD (Name.mkSimple s!"{pattern}_var") listType fun lVar => do
+      let body := mkConst ``True
+      return body
+    
+    -- Build proper forall quantification
+    return Expr.forallE (Name.mkSimple s!"{pattern}_var") listType bodyExpr (BinderInfo.default)
 
 /-- Generate List-specific composition theorems -/
 def generateListCompositionTheorem (op1 op2 : String) : MetaM (Option (String × Expr)) := do
