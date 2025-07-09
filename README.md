@@ -18,8 +18,8 @@ See sample outputs in [log](log) directory.
 - `lake lean TestGroupRing.lean` - Group ring properties
 
 ### Benchmark Tests
-- `lake lean TestBenchmarks.lean` - miniF2F integration test
-- `lake lean BenchmarkEval.lean` - Quick benchmark evaluation
+- `lake lean BenchmarkEval.lean` - Quick benchmark evaluation (3 problems)
+- `lake lean RunFullBenchmark.lean` - Full benchmark evaluation
 
 Test files also run interactively in VSCode Lean extension.
 
