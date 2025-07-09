@@ -8,7 +8,7 @@ _Eurisko-Inspired Discovery System for Lean in Lean_
 ## Running
 
 `lake build` builds the system.
-Then run tests with `lake lean _TestXXX.lean_`.
+Then run each test `XXX` with `lake lean TestXXX.lean`.
 Test files also run interactively in VSCode Lean extension.
 
 ### Domain-Specific Discovery Tests
