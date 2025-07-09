@@ -2793,6 +2793,102 @@ def runDiscoveryCustom
       | _ =>
         IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {metadata.specializationDepth})"
 
+def runDiscoveryCustomReturn
+  (description : String)
+  (initialConcepts : List ConceptData)
+  (customHeuristics : List (String × HeuristicFn))
+  (customEvaluators : List (String × EvaluationFn))
+  (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM KnowledgeBase := do
+  IO.println s!"=== Starting {description}Discovery System ==="
+  IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
+  IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
+  IO.println s!"Mining mode: {if useMining then "ON" else "OFF"}"
+  IO.println "Initializing with mathematical seed concepts..."
+
+  let kb0 ← initializeSystem config useMining
+
+  -- Build heuristics registry
+  let mut heuristics : HeuristicRegistry := kb0.heuristics
+
+  -- Add all heuristics (custom ones override standard if same name)
+  for (name, fn) in customHeuristics do
+    heuristics := heuristics.insert name fn
+
+  -- Build evaluators registry
+  let mut evaluators : EvaluationRegistry := kb0.evaluators
+
+  -- Add all evaluators (custom ones override standard if same name)
+  for (name, fn) in customEvaluators do
+    evaluators := evaluators.insert name fn
+
+  -- Create heuristic reference concepts
+  let heuristicRefs := customHeuristics.map fun (name, _) =>
+    ConceptData.heuristicRef name s!"Custom heuristic: {name}"
+      { name := name
+        created := 0
+        parent := none
+        interestingness := 1.0
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "initial" }
+
+  -- Create knowledge base
+  let kb : KnowledgeBase := {
+    concepts := initialConcepts ++ kb0.concepts ++ heuristicRefs
+    recentConcepts := initialConcepts ++ kb0.concepts
+    heuristics := heuristics
+    evaluators := evaluators
+    config := kb0.config
+    iteration := kb0.iteration
+    history := kb0.history
+    cache := kb0.cache
+    failedProofs := kb0.failedProofs
+  }
+
+  IO.println s!"\nInitial concepts ({kb.concepts.length}):"
+  showConceptStats kb.concepts
+
+  let finalKb ← discoveryLoop kb maxIterations
+
+  IO.println s!"\n=== Discovery Complete ==="
+  IO.println s!"Total concepts: {finalKb.concepts.length}"
+  showConceptStats finalKb.concepts
+
+  -- Show discovered patterns
+  let patterns := finalKb.concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true
+    | _ => false
+
+  if patterns.length > 0 then
+    IO.println s!"\nDiscovered Patterns:"
+    for p in patterns do
+      match p with
+      | ConceptData.pattern name desc instances _ =>
+        IO.println s!"  - {name}: {desc}"
+        IO.println s!"    Instances: {instances}"
+      | _ => pure ()
+
+  -- Show top concepts
+  let sorted := finalKb.concepts.toArray.qsort fun c1 c2 =>
+    getInterestingness c1 > getInterestingness c2
+
+  IO.println s!"\nTop discovered concepts:"
+  for i in [:min 20 sorted.size] do
+    if h : i < sorted.size then
+      let c := sorted[i]
+      let metadata := getConceptMetadata c
+      match c with
+      | ConceptData.conjecture name _ evidence _ =>
+        IO.println s!"  {name} (CONJECTURE, evidence: {evidence}, score: {(getInterestingness c).toString})"
+      | ConceptData.pattern name _ _ _ =>
+        IO.println s!"  {name} (PATTERN, score: {(getInterestingness c).toString})"
+      | _ =>
+        IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {metadata.specializationDepth})"
+
+  -- Return the final knowledge base instead of Unit
+  return finalKb
+
 def runDiscovery
   (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do
   runDiscoveryCustom "Lean" [] [] [] maxIterations useMining config

@@ -156,8 +156,8 @@ def runDiscoveryWithGoals
   let goalTrackingHeuristic := createGoalTrackingHeuristic goals
   let allHeuristics := customHeuristics ++ [goalTrackingHeuristic]
   
-  -- Run discovery with goals included
-  runDiscoveryCustom
+  -- Run discovery with goals included and get final concepts
+  let finalKb ← runDiscoveryCustomReturn
     s!"GoalTracker_{problemId}"
     (initialConcepts ++ goalConcepts)
     allHeuristics
@@ -168,11 +168,11 @@ def runDiscoveryWithGoals
   
   IO.println s!"=== Goal Validation for {problemId} ==="
   
-  -- TODO: We need to get the final concepts from the discovery system
-  -- For now, we'll use a placeholder that simulates realistic goal achievement
+  -- Use the final discovered concepts from the discovery system
+  let finalConcepts := finalKb.concepts
   
-  -- Simulate checking if goals were proven (placeholder)
-  let (results, _) ← validateGoals goals []
+  -- Check if goals were proven using the discovered concepts
+  let (results, _) ← validateGoals goals finalConcepts
   
   let actualProvenCount := results.filter (· == true) |>.size
   let successRate := if goals.size > 0 then 
