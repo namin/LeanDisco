@@ -136,7 +136,7 @@ def runDiscoveryWithGoals
     allHeuristics
     []
     maxIterations
-    false
+    true  -- Enable mining for better mathematical concepts
     config
   
   IO.println s!"=== Goal Validation for {problemId} ==="

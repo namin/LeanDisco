@@ -136,7 +136,7 @@ def runMultipleProblems (problems : Array Problem) (config : DiscoveryConfig) : 
             [proofHeuristic]
             []
             3  -- 3 iterations per problem
-            false
+            true  -- Enable mining for better mathematical concepts
             config
           
           -- Simulate realistic success rate for parsing failures

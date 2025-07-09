@@ -5,11 +5,13 @@ Integrates LeanDisco's mathematical discovery with the miniF2F theorem proving d
 ## Quick Start
 
 ```bash
-# Quick evaluation (3 problems)
-lake lean BenchmarkEval.lean
+# Quick test (3 problems by default)
+lake lean TestBenchmarks.lean
 
-# Full benchmark (244 problems)
-lake lean RunFullBenchmark.lean
+# Edit TestBenchmarks.lean to uncomment lines for:
+# - 50 problems: runBenchmarks (some 50) none false true
+# - All test problems: runBenchmarks none (some "test") false true  
+# - ALL problems: runBenchmarks none none false true
 ```
 
 ## Current Status
@@ -21,4 +23,4 @@ lake lean RunFullBenchmark.lean
 
 - `LeanDisco/Benchmarks/RealRunner.lean` - Main evaluation logic
 - `LeanDisco/Benchmarks/MiniF2F.lean` - Dataset loader  
-- `BenchmarkEval.lean` - Quick evaluation script
+- `TestBenchmarks.lean` - Configurable benchmark runner
