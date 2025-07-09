@@ -706,7 +706,27 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
             let proof ← mkAppM ``Eq.refl #[lhsSimp]
             return some proof
           else
-            -- Strategy 4: Try common arithmetic equalities
+            -- Strategy 4: Try kernel reduction (for computational cases)
+            do
+              try
+                let lhsKernel ← Core.betaReduce lhs
+                let rhsKernel ← Core.betaReduce rhs
+                if ← isDefEq lhsKernel rhsKernel then
+                  IO.println s!"  [PROOF] Found equality after kernel reduction, using refl"
+                  let proof ← mkAppM ``Eq.refl #[lhsKernel]
+                  return some proof
+              catch _ => 
+                pure ()
+              
+              -- Strategy 5: Try using rfl which is more powerful
+              try
+                let proofRfl ← mkAppM ``rfl #[lhs]
+                IO.println s!"  [PROOF] Found equality using rfl tactic"
+                return some proofRfl
+              catch _ => 
+                pure ()
+            
+            -- Strategy 6: Try common arithmetic equalities
             match lhs, rhs with
             | .app (.app (.const ``Nat.add _) (.const ``Nat.zero _)) x, y =>
               if ← isDefEq x y then
