@@ -1,3 +1,3 @@
 [submodule "benchmarks/miniF2F-lean4"]
 	path = benchmarks/miniF2F-lean4
-	url = https://github.com/yangky11/miniF2F-lean4.git
+	url = https://github.com/namin/miniF2F-lean4.git
