@@ -677,10 +677,16 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
 
   -- Try multiple proof strategies
   try
-    -- Strategy 1: Reflexivity
+    -- Strategy 1: Prove True
+    if ← isDefEq stmt (Expr.const ``True []) then
+      IO.println s!"  [PROOF] Found True statement, using trivial proof"
+      return some (Expr.const ``True.intro [])
+    
+    -- Strategy 2: Reflexivity for equality
     match stmt with
     | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
       if ← isDefEq lhs rhs then
+        IO.println s!"  [PROOF] Found reflexive equality, using refl"
         let proof ← mkAppM ``Eq.refl #[lhs]
         return some proof
       else
@@ -688,30 +694,53 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
         let lhs' ← reduce lhs
         let rhs' ← reduce rhs
         if ← isDefEq lhs' rhs' then
+          IO.println s!"  [PROOF] Found equality after reduction, using refl"
           let proof ← mkAppM ``Eq.refl #[lhs']
           return some proof
         else
-          -- Strategy 2: Try simplification
+          -- Strategy 3: Try simplification
           let lhsSimp ← whnf lhs'
           let rhsSimp ← whnf rhs'
           if ← isDefEq lhsSimp rhsSimp then
+            IO.println s!"  [PROOF] Found equality after simplification, using refl"
             let proof ← mkAppM ``Eq.refl #[lhsSimp]
             return some proof
           else
-            return none
+            -- Strategy 4: Try common arithmetic equalities
+            match lhs, rhs with
+            | .app (.app (.const ``Nat.add _) (.const ``Nat.zero _)) x, y =>
+              if ← isDefEq x y then
+                IO.println s!"  [PROOF] Found 0 + x = x, using zero_add"
+                let proof ← mkAppM ``Nat.zero_add #[x]
+                return some proof
+              else
+                return none
+            | .app (.app (.const ``Nat.add _) x) (.const ``Nat.zero _), y =>
+              if ← isDefEq x y then
+                IO.println s!"  [PROOF] Found x + 0 = x, using add_zero"
+                let proof ← mkAppM ``Nat.add_zero #[x]
+                return some proof
+              else
+                return none
+            | _, _ => return none
     | _ =>
-      -- Strategy 3: Try to find exact matching theorem
+      -- Strategy 5: Try to find exact matching theorem
       for thm in availableTheorems do
         match thm with
         | ConceptData.theorem name thmStmt _ _ _ =>
           if ← isDefEq stmt thmStmt then
+            IO.println s!"  [PROOF] Found exact theorem match: {name}"
             -- Found exact match - try to create proof term
             return some (mkConst (Name.mkSimple name))
           else
             continue
         | _ => continue
+      
+      -- Strategy 6: No recursive calls - just return none for complex cases
       return none
-  catch _ => return none
+  catch e => 
+    IO.println s!"  [PROOF] Error during proof attempt: {← e.toMessageData.toString}"
+    return none
 
 /-- Check if a constant should be included based on filters -/
 def shouldIncludeConstant (name : Name) (allowedPrefixes : List String) : Bool :=
