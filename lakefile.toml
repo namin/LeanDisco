@@ -19,3 +19,7 @@ root = "RunBenchmarks"
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
+
+[[require]]
+name = "miniF2F-lean4"
+path = "./benchmarks/miniF2F-lean4"
