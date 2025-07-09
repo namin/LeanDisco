@@ -3,6 +3,7 @@ import LeanDisco.Basic
 import LeanDisco.Benchmarks.RealRunner
 import LeanDisco.Benchmarks.MiniF2F
 import LeanDisco.Benchmarks.GoalValidation
+import MiniF2F.Valid  -- Import the actual theorem statements
 
 set_option maxHeartbeats 1000000000
 
@@ -34,14 +35,29 @@ def runBenchmarksParallel
     ]
     pure testProblems
   
-  if problems.isEmpty then
+  -- Add simple miniF2F theorems as sanity check
+  let simpleProblems : Array Problem := #[
+    { id := "test_true", name := "test_true", 
+      formalStatement := "True", 
+      header := "", split := "simple" },
+    { id := "mathd_algebra_182", name := "mathd_algebra_182", 
+      formalStatement := "theorem mathd_algebra_182 (y : ℂ) : 7 * (3 * y + 2) = 21 * y + 14 := by ring", 
+      header := "", split := "simple" },
+    { id := "mathd_numbertheory_169", name := "mathd_numbertheory_169",
+      formalStatement := "theorem mathd_numbertheory_169 : Nat.gcd 20! 200000 = 40000 := by apply Eq.refl",
+      header := "", split := "simple" }
+  ]
+  
+  let allProblems := problems ++ simpleProblems
+  
+  if allProblems.isEmpty then
     IO.println "No problems found"
     return
   
   -- Limit problems if requested
   let testProblems := match numProblems with
-    | some n => problems.take n
-    | none => problems
+    | some n => allProblems.take n
+    | none => allProblems
   
   if showStats then
     -- Show statistics
@@ -115,10 +131,10 @@ def runBenchmarksParallel
     IO.println s!"Success: {success}"
 
 -- Run all problems as goals in a single discovery session (MUCH faster!)
-#eval runBenchmarksParallel none none false true      -- ALL problems as goals
+-- #eval runBenchmarksParallel none none false true      -- ALL problems as goals
 
--- Uncomment for smaller test runs:
--- #eval runBenchmarksParallel (some 3) none false true       -- 3 problems as goals
+-- Test with simple theorems first as sanity check:
+#eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
 -- #eval runBenchmarksParallel (some 10) (some "valid") false true  -- 10 valid problems as goals
 -- #eval runBenchmarksParallel (some 50) none false true      -- 50 problems as goals
 

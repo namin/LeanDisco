@@ -27,19 +27,43 @@ def createGoal (problemId : String) (theoremName : String) : Goal := {
 }
 
 /-- Create a goal conjecture that can be added to the discovery system -/
-def createGoalConcept (goal : Goal) : ConceptData := 
-  ConceptData.conjecture 
-    goal.name 
-    (Expr.const goal.name.toName [])  -- Simple name-based expression
-    1.0  -- High evidence to prioritize proving
-    { name := goal.name
-      created := 0
-      parent := none
-      interestingness := 1.0
-      useCount := 0
-      successCount := 0
-      specializationDepth := 0
-      generationMethod := "goal_conjecture" }
+def createGoalConcept (goal : Goal) : MetaM ConceptData := do
+  -- Try to look up the theorem in the environment and get its type
+  let env ← getEnv
+  let theoremName := goal.name.toName
+  
+  match env.find? theoremName with
+  | some constInfo => do
+    -- Use the theorem's type as the goal expression
+    let theoremType := constInfo.type
+    IO.println s!"[GOAL] Created goal for {goal.name} with type: {theoremType}"
+    return ConceptData.conjecture 
+      goal.name 
+      theoremType  -- Use the actual theorem type, not just the name
+      1.0  -- High evidence to prioritize proving
+      { name := goal.name
+        created := 0
+        parent := none
+        interestingness := 1.0
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "goal_conjecture" }
+  | none => do
+    -- Fallback to name-based approach for non-existent theorems
+    IO.println s!"[GOAL] Warning: Theorem {goal.name} not found in environment, using name-based approach"
+    return ConceptData.conjecture 
+      goal.name 
+      (Expr.const theoremName [])  -- Fallback to name-based expression
+      1.0  -- High evidence to prioritize proving
+      { name := goal.name
+        created := 0
+        parent := none
+        interestingness := 1.0
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "goal_conjecture" }
 
 /-- Check if a theorem proves a specific goal -/
 def theoremProvesGoal (concept : ConceptData) (goal : Goal) : MetaM Bool := do
@@ -123,7 +147,10 @@ def runDiscoveryWithGoals
   IO.println ""
   
   -- Create goal concepts that can be proven
-  let goalConcepts := goals.toList.map createGoalConcept
+  let mut goalConcepts : List ConceptData := []
+  for goal in goals do
+    let goalConcept ← createGoalConcept goal
+    goalConcepts := goalConcepts ++ [goalConcept]
   
   -- Add goal tracking heuristic
   let goalTrackingHeuristic := createGoalTrackingHeuristic goals
