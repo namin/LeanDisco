@@ -18,7 +18,7 @@ See sample outputs in [log](log) directory.
 - `lake lean TestGroupRing.lean` - Group ring properties
 
 ### Benchmark Tests
-- `lake lean TestBenchmarks.lean` - Configurable miniF2F benchmark runner
+- `lake lean TestBenchmarks.lean` - Full miniF2F benchmark (all ~244 problems)
 
 Test files also run interactively in VSCode Lean extension.
 

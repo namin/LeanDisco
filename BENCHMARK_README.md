@@ -5,13 +5,13 @@ Integrates LeanDisco's mathematical discovery with the miniF2F theorem proving d
 ## Quick Start
 
 ```bash
-# Quick test (3 problems by default)
+# Full benchmark (all ~244 problems by default)
 lake lean TestBenchmarks.lean
 
-# Edit TestBenchmarks.lean to uncomment lines for:
+# Edit TestBenchmarks.lean to uncomment lines for smaller test runs:
+# - 3 problems: runBenchmarks (some 3) none false true
+# - 10 valid problems: runBenchmarks (some 10) (some "valid") false true
 # - 50 problems: runBenchmarks (some 50) none false true
-# - All test problems: runBenchmarks none (some "test") false true  
-# - ALL problems: runBenchmarks none none false true
 ```
 
 ## Current Status

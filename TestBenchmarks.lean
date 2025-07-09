@@ -3,6 +3,8 @@ import LeanDisco.Basic
 import LeanDisco.Benchmarks.RealRunner
 import LeanDisco.Benchmarks.MiniF2F
 
+set_option maxHeartbeats 1000000000
+
 open LeanDisco.Benchmarks
 open Lean Elab Term Meta
 open LeanDisco
@@ -53,11 +55,11 @@ def runBenchmarks
         IO.println s!"  ... and {categories.size - 5} more categories"
     IO.println ""
   
-  -- Configure discovery
+  -- Configure discovery (optimized for performance)
   let config : DiscoveryConfig := {
     maxSpecializationDepth := 2
-    maxConceptsPerIteration := 25
-    pruneThreshold := 0.3
+    maxConceptsPerIteration := 20  -- Reduced from 25
+    pruneThreshold := 0.4          -- Increased from 0.3 for more aggressive pruning
     deduplicateConcepts := true
     canonicalizeConcepts := true
     filterInternalProofs := true
@@ -76,11 +78,13 @@ def runBenchmarks
     let avgTimeMs := totalTimeMs / testProblems.size
     IO.println s!"Completed in {totalTimeMs}ms (avg {avgTimeMs}ms per problem)"
 
--- Quick tests
-#eval runBenchmarks (some 3) none false true          -- 3 problems, no debug
--- #eval runBenchmarks (some 10) (some "valid") false true  -- 10 valid problems
+-- Run all problems by default
+#eval runBenchmarks none none false true               -- ALL problems
 
--- Uncomment for larger runs:
+-- Uncomment for smaller test runs:
+-- #eval runBenchmarks (some 3) none false true       -- 3 problems for quick testing
+-- #eval runBenchmarks (some 10) (some "valid") false true  -- 10 valid problems
 -- #eval runBenchmarks (some 50) none false true      -- 50 problems
--- #eval runBenchmarks none (some "test") false true  -- all test problems
--- #eval runBenchmarks none none false true           -- ALL problems (very slow!)
+
+-- For development/debugging with smaller sets:
+-- #eval runBenchmarks (some 1) none true true        -- 1 problem with debug output
