@@ -9,13 +9,19 @@ See sample outputs in [log](log) directory.
 
 ## Running
 
-`lake build` builds the system. Then, run a test file:
-- `lake lean TestInfiniteNumbers.lean`
-- `lake lean TestFiniteFields.lean`
-- `lake lean TestNumberTheory.lean` (a bit slow, and shows incremental progress in the [`log`](log) directory)
-- `lake lean TestGroupRing.lean` (slow, but shows incremental progress for each iteration in the [`log`](log) directory, for example [`log/groupring_discovery_iteration_3.txt`](log/groupring_discovery_iteration_3.txt) for iteration 3)
+`lake build` builds the system. Then run tests:
 
-The test files lso run interactively in the VSCode Lean extension.
+### Core Discovery Tests
+- `lake lean TestInfiniteNumbers.lean` - Infinite number discovery
+- `lake lean TestFiniteFields.lean` - Finite field exploration  
+- `lake lean TestNumberTheory.lean` - Number theory concepts
+- `lake lean TestGroupRing.lean` - Group ring properties
+
+### Benchmark Tests
+- `lake lean TestBenchmarks.lean` - miniF2F integration test
+- `lake lean BenchmarkEval.lean` - Quick benchmark evaluation
+
+Test files also run interactively in VSCode Lean extension.
 
 ## References
 
