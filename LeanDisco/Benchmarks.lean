@@ -1,5 +1,6 @@
 import LeanDisco.Benchmarks.Core
 import LeanDisco.Benchmarks.MiniF2F
+import LeanDisco.Benchmarks.GoalValidation
 import LeanDisco.Benchmarks.RealRunner
 import LeanDisco.Benchmarks.Metrics
 
