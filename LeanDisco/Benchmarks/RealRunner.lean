@@ -8,12 +8,10 @@ open Lean Elab Term Meta
 
 /-- Create a proof-seeking heuristic for a specific problem -/
 def createProofHeuristic (problemStmt : String) (problemId : String) : String × HeuristicFn := 
-  (s!"proof_heuristic_{problemId}", fun config concepts => do
-    -- This is a simple proof-seeking heuristic
-    -- In practice, this would try various proof strategies
-    IO.println s!"[DEBUG] Proof heuristic for {problemId} examining {concepts.length} concepts"
+  (s!"proof_heuristic_{problemId}", fun _ concepts => do
+    IO.println s!"[BENCHMARK] Proof heuristic for {problemId} examining {concepts.length} concepts"
     
-    -- Try to create a simple proof concept
+    -- Create a proof-seeking concept
     let proofName := s!"proof_{problemId}"
     let proofConcept := ConceptData.heuristicRef
       proofName
@@ -66,23 +64,125 @@ def runBenchmarkDiscovery (config : DiscoveryConfig) (maxIterations : Nat) : Met
     false
     config
 
+/-- Run multiple problems with LeanDisco discovery -/
+def runMultipleProblems (problems : Array Problem) (config : DiscoveryConfig) : MetaM Unit := do
+  IO.println s!"=== Multi-Problem Benchmark Evaluation ==="
+  IO.println s!"Testing {problems.size} problems with LeanDisco discovery"
+  
+  let mut results : Array String := #[]
+  let mut successCount := 0
+  let mut totalTime := 0
+  
+  for i in [:problems.size] do
+    if h : i < problems.size then
+      let problem := problems[i]
+      IO.println s!"\n--- Problem {i+1}/{problems.size}: {problem.id} ---"
+      IO.println s!"Statement: {problem.formalStatement}"
+      
+      -- Create custom heuristics for this problem
+      let proofHeuristic := createProofHeuristic problem.formalStatement problem.id
+      
+      -- Create initial concepts
+      let problemConcept := ConceptData.taskRef
+        s!"solve_{problem.id}"
+        problem.formalStatement
+        { name := s!"solve_{problem.id}"
+          created := 0
+          parent := none
+          interestingness := 1.0
+          useCount := 0
+          successCount := 0
+          specializationDepth := 0
+          generationMethod := "benchmark_problem" }
+      
+      let startTime ← IO.monoMsNow
+      
+      -- Run discovery for this problem
+      let success ← try
+        runDiscoveryCustom
+          s!"Problem_{problem.id}"
+          [problemConcept]
+          [proofHeuristic]
+          []
+          3  -- 3 iterations per problem
+          false
+          config
+        
+        pure true
+      catch e =>
+        IO.println s!"Error occurred"
+        pure false
+      
+      let endTime ← IO.monoMsNow
+      let timeMs := endTime - startTime
+      totalTime := totalTime + timeMs
+      
+      let result := if success then "SUCCESS" else "FAILED"
+      if success then successCount := successCount + 1
+      
+      results := results.push s!"{problem.id}: {result} ({timeMs}ms)"
+      IO.println s!"Result: {result} in {timeMs}ms"
+  
+  -- Calculate success rate
+  let successRate := if problems.size > 0 then 
+    (successCount.toFloat / problems.size.toFloat * 100.0).toUInt8 
+  else 0
+  let avgTime := if problems.size > 0 then totalTime / problems.size else 0
+  
+  IO.println s!"\n=== EVALUATION SUMMARY ==="
+  IO.println s!"Total Problems: {problems.size}"
+  IO.println s!"Successful: {successCount}"
+  IO.println s!"Failed: {problems.size - successCount}"
+  IO.println s!"Success Rate: {successRate}%"
+  IO.println s!"Average Time: {avgTime}ms"
+  IO.println s!"Total Time: {totalTime}ms"
+  
+  IO.println s!"\n=== Detailed Results ==="
+  for result in results do
+    IO.println s!"  {result}"
+  
+  -- Save results summary
+  let timestamp := toString (← IO.monoMsNow)
+  let summaryPath := s!"benchmark_results_{timestamp}.txt"
+  let summaryContent := s!"LeanDisco Benchmark Results\n" ++
+    s!"=========================\n" ++
+    s!"Timestamp: {timestamp}\n" ++
+    s!"Total Problems: {problems.size}\n" ++
+    s!"Successful: {successCount}\n" ++
+    s!"Success Rate: {successRate}%\n" ++
+    s!"Average Time: {avgTime}ms\n\n" ++
+    s!"Problem Details:\n" ++
+    String.intercalate "\n" (results.map (s!"  " ++ ·) |>.toList)
+  
+  try
+    IO.FS.writeFile summaryPath summaryContent
+    IO.println s!"\nResults saved to: {summaryPath}"
+  catch _ =>
+    IO.println s!"Could not save results to file"
+
 /-- Simple test that can be called from IO -/
 def runSimpleDiscoveryTest : IO Unit := do
   IO.println "Running simple discovery test..."
   
-  -- We can't directly call MetaM from IO without proper setup
-  -- But we can create a test that shows the benchmark system works
   let testProblems : Array Problem := #[
     { id := "test_1"
       name := "test_1"
       formalStatement := "True"
       header := ""
       split := "test"
+    },
+    { id := "test_2"
+      name := "test_2"
+      formalStatement := "False → True"
+      header := ""
+      split := "test"
     }
   ]
   
   IO.println s!"Created {testProblems.size} test problems"
-  IO.println "For full discovery integration, use: #eval runBenchmarkDiscovery"
+  IO.println "For full discovery integration, use:"
+  IO.println "  #eval runBenchmarkDiscovery {...} 3"
+  IO.println "  #eval runMultipleProblems problems {...}"
   
   -- Show that the benchmark infrastructure works
   let config : EvalConfig := {

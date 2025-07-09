@@ -14,7 +14,7 @@ def computeSummary (results : Array EvalResult) : EvalSummary :=
   -- Group by category
   let categoryMap := results.foldl (init := Std.HashMap.empty) fun acc r =>
     let cat := r.problemId.splitOn "_" |>.head? |>.getD "unknown"
-    let (solved, total) := match acc.find? cat with
+    let (solved, total) := match acc[cat]? with
       | some (s, t) => (s, t)
       | none => (0, 0)
     if r.success then
@@ -28,7 +28,7 @@ def computeSummary (results : Array EvalResult) : EvalSummary :=
   -- Track concept usage
   let conceptCounts := results.foldl (init := Std.HashMap.empty) fun acc r =>
     r.conceptsUsed.foldl (init := acc) fun acc' concept =>
-      let count := match acc'.find? concept with | some c => c | none => 0
+      let count := match acc'[concept]? with | some c => c | none => 0
       acc'.insert concept (count + 1)
   
   let topConcepts := conceptCounts.toList.mergeSort (fun a b => a.2 > b.2)
@@ -36,7 +36,7 @@ def computeSummary (results : Array EvalResult) : EvalSummary :=
   -- Track heuristic usage
   let heuristicCounts := results.foldl (init := Std.HashMap.empty) fun acc r =>
     r.heuristicsApplied.foldl (init := acc) fun acc' heuristic =>
-      let count := match acc'.find? heuristic with | some c => c | none => 0
+      let count := match acc'[heuristic]? with | some c => c | none => 0
       acc'.insert heuristic (count + 1)
   
   let topHeuristics := heuristicCounts.toList.mergeSort (fun a b => a.2 > b.2)
@@ -54,14 +54,14 @@ def computeSummary (results : Array EvalResult) : EvalSummary :=
 /-- Save evaluation results to JSON -/
 def saveResults (results : Array EvalResult) (path : System.FilePath) : IO Unit := do
   let json := Json.arr (results.map fun r => Json.mkObj [
-    ("problemId", r.problemId),
-    ("success", r.success),
-    ("proof", r.proof.getD ""),
-    ("timeMs", r.timeMs),
-    ("conceptsExplored", r.conceptsExplored),
+    ("problemId", Json.str r.problemId),
+    ("success", Json.bool r.success),
+    ("proof", Json.str (r.proof.getD "")),
+    ("timeMs", Json.num r.timeMs),
+    ("conceptsExplored", Json.num r.conceptsExplored),
     ("conceptsUsed", Json.arr (r.conceptsUsed.toArray.map Json.str)),
     ("heuristicsApplied", Json.arr (r.heuristicsApplied.toArray.map Json.str)),
-    ("errorMsg", r.errorMsg.getD "")
+    ("errorMsg", Json.str (r.errorMsg.getD ""))
   ])
   IO.FS.writeFile path json.pretty
 
@@ -73,18 +73,18 @@ def loadResults (path : System.FilePath) : IO (Array EvalResult) := do
     results.mapM fun json => do
       match json.getObj? with
       | .ok obj =>
-        let problemId := match obj.find "problemId" with | some j => j.getStr? |>.getD "" | none => ""
-        let success := match obj.find "success" with | some j => j.getBool? |>.getD false | none => false
-        let proof := match obj.find "proof" with | some j => j.getStr? |>.filter (·.length > 0) | none => none
-        let timeMs := match obj.find "timeMs" with | some j => j.getNat? |>.getD 0 | none => 0
-        let conceptsExplored := match obj.find "conceptsExplored" with | some j => j.getNat? |>.getD 0 | none => 0
-        let conceptsUsed := match obj.find "conceptsUsed" with
+        let problemId := (obj["problemId"]?).bind (·.getStr?) |>.getD ""
+        let success := (obj["success"]?).bind (·.getBool?) |>.getD false
+        let proof := (obj["proof"]?).bind (·.getStr?) |>.filter (·.length > 0)
+        let timeMs := (obj["timeMs"]?).bind (·.getNat?) |>.getD 0
+        let conceptsExplored := (obj["conceptsExplored"]?).bind (·.getNat?) |>.getD 0
+        let conceptsUsed := match obj["conceptsUsed"]? with
           | some (Json.arr cs) => cs.filterMap (·.getStr?) |>.toList
           | _ => []
-        let heuristicsApplied := match obj.find "heuristicsApplied" with
+        let heuristicsApplied := match obj["heuristicsApplied"]? with
           | some (Json.arr hs) => hs.filterMap (·.getStr?) |>.toList
           | _ => []
-        let errorMsg := match obj.find "errorMsg" with | some j => j.getStr? |>.filter (·.length > 0) | none => none
+        let errorMsg := (obj["errorMsg"]?).bind (·.getStr?) |>.filter (·.length > 0)
         return EvalResult.mk problemId success proof timeMs conceptsExplored conceptsUsed heuristicsApplied errorMsg
       | .error _ => return EvalResult.mk "" false none 0 0 [] [] (some "JSON parse error")
   | _ => return #[]
@@ -92,8 +92,9 @@ def loadResults (path : System.FilePath) : IO (Array EvalResult) := do
 /-- Generate detailed report -/
 def generateReport (results : Array EvalResult) (outputPath : System.FilePath) : IO Unit := do
   let summary := computeSummary results
+  let timestamp := toString (← IO.monoMsNow)
   let report := s!"# LeanDisco Benchmark Evaluation Report\n\n" ++
-    s!"Generated: {← IO.monoMsNow}ms\n\n" ++
+    s!"Generated: {timestamp}\n\n" ++
     s!"{summary}\n\n" ++
     s!"## Detailed Results\n\n"
   
