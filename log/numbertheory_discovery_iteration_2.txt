@@ -1,8 +1,8 @@
 === ITERATION 2 COMPLETE ===
-Total Concepts: 489 (+214 new)
+Total Concepts: 489 (+232 new)
 Patterns: 9
-Conjectures: 121
-Theorems: 198
+Conjectures: 103
+Theorems: 216
 Top Concepts:
   - nat_32 (score: 1.000000)
   - add_assoc (score: 1.000000)
@@ -31,7 +31,7 @@ All Patterns (9):
   - meta_pattern_specialization_successful: Meta-pattern: specialization has been successful (50 concepts)
   - revived_natural_number_sequence: Revived: Sequence: 0, 1, 2, ... (natural numbers via successor)
   - revived_variation_add_assoc: Revived: Variation pattern based on theorem add_assoc
-All Conjectures (121):
+All Conjectures (103):
   - function_lemma_for_zero_add_zero
     Statement: Eq.{1} Nat (Nat.add Nat.zero Nat.zero)
   - function_lemma_for_one_add_one_eq_two
@@ -238,43 +238,7 @@ All Conjectures (121):
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) Nat.zero) ((fun (x : Nat) => Nat.add (Nat.succ (Nat.succ Nat.zero)) x) (Nat.succ Nat.zero))
   - succ_compose_add1_preserves_add_assoc_spec_nat_0_maybe
     Statement: Eq.{1} Nat ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) Nat.zero) ((fun (x : Nat) => Nat.succ (Nat.add 1 x)) (Nat.succ Nat.zero))
-  - cross_apply_zero_add_zero_to_zero
-    Statement: True
-  - cross_apply_zero_add_zero_to_succ
-    Statement: True
-  - cross_apply_zero_add_zero_to_one
-    Statement: True
-  - cross_apply_zero_add_zero_to_two
-    Statement: True
-  - cross_apply_zero_add_zero_to_add
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_zero
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_succ
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_one
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_two
-    Statement: True
-  - cross_apply_one_add_one_eq_two_to_add
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_zero
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_succ
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_one
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_two
-    Statement: True
-  - cross_apply_two_add_one_eq_three_to_add
-    Statement: True
-  - extension_zero_add_zero
-    Statement: True
-  - extension_one_add_one_eq_two
-    Statement: True
-  - extension_two_add_one_eq_three
-    Statement: True
-All Theorems (198):
+All Theorems (216):
   - add_assoc
     Statement: forall (n : Nat) (m : Nat) (k : Nat), Eq.{1} Nat (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n m) k) (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) n (HAdd.hAdd.{0, 0, 0} Nat Nat Nat (instHAdd.{0} Nat instAddNat) m k))
   - add_comm
@@ -671,4 +635,40 @@ All Theorems (198):
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
   - dual_of_two_add_one_eq_three_on_num_3
     Statement: Eq.{1} Nat (Nat.succ (Nat.succ (Nat.succ Nat.zero))) (Nat.succ (Nat.succ (Nat.succ Nat.zero)))
+  - cross_apply_zero_add_zero_to_zero
+    Statement: True
+  - cross_apply_zero_add_zero_to_succ
+    Statement: True
+  - cross_apply_zero_add_zero_to_one
+    Statement: True
+  - cross_apply_zero_add_zero_to_two
+    Statement: True
+  - cross_apply_zero_add_zero_to_add
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_zero
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_succ
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_one
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_two
+    Statement: True
+  - cross_apply_one_add_one_eq_two_to_add
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_zero
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_succ
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_one
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_two
+    Statement: True
+  - cross_apply_two_add_one_eq_three_to_add
+    Statement: True
+  - extension_zero_add_zero
+    Statement: True
+  - extension_one_add_one_eq_two
+    Statement: True
+  - extension_two_add_one_eq_three
+    Statement: True
 

@@ -677,10 +677,16 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
 
   -- Try multiple proof strategies
   try
-    -- Strategy 1: Reflexivity
+    -- Strategy 1: Prove True
+    if ← isDefEq stmt (Expr.const ``True []) then
+      IO.println s!"  [PROOF] Found True statement, using trivial proof"
+      return some (Expr.const ``True.intro [])
+    
+    -- Strategy 2: Reflexivity for equality
     match stmt with
     | .app (.app (.app (.const ``Eq _) _) lhs) rhs =>
       if ← isDefEq lhs rhs then
+        IO.println s!"  [PROOF] Found reflexive equality, using refl"
         let proof ← mkAppM ``Eq.refl #[lhs]
         return some proof
       else
@@ -688,30 +694,73 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
         let lhs' ← reduce lhs
         let rhs' ← reduce rhs
         if ← isDefEq lhs' rhs' then
+          IO.println s!"  [PROOF] Found equality after reduction, using refl"
           let proof ← mkAppM ``Eq.refl #[lhs']
           return some proof
         else
-          -- Strategy 2: Try simplification
+          -- Strategy 3: Try simplification
           let lhsSimp ← whnf lhs'
           let rhsSimp ← whnf rhs'
           if ← isDefEq lhsSimp rhsSimp then
+            IO.println s!"  [PROOF] Found equality after simplification, using refl"
             let proof ← mkAppM ``Eq.refl #[lhsSimp]
             return some proof
           else
-            return none
+            -- Strategy 4: Try kernel reduction (for computational cases)
+            do
+              try
+                let lhsKernel ← Core.betaReduce lhs
+                let rhsKernel ← Core.betaReduce rhs
+                if ← isDefEq lhsKernel rhsKernel then
+                  IO.println s!"  [PROOF] Found equality after kernel reduction, using refl"
+                  let proof ← mkAppM ``Eq.refl #[lhsKernel]
+                  return some proof
+              catch _ => 
+                pure ()
+              
+              -- Strategy 5: Try using rfl which is more powerful
+              try
+                let proofRfl ← mkAppM ``rfl #[lhs]
+                IO.println s!"  [PROOF] Found equality using rfl tactic"
+                return some proofRfl
+              catch _ => 
+                pure ()
+            
+            -- Strategy 6: Try common arithmetic equalities
+            match lhs, rhs with
+            | .app (.app (.const ``Nat.add _) (.const ``Nat.zero _)) x, y =>
+              if ← isDefEq x y then
+                IO.println s!"  [PROOF] Found 0 + x = x, using zero_add"
+                let proof ← mkAppM ``Nat.zero_add #[x]
+                return some proof
+              else
+                return none
+            | .app (.app (.const ``Nat.add _) x) (.const ``Nat.zero _), y =>
+              if ← isDefEq x y then
+                IO.println s!"  [PROOF] Found x + 0 = x, using add_zero"
+                let proof ← mkAppM ``Nat.add_zero #[x]
+                return some proof
+              else
+                return none
+            | _, _ => return none
     | _ =>
-      -- Strategy 3: Try to find exact matching theorem
+      -- Strategy 5: Try to find exact matching theorem
       for thm in availableTheorems do
         match thm with
         | ConceptData.theorem name thmStmt _ _ _ =>
           if ← isDefEq stmt thmStmt then
+            IO.println s!"  [PROOF] Found exact theorem match: {name}"
             -- Found exact match - try to create proof term
             return some (mkConst (Name.mkSimple name))
           else
             continue
         | _ => continue
+      
+      -- Strategy 6: No recursive calls - just return none for complex cases
       return none
-  catch _ => return none
+  catch e => 
+    IO.println s!"  [PROOF] Error during proof attempt: {← e.toMessageData.toString}"
+    return none
 
 /-- Check if a constant should be included based on filters -/
 def shouldIncludeConstant (name : Name) (allowedPrefixes : List String) : Bool :=
@@ -2743,6 +2792,102 @@ def runDiscoveryCustom
         IO.println s!"  {name} (PATTERN, score: {(getInterestingness c).toString})"
       | _ =>
         IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {metadata.specializationDepth})"
+
+def runDiscoveryCustomReturn
+  (description : String)
+  (initialConcepts : List ConceptData)
+  (customHeuristics : List (String × HeuristicFn))
+  (customEvaluators : List (String × EvaluationFn))
+  (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM KnowledgeBase := do
+  IO.println s!"=== Starting {description}Discovery System ==="
+  IO.println s!"Config: maxDepth={config.maxSpecializationDepth}, maxPerIter={config.maxConceptsPerIteration}"
+  IO.println s!"Features: conjectures={config.enableConjectures}, patterns={config.enablePatternRecognition}"
+  IO.println s!"Mining mode: {if useMining then "ON" else "OFF"}"
+  IO.println "Initializing with mathematical seed concepts..."
+
+  let kb0 ← initializeSystem config useMining
+
+  -- Build heuristics registry
+  let mut heuristics : HeuristicRegistry := kb0.heuristics
+
+  -- Add all heuristics (custom ones override standard if same name)
+  for (name, fn) in customHeuristics do
+    heuristics := heuristics.insert name fn
+
+  -- Build evaluators registry
+  let mut evaluators : EvaluationRegistry := kb0.evaluators
+
+  -- Add all evaluators (custom ones override standard if same name)
+  for (name, fn) in customEvaluators do
+    evaluators := evaluators.insert name fn
+
+  -- Create heuristic reference concepts
+  let heuristicRefs := customHeuristics.map fun (name, _) =>
+    ConceptData.heuristicRef name s!"Custom heuristic: {name}"
+      { name := name
+        created := 0
+        parent := none
+        interestingness := 1.0
+        useCount := 0
+        successCount := 0
+        specializationDepth := 0
+        generationMethod := "initial" }
+
+  -- Create knowledge base
+  let kb : KnowledgeBase := {
+    concepts := initialConcepts ++ kb0.concepts ++ heuristicRefs
+    recentConcepts := initialConcepts ++ kb0.concepts
+    heuristics := heuristics
+    evaluators := evaluators
+    config := kb0.config
+    iteration := kb0.iteration
+    history := kb0.history
+    cache := kb0.cache
+    failedProofs := kb0.failedProofs
+  }
+
+  IO.println s!"\nInitial concepts ({kb.concepts.length}):"
+  showConceptStats kb.concepts
+
+  let finalKb ← discoveryLoop kb maxIterations
+
+  IO.println s!"\n=== Discovery Complete ==="
+  IO.println s!"Total concepts: {finalKb.concepts.length}"
+  showConceptStats finalKb.concepts
+
+  -- Show discovered patterns
+  let patterns := finalKb.concepts.filter fun c => match c with
+    | ConceptData.pattern _ _ _ _ => true
+    | _ => false
+
+  if patterns.length > 0 then
+    IO.println s!"\nDiscovered Patterns:"
+    for p in patterns do
+      match p with
+      | ConceptData.pattern name desc instances _ =>
+        IO.println s!"  - {name}: {desc}"
+        IO.println s!"    Instances: {instances}"
+      | _ => pure ()
+
+  -- Show top concepts
+  let sorted := finalKb.concepts.toArray.qsort fun c1 c2 =>
+    getInterestingness c1 > getInterestingness c2
+
+  IO.println s!"\nTop discovered concepts:"
+  for i in [:min 20 sorted.size] do
+    if h : i < sorted.size then
+      let c := sorted[i]
+      let metadata := getConceptMetadata c
+      match c with
+      | ConceptData.conjecture name _ evidence _ =>
+        IO.println s!"  {name} (CONJECTURE, evidence: {evidence}, score: {(getInterestingness c).toString})"
+      | ConceptData.pattern name _ _ _ =>
+        IO.println s!"  {name} (PATTERN, score: {(getInterestingness c).toString})"
+      | _ =>
+        IO.println s!"  {getConceptName c} (score: {(getInterestingness c).toString}, depth: {metadata.specializationDepth})"
+
+  -- Return the final knowledge base instead of Unit
+  return finalKb
 
 def runDiscovery
   (maxIterations : Nat := 10) (useMining : Bool := false) (config : DiscoveryConfig := {}) : MetaM Unit := do

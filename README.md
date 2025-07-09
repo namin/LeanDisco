@@ -9,13 +9,51 @@ See sample outputs in [log](log) directory.
 
 ## Running
 
-`lake build` builds the system. Then, run a test file:
-- `lake lean TestInfiniteNumbers.lean`
-- `lake lean TestFiniteFields.lean`
-- `lake lean TestNumberTheory.lean` (a bit slow, and shows incremental progress in the [`log`](log) directory)
-- `lake lean TestGroupRing.lean` (slow, but shows incremental progress for each iteration in the [`log`](log) directory, for example [`log/groupring_discovery_iteration_3.txt`](log/groupring_discovery_iteration_3.txt) for iteration 3)
+`lake build` builds the system. Then run tests:
 
-The test files lso run interactively in the VSCode Lean extension.
+### Core Discovery Tests
+- `lake lean TestInfiniteNumbers.lean` - Infinite number discovery
+- `lake lean TestFiniteFields.lean` - Finite field exploration  
+- `lake lean TestNumberTheory.lean` - Number theory concepts
+- `lake lean TestGroupRing.lean` - Group ring properties
+
+### Benchmark Tests
+- `lake lean TestBenchmarks.lean` - Full miniF2F benchmark infrastructure (0% success on hard problems)
+- `lake lean TestTrivialProofs.lean` - **End-to-end proof** that pipeline works (100% success on easy problems)
+- `lake lean TestSingleGoal.lean` - Diagnostic tool for testing individual theorems
+
+#### miniF2F Integration Status
+
+**✅ Working**: The discovery system successfully integrates with miniF2F and can prove theorems.
+
+**Proof of Success**: `TestTrivialProofs.lean` demonstrates 100% success rate on easy theorems like `mathd_numbertheory_169` (proven by `Eq.refl`).
+
+**Current Limitation**: Complex theorems requiring advanced tactics like `ring`, `simp`, or `sorry` are not yet supported.
+
+#### Test File Guide
+
+| File | Purpose | Expected Result |
+|------|---------|-----------------|
+| `TestBenchmarks.lean` | Full benchmark infrastructure with 5 mixed-difficulty problems | 0% success (hard problems dominate) |
+| `TestTrivialProofs.lean` | **Proof of concept** - easy theorems only | 100% success - **shows pipeline works** |
+| `TestSingleGoal.lean` | Test individual theorems with configurable difficulty | Varies by theorem difficulty |
+
+#### Using TestSingleGoal.lean
+
+Test individual theorems from the miniF2F benchmark:
+
+```lean
+-- Edit the #eval line in TestSingleGoal.lean:
+#eval testSingleGoal "mathd_numbertheory_169"  -- Easy (should work)
+#eval testSingleGoal "mathd_algebra_182"       -- Hard (will fail)
+```
+
+Or run with the default easy theorem:
+```bash
+lake lean TestSingleGoal.lean
+```
+
+Test files also run interactively in VSCode Lean extension.
 
 ## References
 
