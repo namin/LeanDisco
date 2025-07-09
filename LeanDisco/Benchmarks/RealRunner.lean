@@ -76,7 +76,10 @@ def runMultipleProblems (problems : Array Problem) (config : DiscoveryConfig) : 
   for i in [:problems.size] do
     if h : i < problems.size then
       let problem := problems[i]
-      IO.println s!"\n--- Problem {i+1}/{problems.size}: {problem.id} ---"
+      let progress := ((i + 1).toFloat / problems.size.toFloat * 100.0).toUInt8
+      IO.println s!"\n--- Problem {i+1}/{problems.size} ({progress}%): {problem.id} ---"
+      if problem.category.isSome then
+        IO.println s!"Category: {problem.category.get!}"
       IO.println s!"Statement: {problem.formalStatement}"
       
       -- Create custom heuristics for this problem
@@ -141,17 +144,36 @@ def runMultipleProblems (problems : Array Problem) (config : DiscoveryConfig) : 
   for result in results do
     IO.println s!"  {result}"
   
-  -- Save results summary
+  -- Save results summary with category breakdown
   let timestamp := toString (← IO.monoMsNow)
   let summaryPath := s!"benchmark_results_{timestamp}.txt"
+  
+  -- Group results by category
+  let categoryResults := problems.foldl (init := Std.HashMap.empty) fun acc problem =>
+    let category := problem.category.getD "unknown"
+    let resultLine := results.find? (fun r => r.startsWith problem.id)
+    let isSuccess := resultLine.map (contains · "SUCCESS") |>.getD false
+    let (successes, total) := match acc[category]? with
+      | some (s, t) => (s, t)
+      | none => (0, 0)
+    let newSuccesses := if isSuccess then successes + 1 else successes
+    acc.insert category (newSuccesses, total + 1)
+  
+  let categoryBreakdown := categoryResults.toList.map fun (cat, (succ, total)) =>
+    let rate := if total > 0 then (succ.toFloat / total.toFloat * 100.0).toUInt8 else 0
+    s!"  {cat}: {succ}/{total} ({rate}%)"
+  
   let summaryContent := s!"LeanDisco Benchmark Results\n" ++
     s!"=========================\n" ++
     s!"Timestamp: {timestamp}\n" ++
     s!"Total Problems: {problems.size}\n" ++
     s!"Successful: {successCount}\n" ++
     s!"Success Rate: {successRate}%\n" ++
-    s!"Average Time: {avgTime}ms\n\n" ++
-    s!"Problem Details:\n" ++
+    s!"Average Time: {avgTime}ms\n" ++
+    s!"Total Time: {totalTime}ms\n\n" ++
+    s!"Category Breakdown:\n" ++
+    String.intercalate "\n" categoryBreakdown ++
+    s!"\n\nProblem Details:\n" ++
     String.intercalate "\n" (results.map (s!"  " ++ ·) |>.toList)
   
   try
