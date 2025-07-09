@@ -12,6 +12,10 @@ name = "TestInfiniteNumbers"
 name = "leandisco"
 root = "Main"
 
+[[lean_exe]]
+name = "runBenchmarks"
+root = "RunBenchmarks"
+
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
