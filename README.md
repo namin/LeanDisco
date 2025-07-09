@@ -5,6 +5,12 @@
 
 _Eurisko-Inspired Discovery System for Lean in Lean_
 
+## Cloning
+
+```bash
+git clone --recursive https://github.com/namin/LeanDisco.git
+```
+
 ## Running
 
 `lake build` builds the system.
