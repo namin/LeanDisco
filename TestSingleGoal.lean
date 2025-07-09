@@ -13,16 +13,16 @@ open LeanDisco.Benchmarks.RealRunner
 open Lean Elab Term Meta
 open LeanDisco
 
-/-- Test if a single goal from TestBenchmarks can be proven -/
-def testSingleGoal : MetaM Unit := do
-  IO.println "=== Testing Single Goal: mathd_algebra_182 ===" 
+/-- Test if a single goal can be proven with different configurations -/
+def testSingleGoal (theoremName : String := "mathd_numbertheory_169") : MetaM Unit := do
+  IO.println s!"=== Testing Single Goal: {theoremName} ===" 
   
-  -- Test mathd_numbertheory_169 which is proven by Eq.refl
-  let goal := createGoal "mathd_numbertheory_169" "mathd_numbertheory_169"
+  -- Test the specified theorem
+  let goal := createGoal theoremName theoremName
   
   -- Create goal concept
   let goalConcept ← createGoalConcept goal
-  IO.println s!"Created goal concept for mathd_numbertheory_169"
+  IO.println s!"Created goal concept for {theoremName}"
   
   -- Use the same config as TestBenchmarks
   let config : DiscoveryConfig := {
@@ -38,7 +38,7 @@ def testSingleGoal : MetaM Unit := do
   }
   
   let success ← runDiscoveryWithGoals
-    "SingleGoal_mathd_numbertheory_169"
+    s!"SingleGoal_{theoremName}"
     #[goal]
     [goalConcept]
     []
@@ -46,9 +46,9 @@ def testSingleGoal : MetaM Unit := do
     5  -- Same iterations as TestBenchmarks
   
   if success then
-    IO.println "✅ SUCCESS: mathd_numbertheory_169 was proven!"
+    IO.println s!"✅ SUCCESS: {theoremName} was proven!"
   else
-    IO.println "❌ FAILED: mathd_numbertheory_169 could not be proven"
+    IO.println s!"❌ FAILED: {theoremName} could not be proven"
   
   IO.println "=== Now testing with enableConjectures := true ==="
   
@@ -66,7 +66,7 @@ def testSingleGoal : MetaM Unit := do
   }
   
   let success2 ← runDiscoveryWithGoals
-    "SingleGoal_mathd_numbertheory_169_with_conjectures"
+    s!"SingleGoal_{theoremName}_with_conjectures"
     #[goal]
     [goalConcept]
     []
@@ -74,9 +74,26 @@ def testSingleGoal : MetaM Unit := do
     5
   
   if success2 then
-    IO.println "✅ SUCCESS: mathd_numbertheory_169 was proven with conjectures!"
+    IO.println s!"✅ SUCCESS: {theoremName} was proven with conjectures!"
   else
-    IO.println "❌ FAILED: mathd_numbertheory_169 could not be proven with conjectures"
+    IO.println s!"❌ FAILED: {theoremName} could not be proven with conjectures"
 
-/-- Run the test -/
+/-- Run the test with default theorem (mathd_numbertheory_169) -/
 #eval testSingleGoal
+
+/-- Examples of other theorems to test:
+   
+   Easy theorems (should work):
+   #eval testSingleGoal "mathd_numbertheory_169"  -- proven by Eq.refl
+   #eval testSingleGoal "mathd_numbertheory_149"  -- proven by Eq.refl
+   
+   Hard theorems (will likely fail):
+   #eval testSingleGoal "mathd_algebra_182"       -- needs ring tactic
+   #eval testSingleGoal "amc12a_2019_p21"        -- complex calculation
+   #eval testSingleGoal "aime_1984_p5"           -- logarithms
+   
+   Usage:
+   - Change the theorem name in the #eval line above
+   - Run with: lake lean TestSingleGoal.lean
+   - Check output for SUCCESS/FAILED messages
+-/
