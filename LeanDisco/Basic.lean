@@ -607,6 +607,12 @@ def verifyTheorem (statement : Expr) (proof : Expr) : MetaM Bool := do
 
 def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
   try
+    -- Add safety checks for complex expressions - use a simple size check
+    if e₁.hasLooseBVars || e₂.hasLooseBVars then
+      return false
+    -- Add a simple complexity check to prevent processing very large expressions
+    if e₁.approxDepth > 20 || e₂.approxDepth > 20 then
+      return false
     isDefEq e₁ e₂
   catch _ =>
     pure false

@@ -76,11 +76,11 @@ def runBenchmarksParallel
         IO.println s!"  ... and {categories.size - 5} more categories"
     IO.println ""
 
-  -- Configure discovery (optimized for multi-goal evaluation)
+  -- Configure discovery (optimized for multi-goal evaluation with limits to prevent explosion)
   let config : DiscoveryConfig := {
     maxSpecializationDepth := 2
-    maxConceptsPerIteration := 30  -- Increased for multi-goal
-    pruneThreshold := 0.3          -- Standard pruning for better exploration
+    maxConceptsPerIteration := 20  -- Reduced to prevent complexity explosion with many goals
+    pruneThreshold := 0.5          -- More aggressive pruning for full dataset
     deduplicateConcepts := true
     canonicalizeConcepts := true
     filterInternalProofs := true
@@ -121,7 +121,7 @@ def runBenchmarksParallel
     problemConcepts
     []  -- No custom heuristics
     config
-    5   -- More iterations for multi-goal
+    3   -- Reduced iterations to prevent complexity explosion with full dataset
 
   let endTime ← IO.monoMsNow
 
@@ -132,8 +132,12 @@ def runBenchmarksParallel
     IO.println s!"Average time per goal: {avgTimeMs}ms"
     IO.println s!"Success: {success}"
 
--- Start with a small test to verify the fix works
-#eval runBenchmarksParallel (some 1) none false true  -- Just 1 problem as test
+-- NOTE: Full dataset (none) still has complexity issues with some MiniF2F problems
+-- For now, use limited problem sets until further optimization
+#eval runBenchmarksParallel (some 10) none false true  -- 10 problems works reliably
+
+-- Uncomment to test full dataset (may still hit complexity issues):
+-- #eval runBenchmarksParallel none none false true      -- ALL problems as goals
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
