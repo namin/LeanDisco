@@ -806,8 +806,23 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
               else
                 return none
             | _, _ => return none
+    
+    -- Strategy 3: Handle implications (A → B)  
+    | .forallE _ antecedent consequent _ =>
+      -- Check for False → anything (ex falso)
+      if ← safeIsDefEq antecedent (Lean.mkConst ``False) then
+        IO.println s!"  [PROOF] Found 'False → _', using ex falso"
+        let proof ← mkLambdaFVars #[] $ mkApp (Lean.mkConst ``False.elim) (mkBVar 0)
+        return some proof
+      -- Check for anything → True (trivial implication)
+      else if ← safeIsDefEq consequent (Lean.mkConst ``True) then
+        IO.println s!"  [PROOF] Found '_ → True', using trivial implication"
+        let proof ← mkLambdaFVars #[] (Lean.mkConst ``True.intro)
+        return some proof
+      else
+        return none
     | _ =>
-      -- Strategy 5: Try to find exact matching theorem
+      -- Strategy 4: Try to find exact matching theorem
       for thm in availableTheorems do
         match thm with
         | ConceptData.theorem name thmStmt _ _ _ =>
