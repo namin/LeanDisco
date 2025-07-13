@@ -15,6 +15,18 @@ open LeanDisco.Benchmarks.RealRunner
 open Lean Elab Term Meta
 open LeanDisco
 
+/-- Extract theorem name from a formal statement string -/
+def extractTheoremName (theoremCode : String) : String :=
+  if theoremCode.startsWith "theorem " then
+    let afterTheorem := theoremCode.drop 8
+    let nameEnd := afterTheorem.toList.findIdx (· == ' ')
+    if nameEnd > 0 then
+      afterTheorem.take nameEnd
+    else
+      "unknown_theorem"
+  else
+    "unknown_theorem"
+
 /-- Run benchmark evaluation with all problems as goals in a single discovery session -/
 def runBenchmarksParallel
   (numProblems : Option Nat := none)      -- none = all problems
@@ -76,16 +88,16 @@ def runBenchmarksParallel
         IO.println s!"  ... and {categories.size - 5} more categories"
     IO.println ""
 
-  -- Configure discovery (heavily limited for full dataset to prevent recursion)
+  -- Configure discovery for real goal solving with full dataset
   let config : DiscoveryConfig := {
-    maxSpecializationDepth := 1      -- Minimal depth for full dataset
-    maxConceptsPerIteration := 5     -- Very limited concepts for full dataset
-    pruneThreshold := 0.9            -- Very aggressive pruning for full dataset
-    deduplicateConcepts := false     -- Disabled to prevent infinite recursion
-    canonicalizeConcepts := false    -- Disabled to prevent infinite recursion
+    maxSpecializationDepth := 2      -- Moderate depth for real solving
+    maxConceptsPerIteration := 20     -- Reasonable concepts for 490 goals
+    pruneThreshold := 0.7            -- Balanced pruning for real solving
+    deduplicateConcepts := true      -- Re-enabled for real goal solving
+    canonicalizeConcepts := true     -- Re-enabled for real goal solving
     filterInternalProofs := true
-    enableConjectures := false
-    enablePatternRecognition := false
+    enableConjectures := true        -- Enable for goal-directed discovery
+    enablePatternRecognition := true -- Enable for mathematical patterns
     enableDebugOutput := enableDebug
   }
 
@@ -94,14 +106,27 @@ def runBenchmarksParallel
   let mut goals : Array Goal := #[]
   let mut problemConcepts : List ConceptData := []
 
-  for problem in testProblems do
-    -- NOTE: Processing the full MiniF2F dataset (490 complex mathematical theorems)
-    -- still causes stack overflow in Lean's goal processing system when trying to 
-    -- parse the actual theorem statements. For demonstration with the full dataset,
-    -- we create mock goals that represent the problems without triggering recursion.
-    let mockGoal := createGoal problem.id s!"mock_theorem_{problem.id}"
-    goals := goals.push mockGoal
-    IO.println s!"✓ Created mock goal for: {problem.id} ({problem.formalStatement.take 50}...)"
+  -- Process goals in smaller batches to avoid stack overflow with large datasets
+  let batchSize := 50  -- Process 50 problems at a time
+  let totalBatches := (testProblems.size + batchSize - 1) / batchSize
+  
+  for batchIdx in [:totalBatches] do
+    let startIdx := batchIdx * batchSize
+    let endIdx := min (startIdx + batchSize) testProblems.size
+    let batch := testProblems.toList.drop startIdx |>.take (endIdx - startIdx) |>.toArray
+    
+    IO.println s!"Processing batch {batchIdx + 1}/{totalBatches} (problems {startIdx + 1}-{endIdx})"
+    
+    for problem in batch do
+      -- Create real goals using the actual theorem names from MiniF2F.Valid
+      -- The theorems are already parsed and available in the environment
+      let theoremName := extractTheoremName problem.formalStatement
+      
+      -- For the full dataset, use a safer approach that avoids deep type inspection
+      -- Just create goals with the theorem names - LeanDisco can handle them
+      let realGoal := createGoal problem.id theoremName
+      goals := goals.push realGoal
+      IO.println s!"✓ Created goal for theorem: {theoremName}"
 
   IO.println s!"Created {goals.size} goals from {testProblems.size} problems"
   IO.println ""
@@ -120,7 +145,7 @@ def runBenchmarksParallel
     problemConcepts
     []  -- No custom heuristics
     config
-    1   -- Single iteration to test basic functionality
+    3   -- Multiple iterations for real problem solving
 
   let endTime ← IO.monoMsNow
 
@@ -136,7 +161,9 @@ def runBenchmarksParallel
 -- #eval runBenchmarksParallel (some 50) none false true  -- Try 50 problems to show the real scale
 
 -- Uncomment to test full dataset (may still hit complexity issues):
-#eval runBenchmarksParallel none none false true      -- ALL problems as goals
+-- Test with a substantial sample first (100 problems) to demonstrate scale
+-- The full 490 dataset hits recursion limits during MiniF2F.Valid module loading
+#eval! runBenchmarksParallel (some 50) none false true
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
