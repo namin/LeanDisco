@@ -6,13 +6,11 @@ set_option maxHeartbeats 1000000000
 open LeanDisco
 open Lean Meta Elab Term
 
-/-- 
-Proof Curriculum: A systematic progression of statements from trivial to complex
-to test and improve LeanDisco's proving capabilities.
-
-The curriculum is organized by difficulty levels and mathematical domains.
-Each level builds on the previous ones, helping identify specific gaps in proof strategies.
--/
+-- Proof Curriculum: A systematic progression of statements from trivial to complex
+-- to test and improve LeanDisco's proving capabilities.
+--
+-- The curriculum is organized by difficulty levels and mathematical domains.
+-- Each level builds on the previous ones, helping identify specific gaps in proof strategies.
 
 /-- Level 1: Trivial proofs (should always work) -/
 def level1_trivial : List (String × String) := [
@@ -114,7 +112,7 @@ def testCurriculumItem (level : String) (name : String) (stmtStr : String) : Met
         IO.println s!"  ❌ PARSE_ERROR: {err}"
         return false
     
-    let stmt ← liftTermElabM $ elabTerm stx none
+    let stmt ← liftM $ Term.elabTerm stx none
     
     -- Try to prove it
     let proof ← tryProveConjecture stmt kb
@@ -181,5 +179,5 @@ def testLevel1 : MetaM Unit := do
 def testLevel2 : MetaM Unit := do
   testCurriculumLevel "Level2_Arithmetic"
 
-/-- Run Level 1 test -/
-#eval! testLevel1
+-- Run Level 1 test
+#eval testLevel1

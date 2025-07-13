@@ -819,6 +819,24 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
         IO.println s!"  [PROOF] Found '_ → True', using trivial implication"
         let proof ← mkLambdaFVars #[] (Lean.mkConst ``True.intro)
         return some proof
+      -- Check for True → A (need to prove A assuming True)
+      else if ← safeIsDefEq antecedent (Lean.mkConst ``True) then
+        IO.println s!"  [PROOF] Found 'True → _', analyzing consequent"
+        -- For True → True case
+        if ← safeIsDefEq consequent (Lean.mkConst ``True) then
+          let proof ← mkLambdaFVars #[] (Lean.mkConst ``True.intro)
+          return some proof
+        -- For True → (P ∨ Q) case, try to prove P ∨ Q
+        else
+          match consequent with
+          | .app (.app (.const ``Or _) p) q =>
+            if ← safeIsDefEq p (Lean.mkConst ``True) then
+              IO.println s!"  [PROOF] Found 'True → (True ∨ _)', using Or.inl"
+              let proof ← mkLambdaFVars #[] (mkApp (Lean.mkConst ``Or.inl) (Lean.mkConst ``True.intro))
+              return some proof
+            else
+              return none
+          | _ => return none
       else
         return none
     | _ =>
@@ -834,8 +852,27 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
             continue
         | _ => continue
       
-      -- Strategy 6: No recursive calls - just return none for complex cases
-      return none
+      -- Strategy 5: Handle basic logical connectives
+      match stmt with
+      | .app (.app (.const ``Or _) p) q =>
+        -- Try to prove P ∨ Q by proving P (left injection)
+        if ← safeIsDefEq p (Lean.mkConst ``True) then
+          IO.println s!"  [PROOF] Found 'True ∨ _', using Or.inl"
+          let proof ← mkAppM ``Or.inl #[Lean.mkConst ``True.intro]
+          return some proof
+        else
+          return none
+      | .app (.app (.const ``And _) p) q =>
+        -- Try to prove P ∧ Q by proving both P and Q
+        if (← safeIsDefEq p (Lean.mkConst ``True)) && (← safeIsDefEq q (Lean.mkConst ``True)) then
+          IO.println s!"  [PROOF] Found 'True ∧ True', using And.intro"
+          let proof ← mkAppM ``And.intro #[Lean.mkConst ``True.intro, Lean.mkConst ``True.intro]
+          return some proof
+        else
+          return none
+      | _ =>
+        -- Strategy 6: No recursive calls - just return none for complex cases
+        return none
   catch e => 
     IO.println s!"  [PROOF] Error during proof attempt: {← e.toMessageData.toString}"
     return none
