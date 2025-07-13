@@ -731,9 +731,17 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
   -- Try multiple proof strategies
   try
     -- Strategy 1: Prove True
-    if ← safeIsDefEq stmt (Expr.const ``True []) then
+    if ← safeIsDefEq stmt (Lean.mkConst ``True) then
       IO.println s!"  [PROOF] Found True statement, using trivial proof"
-      return some (Expr.const ``True.intro [])
+      return some (Lean.mkConst ``True.intro)
+    
+    -- Strategy 1.5: Check for simple natural number constants
+    match stmt with
+    | .const name _ =>
+      if name.toString == "True" then
+        IO.println s!"  [PROOF] Found True constant, using trivial proof"
+        return some (Lean.mkConst ``True.intro)
+    | _ => pure ()
     
     -- Strategy 2: Reflexivity for equality
     match stmt with
@@ -1280,6 +1288,7 @@ partial def discoveryLoop (kb : KnowledgeBase) (maxIterations : Nat) : MetaM Kno
         fa.statementStr == toString stmt && fa.attemptCount >= 3
 
       if !failedBefore then
+        IO.println s!"[CONJECTURE_TEST] Attempting to prove conjecture: {name} with statement: {stmt}"
         if let some proof ← tryProveConjecture stmt kb then
           IO.println s!"  ✓ Proved conjecture: {name}"
           let thm := ConceptData.theorem name stmt proof []
