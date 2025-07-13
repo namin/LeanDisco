@@ -221,9 +221,10 @@ def getConceptExpr : ConceptData → Option Expr
   | ConceptData.conjecture _ s _ _ => some s
   | _ => none
 
-/-- Extract natural number literal from expression -/
-partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
+/-- Extract natural number literal from expression with depth limiting -/
+partial def extractNatLiteral (e : Expr) (depth : Nat := 0) : MetaM (Option Nat) := do
   try
+    if depth > 50 then return none  -- Prevent infinite recursion
     if e.hasLooseBVars then
       return none
 
@@ -231,7 +232,7 @@ partial def extractNatLiteral (e : Expr) : MetaM (Option Nat) := do
     match e' with
     | .const ``Nat.zero _ => return some 0
     | .app (.const ``Nat.succ _) n => do
-      if let some n' ← extractNatLiteral n then
+      if let some n' ← extractNatLiteral n (depth + 1) then
         return some (n' + 1)
       else
         return none
@@ -315,13 +316,14 @@ def getActiveTargets (context : ProofContext) : List ProofGoal :=
   context.goals.filter fun g => g.priority > 0.5
 
 /-- Extract sorry holes from a proof expression -/
-partial def countSorryHoles (expr : Expr) : Nat :=
-  match expr with
+partial def countSorryHoles (expr : Expr) (depth : Nat := 0) : Nat :=
+  if depth > 100 then 0
+  else match expr with
   | Expr.const name _ => if name.toString = "sorry" then 1 else 0
-  | Expr.app f arg => countSorryHoles f + countSorryHoles arg
-  | Expr.lam _ _ body _ => countSorryHoles body
-  | Expr.forallE _ _ body _ => countSorryHoles body
-  | Expr.letE _ _ val body _ => countSorryHoles val + countSorryHoles body
+  | Expr.app f arg => countSorryHoles f (depth + 1) + countSorryHoles arg (depth + 1)
+  | Expr.lam _ _ body _ => countSorryHoles body (depth + 1)
+  | Expr.forallE _ _ body _ => countSorryHoles body (depth + 1)
+  | Expr.letE _ _ val body _ => countSorryHoles val (depth + 1) + countSorryHoles body (depth + 1)
   | _ => 0
 
 /-- Convert high-evidence conjecture to proof goal -/
@@ -609,43 +611,49 @@ def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
   catch _ =>
     pure false
 
-/-- Calculate a very rough structural similarity score. -/
-partial def structuralSimilarity (e1 e2 : Expr) : MetaM Float := do
+/-- Calculate a very rough structural similarity score with depth limiting. -/
+partial def structuralSimilarity (e1 e2 : Expr) (depth : Nat := 0) : MetaM Float := do
   try
+    -- Prevent infinite recursion with depth limit
+    if depth > 50 then
+      return 0.0
+    
     -- Safety check for loose bvars
     if e1.hasLooseBVars || e2.hasLooseBVars then
       return 0.0
 
     match (e1, e2) with
     | (.app f1 a1, .app f2 a2) =>
-        return ((← structuralSimilarity f1 f2) +
-                (← structuralSimilarity a1 a2)) / 2.0
+        return ((← structuralSimilarity f1 f2 (depth + 1)) +
+                (← structuralSimilarity a1 a2 (depth + 1))) / 2.0
     | (.const n1 _, .const n2 _) =>
         return if n1 == n2 then 1.0 else 0.0
     | (.forallE _ t1 b1 _, .forallE _ t2 b2 _) =>
-        return ((← structuralSimilarity t1 t2) +
-                (← structuralSimilarity b1 b2)) / 2.0
+        return ((← structuralSimilarity t1 t2 (depth + 1)) +
+                (← structuralSimilarity b1 b2 (depth + 1))) / 2.0
     | (.lam _ t1 b1 _, .lam _ t2 b2 _) =>
-        return ((← structuralSimilarity t1 t2) +
-                (← structuralSimilarity b1 b2)) / 2.0
+        return ((← structuralSimilarity t1 t2 (depth + 1)) +
+                (← structuralSimilarity b1 b2 (depth + 1))) / 2.0
     | _ =>
         return if ← safeIsDefEq e1 e2 then 0.5 else 0.0
   catch _ => return 0.0
 
-/-- Expression size helper -/
-partial def exprSize : Expr → Nat
+/-- Expression size helper with depth limiting to prevent infinite recursion -/
+partial def exprSize (e : Expr) (depth : Nat := 0) : Nat :=
+  if depth > 100 then 1
+  else match e with
   | .bvar _ => 1
   | .fvar _ => 1
   | .mvar _ => 1
   | .sort _ => 1
   | .const _ _ => 1
-  | .app f a => 1 + exprSize f + exprSize a
-  | .lam _ _ b _ => 1 + exprSize b
-  | .forallE _ _ b _ => 1 + exprSize b
-  | .letE _ _ v b _ => 1 + exprSize v + exprSize b
+  | .app f a => 1 + exprSize f (depth + 1) + exprSize a (depth + 1)
+  | .lam _ _ b _ => 1 + exprSize b (depth + 1)
+  | .forallE _ _ b _ => 1 + exprSize b (depth + 1)
+  | .letE _ _ v b _ => 1 + exprSize v (depth + 1) + exprSize b (depth + 1)
   | .lit _ => 1
-  | .mdata _ e => 1 + exprSize e
-  | .proj _ _ e => 1 + exprSize e
+  | .mdata _ e => 1 + exprSize e (depth + 1)
+  | .proj _ _ e => 1 + exprSize e (depth + 1)
 
 /-- Calculate evidence based on structural similarity and known theorems -/
 def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float := do
