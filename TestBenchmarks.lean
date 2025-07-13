@@ -161,7 +161,7 @@ def runBenchmarksParallel
 -- Solution: Created minif2f_lean4_skip62.jsonl without the problematic theorem
 -- Result: Can now process ALL 486 problems in the dataset (was limited to 61)
 -- The issue was NOT cumulative complexity, but one specific problematic theorem
-#eval! runBenchmarksParallel none none false true  -- Full working dataset with enhanced configuration
+#eval! runBenchmarksParallel (some 1) none true true  -- Single problem with debug output
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones

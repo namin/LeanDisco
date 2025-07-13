@@ -593,35 +593,45 @@ def updateConceptScore (c : ConceptData) (score : Float) : ConceptData :=
 
 def safeIsDefEq (e₁ e₂ : Expr) : MetaM Bool := do
   try
-    -- Emergency circuit breaker for full dataset: reject almost everything
+    -- Safety checks to prevent recursion
     if e₁.hasLooseBVars || e₂.hasLooseBVars then
       return false
-    -- Very aggressive complexity check for full dataset
-    if e₁.approxDepth > 3 || e₂.approxDepth > 3 then
-      return false
-    -- Prevent any complex expression structures
-    if e₁.getAppNumArgs > 3 || e₂.getAppNumArgs > 3 then
-      return false
-    -- Additional safety: avoid function types and complex structures
-    if e₁.isForall || e₂.isForall || e₁.isLambda || e₂.isLambda then
-      return false
-    -- Emergency: disable all equality checks for full dataset to prevent recursion
-    return false  -- Always return false to completely prevent deep recursion
+    
+    -- Quick syntactic equality check first (most common case)
+    if e₁ == e₂ then
+      return true
+    
+    -- For very simple expressions, allow proper type checking
+    if e₁.approxDepth <= 2 && e₂.approxDepth <= 2 && 
+       e₁.getAppNumArgs <= 2 && e₂.getAppNumArgs <= 2 then
+      withReducible $ isDefEq e₁ e₂
+    else
+      -- For complex expressions, do conservative structural matching
+      match e₁, e₂ with
+      | .const n₁ u₁, .const n₂ u₂ => pure (n₁ == n₂)  -- Same constant
+      | .app f₁ a₁, .app f₂ a₂ => 
+        -- Check if function and argument are the same
+        if f₁ == f₂ && a₁ == a₂ then pure true
+        else pure false
+      | _, _ => pure false
   catch _ =>
     pure false
 
 /-- Safe wrapper for inferType that avoids recursion on complex expressions -/
 def safeInferType (e : Expr) : MetaM Expr := do
   try
-    -- For full MiniF2F dataset: avoid inferType on complex expressions
-    if e.approxDepth > 5 then
-      return (mkConst `Prop [])  -- Return a safe default type
-    if e.getAppNumArgs > 5 then
-      return (mkConst `Prop [])  -- Return a safe default type
-    if e.isForall || e.isLambda then
-      return (mkConst `Prop [])  -- Return a safe default type
-    -- For simple expressions, disable inference to prevent recursion
-    return (mkConst `Prop [])  -- Always return Prop to prevent recursion
+    -- Safety checks for very complex expressions
+    if e.approxDepth > 8 then
+      return (mkConst `Prop [])  -- Return a safe default type for very deep expressions
+    if e.getAppNumArgs > 8 then
+      return (mkConst `Prop [])  -- Return a safe default type for very complex applications
+    
+    -- For simple expressions, use actual type inference
+    if e.approxDepth <= 3 && e.getAppNumArgs <= 3 then
+      withReducible $ inferType e
+    else
+      -- For medium complexity, try with reduced resources
+      withReducible $ inferType e
   catch _ =>
     pure (mkConst `Prop [])
 
@@ -1771,6 +1781,24 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
 
   IO.println s!"[APPLICATION] Found {seedFunctions.length} seed functions, {allArgs.length} potential arguments"
 
+  -- Debug: Show what seed functions we found
+  if seedFunctions.length > 0 then
+    IO.println "[APPLICATION] First 3 seed functions:"
+    for (fname, ftype, fvalue, fdeps, fmetadata) in seedFunctions.take 3 do
+      IO.println s!"  {fname} (method: {fmetadata.generationMethod}, forall: {ftype.isForall})"
+
+  -- Debug: Show what arguments we found  
+  if allArgs.length > 0 then
+    IO.println "[APPLICATION] First 3 potential arguments:"
+    for (aname, atype, avalue, adeps, ametadata) in allArgs.take 3 do
+      IO.println s!"  {aname} (method: {ametadata.generationMethod}, depth: {ametadata.specializationDepth})"
+
+  let mut totalAttempts := 0
+  let mut compatibilityFailures := 0
+  let mut alreadyTriedCount := 0
+  let mut successfulApplications := 0
+  let mut exceptionCount := 0
+
   -- Strategy 1: Apply seed functions to all suitable arguments
   for (fname, ftype, fvalue, fdeps, fmetadata) in seedFunctions do
     -- Skip normalization to prevent infinite recursion
@@ -1784,9 +1812,18 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
         let proposedName := s!"{fname}_applied_to_{aname}"
         let alreadyTried := concepts.any (fun c => getConceptName c == proposedName)
 
-        if !alreadyTried && fname != aname then
+        totalAttempts := totalAttempts + 1
+        
+        if alreadyTried then
+          alreadyTriedCount := alreadyTriedCount + 1
+        else if fname == aname then
+          -- Skip self-application
+          pure ()
+        else
           let atype ← safeInferType avalue
-          if ← safeIsDefEq atype argType then
+          let compatible ← safeIsDefEq atype argType
+          if compatible then
+            IO.println s!"[APPLICATION_DEBUG] ✅ COMPATIBLE: {fname}({aname}) - {atype} ≡ {argType}"
             try
               let resultValue := mkApp fvalue avalue
               if !resultValue.hasLooseBVars then
@@ -1806,7 +1843,14 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
                   ConceptData.definition proposedName resultType resultValue none (fdeps ++ adeps ++ [aname]) newMeta
                 ]
                 applicationCount := applicationCount + 1
-            catch _ => pure ()
+                successfulApplications := successfulApplications + 1
+            catch e => 
+              exceptionCount := exceptionCount + 1
+          else
+            compatibilityFailures := compatibilityFailures + 1
+            -- Debug first few incompatibilities  
+            if compatibilityFailures <= 5 then
+              IO.println s!"[APPLICATION_DEBUG] ❌ INCOMPATIBLE: {fname}({aname}) - arg:{atype} vs expected:{argType}"
     | _ => pure ()
 
   -- Strategy 2: Apply recently successful functions
@@ -1845,6 +1889,15 @@ def applicationHeuristic : HeuristicFn := fun config concepts => do
                 ]
             catch _ => pure ()
     | _ => pure ()
+
+  -- Final debug summary
+  IO.println s!"[APPLICATION] === SUMMARY ==="
+  IO.println s!"[APPLICATION] Total attempts: {totalAttempts}"
+  IO.println s!"[APPLICATION] Already tried: {alreadyTriedCount}"
+  IO.println s!"[APPLICATION] Type incompatibilities: {compatibilityFailures}"
+  IO.println s!"[APPLICATION] Exceptions: {exceptionCount}"
+  IO.println s!"[APPLICATION] Successful applications: {successfulApplications}"
+  IO.println s!"[APPLICATION] New concepts created: {newConcepts.length}"
 
   return newConcepts
 
