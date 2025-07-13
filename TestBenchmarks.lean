@@ -159,9 +159,9 @@ def runBenchmarksParallel
 -- NOTE: Full dataset triggers stack overflow in Lean's expression equality test
 -- This occurs even with deduplication/canonicalization disabled and increased stack limits
 -- The issue appears to be in Lean's internal expression comparison when loading MiniF2F.Valid
--- Current workaround: Limited to 100 problems (was 50 before)
+-- Maximum stable limit found: 61 problems (62+ causes stack overflow)
 -- TODO: Investigate alternative approaches to handle full 490+ problem dataset
-#eval! runBenchmarksParallel (some 100) none false true  -- Limited to 100 to avoid stack overflow
+#eval! runBenchmarksParallel (some 61) none false true  -- Maximum stable limit: 61 problems
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
