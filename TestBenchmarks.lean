@@ -38,8 +38,8 @@ def runBenchmarksParallel
   IO.println "=== LeanDisco miniF2F Benchmark (Multi-Goal Discovery) ==="
 
   -- Load problems (testing with simple problems first)
-  let problems ← try  
-    -- Load actual miniF2F problems  
+  let problems ← try
+    -- Load actual miniF2F problems
     MiniF2F.loadProblems "benchmarks/miniF2F-lean4/minif2f_lean4_skip62.jsonl" split
   catch e =>
     IO.println s!"Could not load miniF2F problems: {← e.toMessageData.toString} - using simple test problems"
@@ -108,33 +108,33 @@ def runBenchmarksParallel
   -- Process goals in smaller batches to avoid stack overflow with large datasets
   let batchSize := 20  -- Process 20 problems at a time to reduce memory pressure
   let totalBatches := (testProblems.size + batchSize - 1) / batchSize
-  
+
   for batchIdx in [:totalBatches] do
     let startIdx := batchIdx * batchSize
     let endIdx := min (startIdx + batchSize) testProblems.size
     let batch := testProblems.toList.drop startIdx |>.take (endIdx - startIdx) |>.toArray
-    
+
     IO.println s!"Processing batch {batchIdx + 1}/{totalBatches} (problems {startIdx + 1}-{endIdx})"
-    
+
     for problem in batch do
       -- Create goals from actual formal statements, not theorem names
       let theoremName := extractTheoremName problem.formalStatement
-      
+
       -- Parse the formal statement as an expression
       let goalExpr ← try
         -- Try to parse the formal statement as a term
         let env ← getEnv
         let stx ← match Parser.runParserCategory env `term problem.formalStatement with
           | .ok stx => pure stx
-          | .error err => 
+          | .error err =>
             IO.println s!"Parse error for {problem.formalStatement}: {err}"
             throwError "Failed to parse formal statement"
-        -- Skip complex parsing for now, just use theorem name  
+        -- Skip complex parsing for now, just use theorem name
         pure (Lean.mkConst (Name.mkSimple theoremName))
       catch _ =>
         -- Fallback to simple constant if parsing fails
         pure (Lean.mkConst (Name.mkSimple theoremName))
-      
+
       -- Create goal with the actual expression
       let realGoal := createGoal problem.id theoremName
       goals := goals.push realGoal
@@ -173,7 +173,7 @@ def runBenchmarksParallel
 -- Solution: Created minif2f_lean4_skip62.jsonl without the problematic theorem
 -- Result: Can now process ALL 486 problems in the dataset (was limited to 61)
 -- The issue was NOT cumulative complexity, but one specific problematic theorem
-#eval! runBenchmarksParallel (some 1) none true true  -- Single problem with debug output
+#eval! runBenchmarksParallel none none true true  -- Single problem with debug output
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
