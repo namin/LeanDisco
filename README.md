@@ -7,7 +7,7 @@ _Eurisko-Inspired Discovery System for Lean in Lean_
 
 ## Acknowledgements
 
-Claude Code is heavily used in this code base, an experiment in a verified AI-first code base.
+Claude Code is heavily used in this code base, an experiment in a verified AI-first code bases.
 
 ## Cloning
 
