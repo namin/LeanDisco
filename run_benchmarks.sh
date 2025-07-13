@@ -10,10 +10,10 @@ echo "This may take a while as it processes many mathematical problems."
 echo "Setting stack size limits..."
 
 # Set process stack size limit (if possible)
-ulimit -s 16384 2>/dev/null || echo "Warning: Could not increase ulimit stack size"
+ulimit -s 65536 2>/dev/null || echo "Warning: Could not increase ulimit stack size"
 
 # Set larger stack size for Lean (try multiple values)
-export LEAN_STACK_SIZE=16777216  # 16MB stack
+export LEAN_STACK_SIZE=67108864  # 64MB stack
 
 echo "Stack size set to: $(ulimit -s) kbytes"
 echo "LEAN_STACK_SIZE set to: $LEAN_STACK_SIZE bytes"

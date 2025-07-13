@@ -6,7 +6,7 @@ import LeanDisco.Benchmarks.GoalValidation
 import MiniF2F.Valid  -- Import the actual theorem statements
 
 set_option maxHeartbeats 1000000000
-set_option maxRecDepth 100000000
+set_option maxRecDepth 1000000
 set_option compiler.extract_closed false
 
 open LeanDisco.Benchmarks
@@ -107,7 +107,7 @@ def runBenchmarksParallel
   let mut problemConcepts : List ConceptData := []
 
   -- Process goals in smaller batches to avoid stack overflow with large datasets
-  let batchSize := 50  -- Process 50 problems at a time
+  let batchSize := 20  -- Process 20 problems at a time to reduce memory pressure
   let totalBatches := (testProblems.size + batchSize - 1) / batchSize
   
   for batchIdx in [:totalBatches] do
@@ -163,7 +163,7 @@ def runBenchmarksParallel
 -- Uncomment to test full dataset (may still hit complexity issues):
 -- Test with a substantial sample first (100 problems) to demonstrate scale
 -- The full 490 dataset hits recursion limits during MiniF2F.Valid module loading
-#eval! runBenchmarksParallel (some 50) none false true
+#eval! runBenchmarksParallel none none false true
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
