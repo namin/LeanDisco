@@ -37,15 +37,15 @@ def runBenchmarksParallel
 
   IO.println "=== LeanDisco miniF2F Benchmark (Multi-Goal Discovery) ==="
 
-  -- Load problems (using working dataset without mathd_algebra_433)
+  -- Load problems (back to full working dataset)
   let problems ← try
     MiniF2F.loadProblems "benchmarks/miniF2F-lean4/minif2f_lean4_skip62.jsonl" split
   catch _ =>
     IO.println "Could not load miniF2F problems - using simple test problems"
     let testProblems : Array Problem := #[
-      { id := "test_true", name := "test_true", formalStatement := "True", header := "", split := "test" },
-      { id := "test_eq", name := "test_eq", formalStatement := "1 + 1 = 2", header := "", split := "test" },
-      { id := "test_refl", name := "test_refl", formalStatement := "∀ x : Nat, x = x", header := "", split := "test" }
+      { id := "test_true", name := "test_true", formalStatement := "theorem test_true : True := sorry", header := "", split := "test" },
+      { id := "test_eq", name := "test_eq", formalStatement := "theorem test_eq : 1 + 1 = 2 := sorry", header := "", split := "test" },
+      { id := "test_refl", name := "test_refl", formalStatement := "theorem test_refl : ∀ x : Nat, x = x := sorry", header := "", split := "test" }
     ]
     pure testProblems
 
@@ -88,13 +88,13 @@ def runBenchmarksParallel
         IO.println s!"  ... and {categories.size - 5} more categories"
     IO.println ""
 
-  -- Configure discovery for real goal solving with full dataset
+  -- Configure discovery for real goal solving with enhanced parameters
   let config : DiscoveryConfig := {
-    maxSpecializationDepth := 2      -- Moderate depth for real solving
-    maxConceptsPerIteration := 20     -- Reasonable concepts for 490 goals
-    pruneThreshold := 0.7            -- Balanced pruning for real solving
-    deduplicateConcepts := false     -- DISABLED to avoid expression equality test
-    canonicalizeConcepts := false    -- DISABLED to avoid deep recursion
+    maxSpecializationDepth := 4      -- Increased depth for complex proofs
+    maxConceptsPerIteration := 50     -- More concepts per iteration for better coverage
+    pruneThreshold := 0.5            -- Lower threshold to keep more concepts
+    deduplicateConcepts := true      -- Re-enabled since problematic theorem removed
+    canonicalizeConcepts := true     -- Re-enabled for better concept quality
     filterInternalProofs := true
     enableConjectures := true        -- Enable for goal-directed discovery
     enablePatternRecognition := true -- Enable for mathematical patterns
@@ -145,7 +145,7 @@ def runBenchmarksParallel
     problemConcepts
     []  -- No custom heuristics
     config
-    3   -- Multiple iterations for real problem solving
+    5   -- More iterations for complex mathematical proofs
 
   let endTime ← IO.monoMsNow
 
@@ -161,7 +161,7 @@ def runBenchmarksParallel
 -- Solution: Created minif2f_lean4_skip62.jsonl without the problematic theorem
 -- Result: Can now process ALL 486 problems in the dataset (was limited to 61)
 -- The issue was NOT cumulative complexity, but one specific problematic theorem
-#eval! runBenchmarksParallel none none false true  -- Full working dataset (486 problems)
+#eval! runBenchmarksParallel none none false true  -- Full working dataset with enhanced configuration
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
