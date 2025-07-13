@@ -720,10 +720,13 @@ def calculateConjectureEvidence (stmt : Expr) (kb : KnowledgeBase) : MetaM Float
 
 /-- Conjecture proving with multiple strategies -/
 def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) := do
+  IO.println s!"[PROOF_DEBUG] Attempting to prove statement: {stmt}"
+  
   -- Create proof context from knowledge base
   let availableTheorems := kb.concepts.filter fun c => match c with
     | ConceptData.theorem _ _ _ _ _ => true
     | _ => false
+  IO.println s!"[PROOF_DEBUG] Available theorems: {availableTheorems.length}"
 
   -- Try multiple proof strategies
   try
