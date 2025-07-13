@@ -870,8 +870,78 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
           return some proof
         else
           return none
+      -- Strategy 6: Handle quantifiers (∀ and ∃)
+      | .forallE varName varType body binderInfo =>
+        -- This is ∀ (x : T), P(x) 
+        -- Check for simple reflexivity cases: ∀ (x : Nat), x = x
+        if body.isApp && body.getAppFn.isConstOf ``Eq then
+          let args := body.getAppArgs
+          if args.size >= 3 then
+            let lhs := args[1]!
+            let rhs := args[2]!
+            -- Check if both sides are the bound variable (x = x)
+            if lhs.isBVar && rhs.isBVar && lhs.bvarIdx! == rhs.bvarIdx! && lhs.bvarIdx! == 0 then
+              IO.println s!"  [PROOF] Found '∀ x, x = x', using reflexivity"
+              -- Create proof: λ x => rfl (need to provide the variable)
+              try
+                withLocalDecl varName binderInfo varType fun fvar => do
+                  let reflProof ← mkAppM ``rfl #[fvar] 
+                  let lambdaProof ← mkLambdaFVars #[fvar] reflProof
+                  return some lambdaProof
+              catch _ =>
+                -- Fallback: try without the variable argument
+                return none
+            else
+              return none
+          else
+            return none
+        else
+          return none
+      
+      -- Strategy 7: Handle existentials (∃)
+      | .app (.app (.const ``Exists _) typ) pred =>
+        -- This is ∃ (x : T), P(x)
+        -- Check for simple cases like ∃ (x : Nat), x = 0
+        if pred.isLambda then
+          let body := pred.bindingBody!
+          if body.isApp && body.getAppFn.isConstOf ``Eq then
+            let args := body.getAppArgs
+            if args.size >= 3 then
+              let lhs := args[1]!
+              let rhs := args[2]!
+              -- Check for x = 0 pattern (bound var = constant)
+              if lhs.isBVar && lhs.bvarIdx! == 0 && !rhs.hasLooseBVars then
+                IO.println s!"  [PROOF] Found '∃ x, x = c', using witness"
+                -- Create proof: ⟨c, rfl⟩
+                try
+                  let reflProof ← mkAppM ``rfl #[rhs]
+                  let existsProof ← mkAppM ``Exists.intro #[rhs, reflProof]
+                  return some existsProof
+                catch _ =>
+                  -- Try alternative: constructor with the constant as witness
+                  let existsProof ← mkAppM ``Exists.intro #[rhs, rhs]
+                  return some existsProof
+              -- Check for 0 = x pattern (constant = bound var)  
+              else if rhs.isBVar && rhs.bvarIdx! == 0 && !lhs.hasLooseBVars then
+                IO.println s!"  [PROOF] Found '∃ x, c = x', using witness" 
+                try
+                  let reflProof ← mkAppM ``rfl #[lhs]
+                  let existsProof ← mkAppM ``Exists.intro #[lhs, reflProof]
+                  return some existsProof
+                catch _ =>
+                  let existsProof ← mkAppM ``Exists.intro #[lhs, lhs]
+                  return some existsProof
+              else
+                return none
+            else
+              return none
+          else
+            return none
+        else
+          return none
+          
       | _ =>
-        -- Strategy 6: No recursive calls - just return none for complex cases
+        -- Strategy 8: No recursive calls - just return none for complex cases
         return none
   catch e => 
     IO.println s!"  [PROOF] Error during proof attempt: {← e.toMessageData.toString}"

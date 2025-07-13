@@ -64,40 +64,51 @@ def testLogicCurriculum : MetaM Unit := do
   
   -- Test 4: ∀ (x : Nat), x = x
   IO.println "\n[Test 4] ∀ (x : Nat), x = x"
-  try
-    let natType := Lean.mkConst ``Nat
-    let xVar := mkBVar 0
-    let eq_xx ← mkEq xVar xVar
-    let forall_eq := mkForall `x BinderInfo.default natType eq_xx
-    let proof4 ← tryProveConjecture forall_eq kb
-    total := total + 1
-    match proof4 with
-    | some _ => 
-      IO.println "  ✅ PASSED"
-      passed := passed + 1
-    | none => IO.println "  ❌ FAILED"
+  let result4 ← try
+    -- Use withLocalDecl to properly construct quantified statements
+    withLocalDecl `x BinderInfo.default (Lean.mkConst ``Nat) fun x => do
+      let eq_xx ← mkEq x x
+      let forall_eq ← mkForallFVars #[x] eq_xx
+      let proof4 ← tryProveConjecture forall_eq kb
+      match proof4 with
+      | some _ => 
+        IO.println "  ✅ PASSED"
+        return true
+      | none => 
+        IO.println "  ❌ FAILED"
+        return false
   catch e =>
     IO.println s!"  ❌ ERROR: {← e.toMessageData.toString}"
-    total := total + 1
+    return false
+  
+  total := total + 1
+  if result4 then
+    passed := passed + 1
   
   -- Test 5: ∃ (x : Nat), x = 0
   IO.println "\n[Test 5] ∃ (x : Nat), x = 0"
-  try
-    let natType := Lean.mkConst ``Nat
-    let zeroExpr := mkNatLit 0
-    let xVar := mkBVar 0
-    let eq_x0 ← mkEq xVar zeroExpr
-    let exists_zero := mkApp2 (Lean.mkConst ``Exists) natType (mkLambda `x BinderInfo.default natType eq_x0)
-    let proof5 ← tryProveConjecture exists_zero kb
-    total := total + 1
-    match proof5 with
-    | some _ => 
-      IO.println "  ✅ PASSED"
-      passed := passed + 1
-    | none => IO.println "  ❌ FAILED"
+  let result5 ← try
+    -- Use withLocalDecl to properly construct existential statements
+    withLocalDecl `x BinderInfo.default (Lean.mkConst ``Nat) fun x => do
+      let zeroExpr := mkNatLit 0
+      let eq_x0 ← mkEq x zeroExpr
+      let lambda_eq ← mkLambdaFVars #[x] eq_x0
+      let exists_zero := mkApp2 (Lean.mkConst ``Exists) (Lean.mkConst ``Nat) lambda_eq
+      let proof5 ← tryProveConjecture exists_zero kb
+      match proof5 with
+      | some _ => 
+        IO.println "  ✅ PASSED"
+        return true
+      | none => 
+        IO.println "  ❌ FAILED"
+        return false
   catch e =>
     IO.println s!"  ❌ ERROR: {← e.toMessageData.toString}"
-    total := total + 1
+    return false
+  
+  total := total + 1
+  if result5 then
+    passed := passed + 1
   
   -- Summary
   let percentage := if total > 0 then (passed * 100) / total else 0

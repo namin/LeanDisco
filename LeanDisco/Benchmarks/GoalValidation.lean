@@ -55,7 +55,7 @@ def createGoalConcept (goal : Goal) : MetaM ConceptData := do
       -- If the goal name looks like "True" or "1 = 1", try to parse it
       if goal.name == "test_true_custom" then
         pure (Lean.mkConst ``True)
-      else if goal.name.contains "eq" then
+      else if goal.name.containsSubstr "eq" then
         -- Create 1 = 1
         let oneExpr := mkNatLit 1
         mkEq oneExpr oneExpr
