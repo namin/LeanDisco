@@ -26,21 +26,22 @@ def testComplexDistributive : MetaM Unit := do
   IO.println "\n[Test] 7 * (3 * y + 2) = 21 * y + 14 (ℂ)"
   try
     withLocalDecl `y BinderInfo.default (Lean.mkConst ``Complex) fun y => do
-      -- Create expressions using Complex arithmetic
-      let sevenExpr := mkApp (Lean.mkConst ``OfNat.ofNat) (mkNatLit 7)
-      let threeExpr := mkApp (Lean.mkConst ``OfNat.ofNat) (mkNatLit 3)  
-      let twoExpr := mkApp (Lean.mkConst ``OfNat.ofNat) (mkNatLit 2)
-      let twentyOneExpr := mkApp (Lean.mkConst ``OfNat.ofNat) (mkNatLit 21)
-      let fourteenExpr := mkApp (Lean.mkConst ``OfNat.ofNat) (mkNatLit 14)
+      -- Create Complex number constants using proper universe levels
+      let complexType := Lean.mkConst ``Complex
+      let sevenExpr ← mkAppOptM ``OfNat.ofNat #[complexType, mkNatLit 7, none]
+      let threeExpr ← mkAppOptM ``OfNat.ofNat #[complexType, mkNatLit 3, none]  
+      let twoExpr ← mkAppOptM ``OfNat.ofNat #[complexType, mkNatLit 2, none]
+      let twentyOneExpr ← mkAppOptM ``OfNat.ofNat #[complexType, mkNatLit 21, none]
+      let fourteenExpr ← mkAppOptM ``OfNat.ofNat #[complexType, mkNatLit 14, none]
       
       -- Left side: 7 * (3 * y + 2)
-      let three_y := mkApp2 (Lean.mkConst ``HMul.hMul) threeExpr y
-      let three_y_plus_2 := mkApp2 (Lean.mkConst ``HAdd.hAdd) three_y twoExpr
-      let lhs := mkApp2 (Lean.mkConst ``HMul.hMul) sevenExpr three_y_plus_2
+      let three_y ← mkAppOptM ``HMul.hMul #[complexType, complexType, complexType, none, threeExpr, y]
+      let three_y_plus_2 ← mkAppOptM ``HAdd.hAdd #[complexType, complexType, complexType, none, three_y, twoExpr]
+      let lhs ← mkAppOptM ``HMul.hMul #[complexType, complexType, complexType, none, sevenExpr, three_y_plus_2]
       
       -- Right side: 21 * y + 14  
-      let twentyone_y := mkApp2 (Lean.mkConst ``HMul.hMul) twentyOneExpr y
-      let rhs := mkApp2 (Lean.mkConst ``HAdd.hAdd) twentyone_y fourteenExpr
+      let twentyone_y ← mkAppOptM ``HMul.hMul #[complexType, complexType, complexType, none, twentyOneExpr, y]
+      let rhs ← mkAppOptM ``HAdd.hAdd #[complexType, complexType, complexType, none, twentyone_y, fourteenExpr]
       
       -- Create equality
       let eqStmt ← mkEq lhs rhs

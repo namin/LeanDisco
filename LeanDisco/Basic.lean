@@ -6,10 +6,14 @@ import Lean.Elab.Command
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.Ring.Basic
 
+-- Extensible proof strategies
+import LeanDisco.ProofStrategies
+
 set_option autoImplicit false
 set_option linter.unusedVariables false
 
 open Lean Meta Elab
+open LeanDisco.ProofStrategies
 
 /-
 # Eurisko-Inspired Discovery System for Lean
@@ -789,36 +793,26 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
               catch _ => 
                 pure ()
             
-            -- Strategy 6: Try distributive property a * (b + c) = a * b + a * c
-            match lhs, rhs with
-            | .app (.app (.const ``Nat.mul _) a) (.app (.app (.const ``Nat.add _) b) c),
-              .app (.app (.const ``Nat.add _) (.app (.app (.const ``Nat.mul _) a') b')) (.app (.app (.const ``Nat.mul _) a'') c') =>
-              -- Check if this matches distributive pattern: a * (b + c) = a * b + a * c
-              if (← safeIsDefEq a a') && (← safeIsDefEq a a'') && (← safeIsDefEq b b') && (← safeIsDefEq c c') then
-                IO.println s!"  [PROOF] Found distributive property, using Nat.mul_add"
-                try
-                  let proof ← mkAppM ``Nat.mul_add #[a, b, c]
-                  return some proof
-                catch _ =>
+            -- Strategy 6: Try extensible proof strategies (distributive, zero addition, ring tactics)
+            let extensibleResult ← ProofStrategies.tryExtensibleProof (.app (.app (.const ``Eq []) lhs) rhs)
+            match extensibleResult with
+            | some proof => return some proof
+            | none => 
+              -- Fallback to original hardcoded strategies for backward compatibility
+              match lhs, rhs with
+              | .app (.app (.const ``Nat.mul _) a) (.app (.app (.const ``Nat.add _) b) c),
+                .app (.app (.const ``Nat.add _) (.app (.app (.const ``Nat.mul _) a') b')) (.app (.app (.const ``Nat.mul _) a'') c') =>
+                -- Check if this matches distributive pattern: a * (b + c) = a * b + a * c  
+                if (← safeIsDefEq a a') && (← safeIsDefEq a a'') && (← safeIsDefEq b b') && (← safeIsDefEq c c') then
+                  IO.println s!"  [PROOF] Found distributive property (fallback), using Nat.mul_add"
+                  try
+                    let proof ← mkAppM ``Nat.mul_add #[a, b, c]
+                    return some proof
+                  catch _ =>
+                    return none
+                else
                   return none
-              else
-                return none
-            -- Strategy 7: Try common arithmetic equalities
-            | .app (.app (.const ``Nat.add _) (.const ``Nat.zero _)) x, y =>
-              if ← safeIsDefEq x y then
-                IO.println s!"  [PROOF] Found 0 + x = x, using zero_add"
-                let proof ← mkAppM ``Nat.zero_add #[x]
-                return some proof
-              else
-                return none
-            | .app (.app (.const ``Nat.add _) x) (.const ``Nat.zero _), y =>
-              if ← safeIsDefEq x y then
-                IO.println s!"  [PROOF] Found x + 0 = x, using add_zero"
-                let proof ← mkAppM ``Nat.add_zero #[x]
-                return some proof
-              else
-                return none
-            | _, _ => return none
+              | _, _ => return none
     
     -- Strategy 3: Handle implications (A → B)  
     | .forallE _ antecedent consequent _ =>
