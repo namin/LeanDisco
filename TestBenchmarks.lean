@@ -93,8 +93,8 @@ def runBenchmarksParallel
     maxSpecializationDepth := 2      -- Moderate depth for real solving
     maxConceptsPerIteration := 20     -- Reasonable concepts for 490 goals
     pruneThreshold := 0.7            -- Balanced pruning for real solving
-    deduplicateConcepts := true      -- Re-enabled for real goal solving
-    canonicalizeConcepts := true     -- Re-enabled for real goal solving
+    deduplicateConcepts := false     -- DISABLED to avoid expression equality test
+    canonicalizeConcepts := false    -- DISABLED to avoid deep recursion
     filterInternalProofs := true
     enableConjectures := true        -- Enable for goal-directed discovery
     enablePatternRecognition := true -- Enable for mathematical patterns
@@ -156,14 +156,12 @@ def runBenchmarksParallel
     IO.println s!"Average time per goal: {avgTimeMs}ms"
     IO.println s!"Success: {success}"
 
--- NOTE: Full dataset (none) still has complexity issues with some MiniF2F problems
--- For now, use limited problem sets until further optimization
--- #eval runBenchmarksParallel (some 50) none false true  -- Try 50 problems to show the real scale
-
--- Uncomment to test full dataset (may still hit complexity issues):
--- Test with a substantial sample first (100 problems) to demonstrate scale
--- The full 490 dataset hits recursion limits during MiniF2F.Valid module loading
-#eval! runBenchmarksParallel none none false true
+-- NOTE: Full dataset triggers stack overflow in Lean's expression equality test
+-- This occurs even with deduplication/canonicalization disabled and increased stack limits
+-- The issue appears to be in Lean's internal expression comparison when loading MiniF2F.Valid
+-- Current workaround: Limited to 100 problems (was 50 before)
+-- TODO: Investigate alternative approaches to handle full 490+ problem dataset
+#eval! runBenchmarksParallel (some 100) none false true  -- Limited to 100 to avoid stack overflow
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
