@@ -789,8 +789,21 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
               catch _ => 
                 pure ()
             
-            -- Strategy 6: Try common arithmetic equalities
+            -- Strategy 6: Try distributive property a * (b + c) = a * b + a * c
             match lhs, rhs with
+            | .app (.app (.const ``Nat.mul _) a) (.app (.app (.const ``Nat.add _) b) c),
+              .app (.app (.const ``Nat.add _) (.app (.app (.const ``Nat.mul _) a') b')) (.app (.app (.const ``Nat.mul _) a'') c') =>
+              -- Check if this matches distributive pattern: a * (b + c) = a * b + a * c
+              if (← safeIsDefEq a a') && (← safeIsDefEq a a'') && (← safeIsDefEq b b') && (← safeIsDefEq c c') then
+                IO.println s!"  [PROOF] Found distributive property, using Nat.mul_add"
+                try
+                  let proof ← mkAppM ``Nat.mul_add #[a, b, c]
+                  return some proof
+                catch _ =>
+                  return none
+              else
+                return none
+            -- Strategy 7: Try common arithmetic equalities
             | .app (.app (.const ``Nat.add _) (.const ``Nat.zero _)) x, y =>
               if ← safeIsDefEq x y then
                 IO.println s!"  [PROOF] Found 0 + x = x, using zero_add"
@@ -940,8 +953,11 @@ def tryProveConjecture (stmt : Expr) (kb : KnowledgeBase) : MetaM (Option Expr) 
         else
           return none
           
+      -- Strategy 8: Handle distributive property specifically
+      -- This is for top-level equality expressions that match distributive pattern
+      
       | _ =>
-        -- Strategy 8: No recursive calls - just return none for complex cases
+        -- Strategy 9: No recursive calls - just return none for complex cases
         return none
   catch e => 
     IO.println s!"  [PROOF] Error during proof attempt: {← e.toMessageData.toString}"

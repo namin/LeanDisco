@@ -26,8 +26,8 @@ def testSimplestBenchmark : MetaM Unit := do
   -- Problem: 7 * (3 * y + 2) = 21 * y + 14
   -- Let's construct this step by step
   
-  -- Create variables: y : ℂ  
-  let yType := Lean.mkConst ``Complex
+  -- Create variables: y : ℕ (use Nat instead of Complex for simplicity)
+  let yType := Lean.mkConst ``Nat
   
   -- Create expressions
   let sevenExpr := mkNatLit 7
@@ -39,14 +39,14 @@ def testSimplestBenchmark : MetaM Unit := do
   -- Create y variable (free variable for this test)
   let yVar := mkFVar (FVarId.mk (Name.mkSimple "y"))
   
-  -- Left side: 7 * (3 * y + 2)
-  let three_y := mkApp2 (Lean.mkConst ``HMul.hMul) threeExpr yVar
-  let three_y_plus_2 := mkApp2 (Lean.mkConst ``HAdd.hAdd) three_y twoExpr
-  let lhs := mkApp2 (Lean.mkConst ``HMul.hMul) sevenExpr three_y_plus_2
+  -- Left side: 7 * (3 * y + 2) using Nat operations
+  let three_y := mkApp2 (Lean.mkConst ``Nat.mul) threeExpr yVar
+  let three_y_plus_2 := mkApp2 (Lean.mkConst ``Nat.add) three_y twoExpr
+  let lhs := mkApp2 (Lean.mkConst ``Nat.mul) sevenExpr three_y_plus_2
   
   -- Right side: 21 * y + 14
-  let twentyone_y := mkApp2 (Lean.mkConst ``HMul.hMul) twentyOneExpr yVar
-  let rhs := mkApp2 (Lean.mkConst ``HAdd.hAdd) twentyone_y fourteenExpr
+  let twentyone_y := mkApp2 (Lean.mkConst ``Nat.mul) twentyOneExpr yVar
+  let rhs := mkApp2 (Lean.mkConst ``Nat.add) twentyone_y fourteenExpr
   
   -- Create equality
   let eqStmt ← mkEq lhs rhs
