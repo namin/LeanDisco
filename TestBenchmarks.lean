@@ -160,6 +160,8 @@ def runBenchmarksParallel
 -- This occurs even with deduplication/canonicalization disabled and increased stack limits
 -- The issue appears to be in Lean's internal expression comparison when loading MiniF2F.Valid
 -- Maximum stable limit found: 61 problems (62+ causes stack overflow)
+-- Investigation shows: The issue is cumulative complexity, not a specific problematic theorem
+-- The crash occurs during compilation when loading MiniF2F.Valid, before runtime execution
 -- TODO: Investigate alternative approaches to handle full 490+ problem dataset
 #eval! runBenchmarksParallel (some 61) none false true  -- Maximum stable limit: 61 problems
 
