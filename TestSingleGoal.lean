@@ -14,7 +14,7 @@ open Lean Elab Term Meta
 open LeanDisco
 
 /-- Test if a single goal can be proven with different configurations -/
-def testSingleGoal (theoremName : String := "mathd_numbertheory_169") : MetaM Unit := do
+def testSingleGoal (theoremName : String := "mathd_numbertheory_13") : MetaM Unit := do
   IO.println s!"=== Testing Single Goal: {theoremName} ===" 
   
   -- Test the specified theorem
@@ -78,7 +78,7 @@ def testSingleGoal (theoremName : String := "mathd_numbertheory_169") : MetaM Un
   else
     IO.println s!"❌ FAILED: {theoremName} could not be proven with conjectures"
 
-/-- Run the test with default theorem (mathd_numbertheory_169) -/
+/-- Run the test with default theorem (mathd_algebra_182) -/
 #eval testSingleGoal
 
 /-- Examples of other theorems to test:
