@@ -6,7 +6,7 @@ import LeanDisco.Benchmarks.GoalValidation
 import MiniF2F.Valid  -- Import the actual theorem statements
 
 set_option maxHeartbeats 1000000000
-set_option maxRecDepth 1000000
+set_option maxRecDepth 100000000
 set_option compiler.extract_closed false
 
 open LeanDisco.Benchmarks
@@ -14,18 +14,6 @@ open LeanDisco.Benchmarks.GoalValidation
 open LeanDisco.Benchmarks.RealRunner
 open Lean Elab Term Meta
 open LeanDisco
-
-/-- Extract theorem name from a formal statement string -/
-def extractTheoremName (theoremCode : String) : String :=
-  if theoremCode.startsWith "theorem " then
-    let afterTheorem := theoremCode.drop 8
-    let nameEnd := afterTheorem.toList.findIdx (· == ' ')
-    if nameEnd > 0 then
-      afterTheorem.take nameEnd
-    else
-      "unknown_theorem"
-  else
-    "unknown_theorem"
 
 /-- Run benchmark evaluation with all problems as goals in a single discovery session -/
 def runBenchmarksParallel
@@ -37,9 +25,9 @@ def runBenchmarksParallel
 
   IO.println "=== LeanDisco miniF2F Benchmark (Multi-Goal Discovery) ==="
 
-  -- Load problems (using modified file that skips mathd_algebra_433)
+  -- Load problems
   let problems ← try
-    MiniF2F.loadProblems "benchmarks/miniF2F-lean4/minif2f_lean4_skip62.jsonl" split
+    MiniF2F.loadProblems "benchmarks/miniF2F-lean4/minif2f_lean4.jsonl" split
   catch _ =>
     IO.println "Could not load miniF2F problems - using simple test problems"
     let testProblems : Array Problem := #[
@@ -88,16 +76,16 @@ def runBenchmarksParallel
         IO.println s!"  ... and {categories.size - 5} more categories"
     IO.println ""
 
-  -- Configure discovery for real goal solving with full dataset
+  -- Configure discovery (optimized for multi-goal evaluation)
   let config : DiscoveryConfig := {
-    maxSpecializationDepth := 2      -- Moderate depth for real solving
-    maxConceptsPerIteration := 20     -- Reasonable concepts for 490 goals
-    pruneThreshold := 0.7            -- Balanced pruning for real solving
-    deduplicateConcepts := false     -- DISABLED to avoid expression equality test
-    canonicalizeConcepts := false    -- DISABLED to avoid deep recursion
+    maxSpecializationDepth := 2
+    maxConceptsPerIteration := 30  -- Increased for multi-goal
+    pruneThreshold := 0.3          -- Standard pruning for better exploration
+    deduplicateConcepts := true
+    canonicalizeConcepts := true
     filterInternalProofs := true
-    enableConjectures := true        -- Enable for goal-directed discovery
-    enablePatternRecognition := true -- Enable for mathematical patterns
+    enableConjectures := false
+    enablePatternRecognition := false
     enableDebugOutput := enableDebug
   }
 
@@ -106,27 +94,15 @@ def runBenchmarksParallel
   let mut goals : Array Goal := #[]
   let mut problemConcepts : List ConceptData := []
 
-  -- Process goals in smaller batches to avoid stack overflow with large datasets
-  let batchSize := 20  -- Process 20 problems at a time to reduce memory pressure
-  let totalBatches := (testProblems.size + batchSize - 1) / batchSize
-  
-  for batchIdx in [:totalBatches] do
-    let startIdx := batchIdx * batchSize
-    let endIdx := min (startIdx + batchSize) testProblems.size
-    let batch := testProblems.toList.drop startIdx |>.take (endIdx - startIdx) |>.toArray
-    
-    IO.println s!"Processing batch {batchIdx + 1}/{totalBatches} (problems {startIdx + 1}-{endIdx})"
-    
-    for problem in batch do
-      -- Create real goals using the actual theorem names from MiniF2F.Valid
-      -- The theorems are already parsed and available in the environment
-      let theoremName := extractTheoremName problem.formalStatement
-      
-      -- For the full dataset, use a safer approach that avoids deep type inspection
-      -- Just create goals with the theorem names - LeanDisco can handle them
-      let realGoal := createGoal problem.id theoremName
-      goals := goals.push realGoal
-      IO.println s!"✓ Created goal for theorem: {theoremName}"
+  for problem in testProblems do
+    -- Create goal for this problem
+    let goalOpt ← createProblemGoal problem
+    match goalOpt with
+    | some goal =>
+      goals := goals.push goal
+      IO.println s!"✓ Created goal: {goal.name}"
+    | none =>
+      IO.println s!"✗ Could not create goal for {problem.id}"
 
   IO.println s!"Created {goals.size} goals from {testProblems.size} problems"
   IO.println ""
@@ -145,28 +121,16 @@ def runBenchmarksParallel
     problemConcepts
     []  -- No custom heuristics
     config
-    3   -- Multiple iterations for real problem solving
+    5   -- More iterations for multi-goal
 
   let endTime ← IO.monoMsNow
 
   if showStats then
     let totalTimeMs := endTime - startTime
-    let avgTimeMs := if goals.size > 0 then totalTimeMs / goals.size else 0
+    let avgTimeMs := totalTimeMs / goals.size
     IO.println s!"Multi-goal discovery completed in {totalTimeMs}ms"
     IO.println s!"Average time per goal: {avgTimeMs}ms"
     IO.println s!"Success: {success}"
 
--- BREAKTHROUGH: Full dataset now works by removing one problematic theorem!
--- Problem: mathd_algebra_433 (Real.sqrt theorem) caused stack overflow for 62+ problems
--- Solution: Created minif2f_lean4_skip62.jsonl without the problematic theorem
--- Result: Can now process ALL 486 problems in the dataset (was limited to 61)
--- The issue was NOT cumulative complexity, but one specific problematic theorem
-#eval! runBenchmarksParallel none none false true  -- Test full dataset!
-
--- Test with simple theorems first as sanity check:
--- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones
--- #eval runBenchmarksParallel (some 10) (some "valid") false true  -- 10 valid problems as goals
--- #eval runBenchmarksParallel (some 50) none false true      -- 50 problems as goals
-
--- For development/debugging with smaller sets:
--- #eval runBenchmarksParallel (some 1) none true true        -- 1 problem with debug output
+-- File compiles but does not automatically run benchmarks
+-- To run: use #eval runBenchmarksParallel with appropriate parameters
