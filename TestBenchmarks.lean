@@ -27,6 +27,20 @@ def extractTheoremName (theoremCode : String) : String :=
   else
     "unknown_theorem"
 
+/-- Extract the goal statement from theorem syntax: "theorem name (args) : GOAL := proof" -> "GOAL" -/
+def extractGoalStatement (theoremCode : String) : String :=
+  -- Simple approach: split on " := " and take everything after the first ":"
+  let parts := theoremCode.splitOn " := "
+  let beforeProof := parts.head!
+  -- Find the colon that separates type from proof
+  let colonIdx := beforeProof.toList.findIdx (· == ':')
+  if colonIdx == beforeProof.length then
+    -- No colon found, return the whole thing
+    beforeProof
+  else
+    let afterColon := beforeProof.drop (colonIdx + 1)
+    afterColon.trim
+
 /-- Run benchmark evaluation with all problems as goals in a single discovery session -/
 def runBenchmarksParallel
   (numProblems : Option Nat := none)      -- none = all problems
@@ -120,23 +134,16 @@ def runBenchmarksParallel
       -- Create goals from actual formal statements, not theorem names
       let theoremName := extractTheoremName problem.formalStatement
 
-      -- Parse the formal statement as an expression
-      let goalExpr ← try
-        -- Try to parse the formal statement as a term
-        let env ← getEnv
-        let stx ← match Parser.runParserCategory env `term problem.formalStatement with
-          | .ok stx => pure stx
-          | .error err =>
-            IO.println s!"Parse error for {problem.formalStatement}: {err}"
-            throwError "Failed to parse formal statement"
-        -- Skip complex parsing for now, just use theorem name
-        pure (Lean.mkConst (Name.mkSimple theoremName))
-      catch _ =>
-        -- Fallback to simple constant if parsing fails
-        pure (Lean.mkConst (Name.mkSimple theoremName))
+      -- Extract just the goal statement from theorem syntax
+      let goalStatement := extractGoalStatement problem.formalStatement
 
-      -- Create goal with the actual expression
-      let realGoal := createGoal problem.id theoremName
+      -- For now, just log the extracted goal and use theorem name as constant
+      -- TODO: Implement proper goal expression parsing in the right monad context
+      IO.println s!"✓ Extracted goal: '{goalStatement}' from theorem: {theoremName}"
+      let goalExpr := Lean.mkConst (Name.mkSimple theoremName)
+
+      -- Create goal with the actual expression and formal statement
+      let realGoal := createGoal problem.id theoremName problem.formalStatement
       goals := goals.push realGoal
       IO.println s!"✓ Created goal for theorem: {theoremName} with expr: {goalExpr}"
 
@@ -173,7 +180,7 @@ def runBenchmarksParallel
 -- Solution: Created minif2f_lean4_skip62.jsonl without the problematic theorem
 -- Result: Can now process ALL 486 problems in the dataset (was limited to 61)
 -- The issue was NOT cumulative complexity, but one specific problematic theorem
-#eval! runBenchmarksParallel none none true true  -- Single problem with debug output
+#eval! runBenchmarksParallel none none true true  -- Test with 3 problems to see parsing
 
 -- Test with simple theorems first as sanity check:
 -- #eval runBenchmarksParallel (some 5) none false true       -- 5 problems including simple ones

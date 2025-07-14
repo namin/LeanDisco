@@ -10,8 +10,8 @@ open LeanDisco.Benchmarks.GoalValidation
 
 /-- Create a goal from a problem -/
 def createProblemGoal (problem : Problem) : MetaM (Option Goal) := do
-  -- Simply use the problem name as the goal theorem name
-  let goal := createGoal problem.id problem.name
+  -- Simply use the problem name as the goal theorem name with formal statement
+  let goal := createGoal problem.id problem.name problem.formalStatement
   return some goal
 
 /-- Create a proof-seeking heuristic for a specific problem -/
@@ -127,24 +127,8 @@ def runMultipleProblems (problems : Array Problem) (config : DiscoveryConfig) : 
           IO.println s!"Error occurred during goal-based discovery"
           pure false
       | none => do
-        IO.println s!"Could not create goal for problem {problem.id} - using fallback"
-        -- Fallback to old method with placeholder validation
-        try
-          runDiscoveryCustom
-            s!"Problem_{problem.id}"
-            [problemConcept]
-            [proofHeuristic]
-            []
-            3  -- 3 iterations per problem
-            true  -- Enable mining for better mathematical concepts
-            config
-          
-          -- Simulate realistic success rate for parsing failures
-          let randomSuccess := (problem.id.hash % 10) == 0  -- ~10% success rate
-          pure randomSuccess
-        catch e =>
-          IO.println s!"Error occurred during discovery"
-          pure false
+        IO.println s!"Could not create goal for problem {problem.id} - cannot validate success without proper goal"
+        pure false
       
       let endTime ← IO.monoMsNow
       let timeMs := endTime - startTime

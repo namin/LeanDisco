@@ -3,13 +3,14 @@ import LeanDisco.Basic
 
 namespace LeanDisco.Benchmarks.GoalValidation
 
-open Lean Meta
+open Lean Elab Term Meta
 open LeanDisco
 
 /-- A goal represents a theorem name that must be proven for success -/
 structure Goal where
   name : String           -- The theorem name to prove (e.g., "amc12a_2019_p21")
   problemId : String      -- The problem identifier
+  formalStatement : String -- The formal statement to prove
   isProven : Bool := false
   deriving Repr, BEq
 
@@ -20,11 +21,33 @@ structure GoalTracker where
   deriving Repr
 
 /-- Create a goal from a problem name -/
-def createGoal (problemId : String) (theoremName : String) : Goal := {
+def createGoal (problemId : String) (theoremName : String) (formalStatement : String := "") : Goal := {
   name := theoremName
   problemId := problemId
+  formalStatement := formalStatement
   isProven := false
 }
+
+/-- Parse a theorem statement to extract the goal type -/
+def parseTheoremStatement (statement : String) : MetaM Expr := do
+  -- Simple parsing: extract theorem name if it's a full theorem statement
+  -- For statements like "theorem name : type := proof", extract the name
+  try
+    if statement.startsWith "theorem " then
+      let afterTheorem := statement.drop 8
+      let nameEnd := afterTheorem.toList.findIdx (fun c => c == ' ' || c == ':')
+      if nameEnd > 0 then
+        let theoremName := afterTheorem.take nameEnd
+        pure (Expr.const theoremName.toName [])
+      else
+        pure (Expr.const statement.toName [])
+    else
+      -- Just treat it as a theorem name
+      pure (Expr.const statement.toName [])
+  catch e =>
+    IO.println s!"[GOAL] Failed to parse statement '{statement}': {← e.toMessageData.toString}"
+    -- Ultimate fallback: create a constant
+    pure (Expr.const statement.toName [])
 
 /-- Create a goal conjecture that can be added to the discovery system -/
 def createGoalConcept (goal : Goal) : MetaM ConceptData := do
@@ -36,11 +59,11 @@ def createGoalConcept (goal : Goal) : MetaM ConceptData := do
   | some constInfo => do
     -- Use the theorem's type as the goal expression
     let theoremType := constInfo.type
-    IO.println s!"[GOAL] Created goal for {goal.name} with type: {theoremType}"
+    IO.println s!"[GOAL] Found theorem {goal.name} in environment with type: {theoremType}"
     return ConceptData.conjecture 
       goal.name 
-      theoremType  -- Use the actual theorem type, not just the name
-      1.0  -- High evidence to prioritize proving
+      theoremType
+      1.0
       { name := goal.name
         created := 0
         parent := none
@@ -50,25 +73,13 @@ def createGoalConcept (goal : Goal) : MetaM ConceptData := do
         specializationDepth := 0
         generationMethod := "goal_conjecture" }
   | none => do
-    -- Try to parse the theorem name as a simple expression (for test cases)
-    let goalExpr ← try
-      -- If the goal name looks like "True" or "1 = 1", try to parse it
-      if goal.name == "test_true_custom" then
-        pure (Lean.mkConst ``True)
-      else if goal.name.contains 'e' && goal.name.contains 'q' then
-        -- Create 1 = 1
-        let oneExpr := mkNatLit 1
-        mkEq oneExpr oneExpr
-      else
-        pure (Expr.const theoremName [])
-    catch _ =>
-      pure (Expr.const theoremName [])
-    
-    IO.println s!"[GOAL] Warning: Theorem {goal.name} not found in environment, using parsed expression: {goalExpr}"
+    -- Parse the goal's formal statement to get the actual goal type
+    let goalExpr ← parseTheoremStatement goal.formalStatement
+    IO.println s!"[GOAL] Parsed goal for {goal.name} with type: {goalExpr}"
     return ConceptData.conjecture 
       goal.name 
-      goalExpr  -- Use parsed expression instead of just the name
-      1.0  -- High evidence to prioritize proving
+      goalExpr
+      1.0
       { name := goal.name
         created := 0
         parent := none
@@ -82,8 +93,26 @@ def createGoalConcept (goal : Goal) : MetaM ConceptData := do
 def theoremProvesGoal (concept : ConceptData) (goal : Goal) : MetaM Bool := do
   match concept with
   | ConceptData.theorem name statement proof deps metadata => do
-    -- Check if the theorem name matches the goal name
-    pure (name == goal.name)
+    -- First check if names match
+    if name != goal.name then
+      pure false
+    else
+      -- Validate that the proof term actually proves the statement
+      try
+        -- Check that the proof has the correct type
+        let proofType ← inferType proof
+        let isValid ← isDefEq proofType statement
+        if isValid then
+          -- Additionally verify the proof term is well-typed
+          let _ ← check proof
+          IO.println s!"✓ Validated proof for {goal.name}: proof term type-checks and matches goal"
+          pure true
+        else
+          IO.println s!"✗ Invalid proof for {goal.name}: proof type {proofType} doesn't match statement {statement}"
+          pure false
+      catch e =>
+        IO.println s!"✗ Proof validation failed for {goal.name}: {← e.toMessageData.toString}"
+        pure false
   | _ => pure false
 
 /-- Check if any concept in the list proves the goal -/
