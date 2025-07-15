@@ -5,6 +5,8 @@
 
 _Eurisko-Inspired Discovery System for Lean in Lean_
 
+_Warning_: this is an *early* exploration, which will be re-written with a more solid architecture.
+
 ## Cloning
 
 ```bash
