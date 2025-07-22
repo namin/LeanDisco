@@ -2438,6 +2438,115 @@ def patternImportanceTask : EvaluationFn := fun concepts => do
   else
     return 0.5
 
+/-- MiniF2F evaluation task - favors theorems useful for competition mathematics -/
+def miniF2FTask : EvaluationFn := fun concepts => do
+  if let some concept := concepts.getLast? then
+    match concept with
+    | ConceptData.theorem name stmt _ _ _ =>
+      -- Check for competition math relevant keywords
+      let relevantKeywords := [
+        "ineq", "inequality", "bound", "max", "min", "optimization",
+        "sum", "product", "sequence", "series", "convergence",
+        "prime", "divisibility", "gcd", "lcm", "modular",
+        "polynomial", "root", "factor", "degree",
+        "triangle", "angle", "circle", "area", "volume",
+        "combinatorial", "permutation", "combination", "binomial",
+        "function", "injective", "surjective", "bijective",
+        "limit", "derivative", "integral", "continuous",
+        "matrix", "determinant", "eigenvalue", "vector"
+      ]
+      
+      -- Count keyword matches in theorem name and statement
+      let nameLower := name.toLower
+      let stmtStr := toString stmt |>.toLower
+      let mut keywordMatches := 0
+      let mut keywordWeights := 0.0
+      for keyword in relevantKeywords do
+        -- Use continuous scoring based on how well the keyword matches
+        let nameMatch := if nameLower == keyword then 1.0
+                        else if keyword.isPrefixOf nameLower || nameLower.endsWith keyword then 0.8
+                        else if (nameLower.splitOn keyword).length > 1 then 0.6
+                        else 0.0
+        let stmtMatch := if (stmtStr.splitOn keyword).length > 1 then 0.4 else 0.0
+        let matchScore := max nameMatch stmtMatch
+        if matchScore > 0 then
+          keywordMatches := keywordMatches + 1
+          keywordWeights := keywordWeights + matchScore
+      
+      -- Continuous keyword relevance score using sigmoid
+      let keywordScore := keywordWeights / (1.0 + keywordWeights)
+      
+      -- Numeric content score (continuous based on density)
+      let numericTerms := ["zero", "one", "two", "nat", "int", "real", "num_"]
+      let mut numericDensity := 0.0
+      for term in numericTerms do
+        numericDensity := numericDensity + ((stmtStr.splitOn term).length - 1).toFloat
+      let numericScore := min 0.3 (numericDensity / 20.0)
+      
+      -- Constructive proof score (continuous)
+      let constructiveTerms := ["exists", "construct", "witness", "example"]
+      let mut constructiveDensity := 0.0
+      for term in constructiveTerms do
+        constructiveDensity := constructiveDensity + ((stmtStr.splitOn term).length - 1).toFloat
+      let constructiveScore := min 0.2 (constructiveDensity / 5.0)
+      
+      -- Complexity score using smooth function
+      let stmtSize := (exprSize stmt).toFloat
+      let optimalComplexity := 50.0  -- Optimal statement size
+      let complexityDeviation := Float.abs (stmtSize - optimalComplexity) / optimalComplexity
+      let complexityScore := Float.exp (-complexityDeviation * complexityDeviation)
+      
+      -- Combine scores with weights
+      let baseScore := 0.3
+      let weightedScore := baseScore + 
+                          (keywordScore * 0.35) + 
+                          (numericScore * 0.15) + 
+                          (constructiveScore * 0.15) + 
+                          (complexityScore * 0.05)
+      
+      return min 1.0 weightedScore
+      
+    | ConceptData.definition name _ value _ _ metadata =>
+      -- Definitions can be useful if they relate to competition math
+      let nameLower := name.toLower
+      
+      -- Continuous scoring for useful definition types
+      let usefulTerms := ["bound", "limit", "max", "min", "optimal", "extreme"]
+      let mut relevanceScore := 0.0
+      for term in usefulTerms do
+        if nameLower == term then relevanceScore := relevanceScore + 1.0
+        else if term.isPrefixOf nameLower || nameLower.endsWith term then relevanceScore := relevanceScore + 0.7
+        else if (nameLower.splitOn term).length > 1 then relevanceScore := relevanceScore + 0.4
+      
+      -- Smooth penalty for specialization depth
+      let depthPenalty := 1.0 / (1.0 + metadata.specializationDepth.toFloat * 0.3)
+      
+      -- Base score with continuous modifiers
+      let baseScore := 0.25
+      let score := baseScore + (relevanceScore / (1.0 + relevanceScore)) * 0.4 * depthPenalty
+        
+      return min 0.95 score
+      
+    | ConceptData.conjecture name _ evidence _ =>
+      -- Conjectures about competition-relevant topics are interesting
+      let nameLower := name.toLower
+      
+      -- Continuous relevance scoring
+      let competitionTerms := ["bound", "inequality", "optimal", "extreme", "max", "min"]
+      let mut relevanceBoost := 0.0
+      for term in competitionTerms do
+        if nameLower == term then relevanceBoost := relevanceBoost + 1.0
+        else if term.isPrefixOf nameLower || nameLower.endsWith term then relevanceBoost := relevanceBoost + 0.6
+        else if (nameLower.splitOn term).length > 1 then relevanceBoost := relevanceBoost + 0.3
+      
+      -- Smooth function combining evidence and relevance
+      let relevanceFactor := 1.0 + relevanceBoost / (2.0 + relevanceBoost)
+      return min 1.0 (evidence * relevanceFactor * 0.85)
+        
+    | _ => return 0.3  -- Low score for other concept types
+  else
+    return 0.5
+
 /-- Initialize system with seed concepts and heuristics -/
 def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : MetaM KnowledgeBase := do
   let basicMeta : ConceptMetadata := {
@@ -2563,6 +2672,7 @@ def initializeSystem (config : DiscoveryConfig) (useMining : Bool := true) : Met
   evaluators := evaluators.insert "complexity" complexityTask
   evaluators := evaluators.insert "novelty" noveltyTask
   evaluators := evaluators.insert "pattern_importance" patternImportanceTask
+  evaluators := evaluators.insert "minif2f" miniF2FTask
 
   let allConcepts := initialConcepts ++ [
       specHeuristicRef, appHeuristicRef, lemmaAppHeuristicRef,
