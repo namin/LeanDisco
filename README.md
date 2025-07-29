@@ -1,1 +1,22 @@
 # LeanDisco
+
+[![CI Status](https://github.com/namin/LeanDisco/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/namin/LeanDisco/actions/workflows/lean_action_ci.yml)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/namin/LeanDisco)
+
+_Eurisko-Inspired Discovery System for Lean in Lean_
+
+## Cloning
+
+```bash
+git clone --recursive https://github.com/namin/LeanDisco.git
+```
+
+## Running
+
+- `lake build` builds the system.
+- `lake lean Main.lean` runs the benchmark analysis.
+
+## References
+
+- [Software Archaeology of Eurisko](https://github.com/namin/eurisclo/tree/llm): a reflective port in Common Lisp, based on unearthed original file.
+- [llmlean](https://github.com/cmu-l3/llmlean/): probably a good starting point to think about LLM integration from within Lean.
