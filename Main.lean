@@ -54,7 +54,27 @@ def runMiniF2FAnalysis : MetaM Unit := do
 
   let theorems ← extractMiniF2FTheorems
   IO.println s!"Found {theorems.length} theorems"
-  IO.println ""
+  
+  -- Count theorems with complete proofs
+  let mut completeProofs := 0
+  let mut incompleteProofs := 0
+  
+  for (_, info) in theorems do
+    match info with
+    | .thmInfo thmInfo =>
+      if !hasSorryExpr thmInfo.value then
+        completeProofs := completeProofs + 1
+      else
+        incompleteProofs := incompleteProofs + 1
+    | _ => pure ()
+  
+  -- Calculate percentage
+  let percentage := (completeProofs.toFloat / theorems.length.toFloat) * 100
+  
+  IO.println s!"\nSummary:"
+  IO.println s!"- Complete proofs: {completeProofs} ({percentage.round}%)"
+  IO.println s!"- Incomplete proofs (with sorry): {incompleteProofs} ({(100.0 - percentage).round}%)"
+  IO.println "\nDetailed theorem list:\n"
 
   for (name, info) in theorems do
     analyzeTheorem name info
