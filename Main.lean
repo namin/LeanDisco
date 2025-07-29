@@ -4,8 +4,8 @@ import Lean
 
 open Lean Meta Elab Tactic
 
-set_option maxRecDepth 1000000000
-set_option maxHeartbeats 1000000000
+set_option maxRecDepth 10000000
+set_option maxHeartbeats 10000000
 
 -- Function to check if an expression contains 'sorry'
 def hasSorryExpr (e : Expr) : Bool :=
@@ -77,17 +77,18 @@ def runMiniF2FAnalysis : MetaM Unit := do
   IO.println s!"\nSummary:"
   IO.println s!"- Complete proofs: {completeProofs} ({percentage.round}%)"
   IO.println s!"- Incomplete proofs (with sorry): {incompleteProofs} ({(100.0 - percentage).round}%)"
-  IO.println "\nDetailed theorem list:\n"
+  --IO.println "\nDetailed theorem list:\n"
 
-  for (name, info) in theorems do
-    analyzeTheorem name info
+  --for (name, info) in theorems do
+  --  analyzeTheorem name info
 
 -- Run prover on MiniF2F benchmark
 def runProverAnalysis : TermElabM Unit := do
   IO.println "MiniF2F Automated Prover Analysis:"
   IO.println "=================================="
 
-  let theorems ← extractMiniF2FTheorems
+  let all_theorems ← extractMiniF2FTheorems
+  let theorems := all_theorems.take 100
 
   let mut count := 0
   let mut proved := 0
@@ -99,14 +100,14 @@ def runProverAnalysis : TermElabM Unit := do
       let result ← attemptProof thmInfo.type
       if result.isSome then
         proved := proved + 1
-        IO.println s!"✓ PROVED {name}"
+        --IO.println s!"✓ PROVED {name} with {result.get!}"
     | _ => pure ()
   IO.println s!"\nProver Summary:"
   IO.println s!"- Total theorems: {count}"
   IO.println s!"- Proved: {proved}"
   IO.println s!"- Success rate: {(proved.toFloat / count.toFloat * 100).round}%"
 
---#eval runMiniF2FAnalysis.run'
+#eval runMiniF2FAnalysis.run'
 #eval runProverAnalysis.run'
 
 def main : IO Unit := do

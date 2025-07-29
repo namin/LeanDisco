@@ -17,7 +17,7 @@ def tacticStrings : List String := [
   "norm_cast"
 ]
 
-def attemptProof (type : Expr) : TermElabM (Option Syntax) := do
+def attemptProof (type : Expr) : TermElabM (Option Expr) := do
   -- Create a synthetic goal from the theorem type
   let mvar ← mkFreshExprMVar type
   let goal := mvar.mvarId!
@@ -31,13 +31,20 @@ def attemptProof (type : Expr) : TermElabM (Option Syntax) := do
         | .ok stx => pure stx
         | .error _ => continue
 
+      -- Save the original metavariable
+      let originalMVar := mvar
+
       -- Run the tactic
       let remainingGoals ← Tactic.run goal do
         Tactic.evalTactic tacticSyntax
 
       -- Check if all goals were solved
       if remainingGoals.isEmpty then
-        return some tacticSyntax
+        -- Get the instantiated proof term
+        let proof ← instantiateMVars originalMVar
+        -- Check that it doesn't contain metavariables
+        if !(proof.hasExprMVar) then
+          return some proof
 
     catch e =>
       -- If tactic failed, continue to next one
