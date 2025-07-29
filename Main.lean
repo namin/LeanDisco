@@ -2,7 +2,10 @@ import LeanDisco
 import MiniF2F.Valid
 import Lean
 
-open Lean Meta Elab
+open Lean Meta Elab Tactic
+
+set_option maxRecDepth 1000000000
+set_option maxHeartbeats 1000000000
 
 -- Function to check if an expression contains 'sorry'
 def hasSorryExpr (e : Expr) : Bool :=
@@ -47,18 +50,18 @@ def analyzeTheorem (name : Name) (info : ConstantInfo) : MetaM Unit := do
     IO.println "---"
   | _ => pure ()
 
--- Main metaprogramming function
+-- Main analysis function
 def runMiniF2FAnalysis : MetaM Unit := do
-  IO.println "MiniF2F Benchmark Analysis (via Metaprogramming):"
-  IO.println "================================================="
+  IO.println "MiniF2F Benchmark Analysis:"
+  IO.println "=========================="
 
   let theorems ← extractMiniF2FTheorems
   IO.println s!"Found {theorems.length} theorems"
-  
+
   -- Count theorems with complete proofs
   let mut completeProofs := 0
   let mut incompleteProofs := 0
-  
+
   for (_, info) in theorems do
     match info with
     | .thmInfo thmInfo =>
@@ -67,10 +70,10 @@ def runMiniF2FAnalysis : MetaM Unit := do
       else
         incompleteProofs := incompleteProofs + 1
     | _ => pure ()
-  
+
   -- Calculate percentage
   let percentage := (completeProofs.toFloat / theorems.length.toFloat) * 100
-  
+
   IO.println s!"\nSummary:"
   IO.println s!"- Complete proofs: {completeProofs} ({percentage.round}%)"
   IO.println s!"- Incomplete proofs (with sorry): {incompleteProofs} ({(100.0 - percentage).round}%)"
@@ -79,8 +82,32 @@ def runMiniF2FAnalysis : MetaM Unit := do
   for (name, info) in theorems do
     analyzeTheorem name info
 
--- Use #eval! to run the metaprogramming analysis (ignoring sorry warnings)
-#eval runMiniF2FAnalysis.run'
+-- Run prover on MiniF2F benchmark
+def runProverAnalysis : TermElabM Unit := do
+  IO.println "MiniF2F Automated Prover Analysis:"
+  IO.println "=================================="
+
+  let theorems ← extractMiniF2FTheorems
+
+  let mut count := 0
+  let mut proved := 0
+
+  for (name, info) in theorems do
+    match info with
+    | .thmInfo thmInfo =>
+      count := count + 1
+      let result ← attemptProof thmInfo.type
+      if result.isSome then
+        proved := proved + 1
+        IO.println s!"✓ PROVED {name}"
+    | _ => pure ()
+  IO.println s!"\nProver Summary:"
+  IO.println s!"- Total theorems: {count}"
+  IO.println s!"- Proved: {proved}"
+  IO.println s!"- Success rate: {(proved.toFloat / count.toFloat * 100).round}%"
+
+--#eval runMiniF2FAnalysis.run'
+#eval runProverAnalysis.run'
 
 def main : IO Unit := do
-  IO.println "Run complete. See analysis above."
+  IO.println "Automated prover run complete. See analysis above."
