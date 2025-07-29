@@ -1,0 +1,10 @@
+name = "LeanDisco"
+version = "0.1.0"
+defaultTargets = ["leandisco"]
+
+[[lean_lib]]
+name = "LeanDisco"
+
+[[lean_exe]]
+name = "leandisco"
+root = "Main"
