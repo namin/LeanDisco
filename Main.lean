@@ -7,17 +7,18 @@ open Lean Meta Elab Tactic
 set_option maxRecDepth 10000000
 set_option maxHeartbeats 10000000
 
--- Function to check if an expression contains 'sorry'
-def hasSorryExpr (e : Expr) : Bool :=
-  match e with
-  | .const name _ => name == ``sorryAx
-  | .app f a => hasSorryExpr f || hasSorryExpr a
-  | .lam _ _ body _ => hasSorryExpr body
-  | .forallE _ _ body _ => hasSorryExpr body
-  | .letE _ _ value body _ => hasSorryExpr value || hasSorryExpr body
-  | .mdata _ e => hasSorryExpr e
-  | .proj _ _ e => hasSorryExpr e
-  | _ => false
+-- Check if a theorem has a complete proof (no sorry, no metavariables)
+def hasCompleteProof (info : ConstantInfo) : MetaM Bool := do
+  match info with
+  | .thmInfo thmInfo =>
+    -- Check if the proof value depends on sorryAx
+    let axioms := thmInfo.value.getUsedConstants
+    if axioms.contains ``sorryAx then
+      return false
+    -- Also check for unassigned metavariables
+    let hasMVars := thmInfo.value.hasExprMVar
+    return !hasMVars
+  | _ => return false
 
 -- Extract all MiniF2F theorems using metaprogramming
 def extractMiniF2FTheorems : MetaM (List (Name × ConstantInfo)) := do
@@ -41,12 +42,12 @@ def analyzeTheorem (name : Name) (info : ConstantInfo) : MetaM Unit := do
     IO.println s!"Theorem: {name}"
     IO.println s!"Type: {thmInfo.type}"
 
-    -- Check if the proof contains 'sorry'
-    let hasProof := !hasSorryExpr thmInfo.value
-    if hasProof then
+    -- Check if the proof is complete
+    let isComplete ← hasCompleteProof info
+    if isComplete then
       IO.println "Status: Has complete proof"
     else
-      IO.println "Status: Contains sorry (incomplete)"
+      IO.println "Status: Incomplete proof"
     IO.println "---"
   | _ => pure ()
 
@@ -63,20 +64,18 @@ def runMiniF2FAnalysis : MetaM Unit := do
   let mut incompleteProofs := 0
 
   for (_, info) in theorems do
-    match info with
-    | .thmInfo thmInfo =>
-      if !hasSorryExpr thmInfo.value then
-        completeProofs := completeProofs + 1
-      else
-        incompleteProofs := incompleteProofs + 1
-    | _ => pure ()
+    let isComplete ← hasCompleteProof info
+    if isComplete then
+      completeProofs := completeProofs + 1
+    else
+      incompleteProofs := incompleteProofs + 1
 
   -- Calculate percentage
   let percentage := (completeProofs.toFloat / theorems.length.toFloat) * 100
 
   IO.println s!"\nSummary:"
   IO.println s!"- Complete proofs: {completeProofs} ({percentage.round}%)"
-  IO.println s!"- Incomplete proofs (with sorry): {incompleteProofs} ({(100.0 - percentage).round}%)"
+  IO.println s!"- Incomplete proofs: {incompleteProofs} ({(100.0 - percentage).round}%)"
   --IO.println "\nDetailed theorem list:\n"
 
   --for (name, info) in theorems do
