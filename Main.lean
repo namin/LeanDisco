@@ -110,4 +110,4 @@ def runProverAnalysis : TermElabM Unit := do
 #eval runProverAnalysis.run'
 
 def main : IO Unit := do
-  IO.println "Automated prover run complete. See analysis above."
+  IO.println "Analysis run complete."
