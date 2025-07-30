@@ -81,13 +81,17 @@ def runMiniF2FAnalysis : MetaM Unit := do
   --for (name, info) in theorems do
   --  analyzeTheorem name info
 
+def blacklistedTheorems := [
+  "mathd_numbertheory_543"
+]
+
 -- Run prover on MiniF2F benchmark
 def runProverAnalysis : TermElabM Unit := do
   IO.println "MiniF2F Automated Prover Analysis:"
   IO.println "=================================="
 
   let all_theorems ← extractMiniF2FTheorems
-  let theorems := all_theorems.take 100
+  let theorems := all_theorems.filter fun (name, _) => !blacklistedTheorems.contains name.toString
 
   let mut count := 0
   let mut proved := 0
