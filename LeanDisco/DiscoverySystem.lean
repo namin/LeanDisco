@@ -5,12 +5,14 @@ open Lean Meta Elab Term
 
 /-- Core representation of all mathematical objects in the discovery system -/
 structure ConceptData where
-  name    : Name
-  type    : Expr
-  proof?  : Option Expr
-  isDef   : Bool
-  isProp  : Bool
-  origin? : Option String := none
+  name     : Name
+  type     : Expr
+  proof?   : Option Expr
+  isDef    : Bool
+  isProp   : Bool
+  origin?  : Option String := none
+  tags     : List String := []
+  contexts : Array Expr := #[]
 
 /-- Summarized string form for logging -/
 def ConceptData.summary (c : ConceptData) : MetaM String := do

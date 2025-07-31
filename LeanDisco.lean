@@ -3,3 +3,4 @@
 import LeanDisco.Basic
 import LeanDisco.Prover
 import LeanDisco.Domains.MiniF2F
+import LeanDisco.Domains.GroupRing
