@@ -10,15 +10,6 @@ def miniF2FBlacklist : List String := [
   "mathd_numbertheory_543"
 ]
 
-/-- Determine whether a constant has a complete proof (no sorry, no metavars) -/
-def hasCompleteProof (info : ConstantInfo) : MetaM Bool :=
-  match info with
-  | .thmInfo thmInfo =>
-    let axioms := thmInfo.value.getUsedConstants
-    let hasMVars := thmInfo.value.hasExprMVar
-    return !(axioms.contains ``sorryAx) && !hasMVars
-  | _ => return false
-
 /-- Extract theorems from the MiniF2F environment as ConceptData -/
 def extractMiniF2FConcepts : MetaM (Array ConceptData) := do
   let env ← getEnv
@@ -33,7 +24,7 @@ def extractMiniF2FConcepts : MetaM (Array ConceptData) := do
         return some {
           name := name,
           type := thmInfo.type,
-          proof? := none,-- some thmInfo.value,
+          proof? := none,
           isDef := false,
           isProp := true,
           origin? := some "MiniF2F"
@@ -47,6 +38,5 @@ def extractMiniF2FConcepts : MetaM (Array ConceptData) := do
 def MiniF2FDomain : DiscoveryDomain where
   name := "MiniF2F"
   seed := extractMiniF2FConcepts
-  generators := [] -- extend later
 
 end LeanDisco.Domains.MiniF2F

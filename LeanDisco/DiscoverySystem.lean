@@ -19,6 +19,18 @@ def ConceptData.summary (c : ConceptData) : MetaM String := do
   let status := if c.proof?.isSome then "✔️" else "❓"
   return s!"{status} {name} : {prop}"
 
+/-- Tracks evolving state of the discovery system -/
+structure DiscoveryState where
+  concepts : Array ConceptData
+  newConcepts : Array ConceptData := #[]
+  iteration : Nat
+  deriving Inhabited
+
+/-- Delta produced by heuristics to modify the discovery state -/
+structure DiscoveryStateDelta where
+  newConcepts : Array ConceptData := #[]
+  removedConcepts : Array Name := #[]
+
 /-- Configuration for controlling the discovery process -/
 structure DiscoveryConfig where
   maxIterations : Nat := 10
@@ -33,13 +45,6 @@ structure DiscoveryConfig where
 class DiscoveryDomain where
   name : String
   seed : MetaM (Array ConceptData)
-  generators : List (DiscoveryConfig → Array ConceptData → MetaM (Array ConceptData))
-
-/-- Tracks evolving state of the discovery system -/
-structure DiscoveryState where
-  concepts : Array ConceptData
-  iteration : Nat
-  deriving Inhabited
 
 /-- Attempt to prove and promote conjectures into theorems -/
 def proveAndPromote (cfg : DiscoveryConfig) (c : ConceptData) : MetaM (Option ConceptData) := do
@@ -50,45 +55,43 @@ def proveAndPromote (cfg : DiscoveryConfig) (c : ConceptData) : MetaM (Option Co
   | some pf => return some { c with proof? := some pf }
   | none => return none
 
-/-- One discovery iteration: generate + try to prove -/
-def stepDiscovery (cfg : DiscoveryConfig) (domain : DiscoveryDomain) (state : DiscoveryState) : MetaM DiscoveryState := do
-  let mut newConcepts : Array ConceptData := #[]
-
-  -- Run each domain-specific generator
-  for gen in domain.generators do
-    let output ← gen cfg state.concepts
-    newConcepts := newConcepts ++ output
-
-  if cfg.logWorkStats then
-    logInfo m!"[iteration {state.iteration}] generated {newConcepts.size} conjectures"
-
-  if cfg.logEachConjecture then
-    for c in newConcepts do
-      logInfo m!"[iteration {state.iteration}] {← c.summary}"
-
-  let toAttempt := newConcepts
-  let total := toAttempt.size
-  let proven := (← toAttempt.filterMapM (fun c => proveAndPromote cfg c))
-
-  if cfg.logProgress then
-    logInfo m!"[iteration {state.iteration}] tried {total}, proved {proven.size}"
-
+/-- A heuristic that attempts to prove unproven concepts -/
+def heuristicProveUnproven (cfg : DiscoveryConfig) (state : DiscoveryState) : MetaM DiscoveryStateDelta := do
+  let toTry := state.newConcepts.filter (·.proof?.isNone)
+  let results ← toTry.mapM (proveAndPromote cfg)
+  let newTheorems := results.filterMap id
   return {
-    concepts := state.concepts ++ proven ++ (toAttempt.filter (·.proof?.isNone)),
+    newConcepts := newTheorems
+    removedConcepts := newTheorems.map (·.name)
+  }
+
+/-- One discovery iteration: run all heuristics and apply deltas -/
+def stepDiscovery (heuristics : List (DiscoveryState → MetaM DiscoveryStateDelta)) (cfg : DiscoveryConfig) (state : DiscoveryState): MetaM DiscoveryState := do
+  let deltas ← heuristics.mapM (fun h => h state)
+  let combined : DiscoveryStateDelta := {
+    newConcepts := deltas.map (·.newConcepts) |>.foldl (· ++ ·) #[],
+    removedConcepts := deltas.map (·.removedConcepts) |>.foldl (· ++ ·) #[]
+  }
+  if cfg.logWorkStats then
+    logInfo m!"[iteration {state.iteration}] +{combined.newConcepts.size} −{combined.removedConcepts.size}"
+  return {
+    concepts := state.concepts.filter (fun c => !combined.removedConcepts.contains c.name) ++ combined.newConcepts,
+    newConcepts := combined.newConcepts,
     iteration := state.iteration + 1
   }
 
 /-- Top-level discovery driver -/
-def runDiscovery (cfg : DiscoveryConfig) (domain : DiscoveryDomain) : MetaM DiscoveryState := do
+def runDiscoveryWith (heuristics : List (DiscoveryState → MetaM DiscoveryStateDelta)) (cfg : DiscoveryConfig) (domain : DiscoveryDomain) : MetaM DiscoveryState := do
   let seed ← domain.seed
-  let firstProven ← seed.filterMapM (fun c => proveAndPromote cfg c)
-  let remaining ← seed.filterM (fun c => return c.proof?.isNone)
   if cfg.logProgress then
-    logInfo m!"[seed] tried {seed.size}, proved {firstProven.size}"
+    logInfo m!"[seed] loaded {seed.size} concepts"
   let mut state : DiscoveryState := {
-    concepts := firstProven ++ remaining,
+    concepts := seed,
+    newConcepts := seed,
     iteration := 1
   }
   for _ in [1:cfg.maxIterations] do
-    state ← stepDiscovery cfg domain state
+    state ← stepDiscovery heuristics cfg state
   return state
+
+def runDiscovery (cfg: DiscoveryConfig) (domain: DiscoveryDomain): MetaM DiscoveryState := runDiscoveryWith [heuristicProveUnproven cfg] cfg domain
