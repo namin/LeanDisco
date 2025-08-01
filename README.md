@@ -14,7 +14,7 @@ git clone --recursive https://github.com/namin/LeanDisco.git
 ## Running
 
 - `lake build` builds the system.
-- `lake lean Main.lean` runs the benchmark analysis.
+- `lake lean Test*.lean` for some `*`.
 
 ## References
 
