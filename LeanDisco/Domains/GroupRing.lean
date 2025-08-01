@@ -6,26 +6,41 @@ open Lean Meta
 
 namespace LeanDisco.Domains.GroupRing
 
-/-- A small synthetic seed set from `Mathlib.Algebra.Group.Defs` -/
+/-- Recognizer for unary operations α → α, possibly under implicit arguments -/
+def isUnaryOp (ty : Expr) : MetaM Bool := do
+  let ty ← whnf ty
+  let rec countArrows (e : Expr) (acc : Nat) : MetaM Nat :=
+    match e with
+    | Expr.forallE _ _ body _ => countArrows body (acc + 1)
+    | Expr.lam _ _ body _ => countArrows body (acc + 1)
+    | _ => return acc
+  let n ← countArrows ty 0
+  return n == 1
+
+/-- Extract relevant theorems and definitions from group-related typeclasses -/
 def extractGroupConcepts : MetaM (Array ConceptData) := do
   let env ← getEnv
-  let all := env.constants.toList
-  let relevant := all.filterMap fun (name, info) =>
-    match info with
-    | .thmInfo thm =>
-      if name.getPrefix == `MulOneClass || name.getPrefix == `Group || name.getPrefix == `Monoid then
-        some {
-          name := name,
-          type := thm.type,
-          proof? := some thm.value,
-          isDef := false,
-          isProp := true,
-          origin? := some "GroupRing",
-          tags := ["group"],
-          contexts := #[]
-        }
-      else none
-    | _ => none
+  let all := env.constants.toList.filter (fun (n, _) =>
+    let s := n.toString
+    s.startsWith "MulOneClass" || s.startsWith "Group" || s.startsWith "Monoid")
+  let relevant ← all.filterMapM fun (name, info) => do
+    let mut tags := ["group"]
+    let (ty, val, isDef) ← match info with
+      | .thmInfo thm => pure (thm.type, some thm.value, false)
+      | .defnInfo defn => pure (defn.type, some defn.value, true)
+      | _ => return none
+    if (← isUnaryOp ty) then
+      tags := "unary_op" :: tags
+    return some {
+      name := name,
+      type := ty,
+      proof? := val,
+      isDef := isDef,
+      isProp := !isDef,
+      origin? := some "GroupRing",
+      tags := tags,
+      contexts := #[]
+    }
   return relevant.toArray
 
 /-- Group/Ring domain instance -/

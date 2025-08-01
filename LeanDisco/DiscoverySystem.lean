@@ -67,6 +67,21 @@ def heuristicProveUnproven (cfg : DiscoveryConfig) (state : DiscoveryState) : Me
     removedConcepts := newTheorems.map (·.name)
   }
 
+/-- Helper to count tags per iteration -/
+def logTagFrequencies (label : String) (concepts : Array ConceptData) : MetaM Unit := do
+  let mut counts : Std.HashMap String Nat := Std.HashMap.emptyWithCapacity 10
+  for c in concepts do
+    for tag in c.tags do
+    let count := match counts.contains tag with
+      | true => counts[tag]!
+      | false => 0
+    counts := counts.insert tag (count + 1)
+  if counts.isEmpty then
+    logInfo m!"[{label}] tags: (none)"
+  else
+    let summary := counts.toList.map (fun (t, n) => s!"{t}: {n}")|> String.intercalate ", "
+    logInfo m!"[{label}] tags: {summary}"
+
 /-- One discovery iteration: run all heuristics and apply deltas -/
 def stepDiscovery (heuristics : List (DiscoveryState → MetaM DiscoveryStateDelta)) (cfg : DiscoveryConfig) (state : DiscoveryState): MetaM DiscoveryState := do
   let deltas ← heuristics.mapM (fun h => h state)
@@ -76,11 +91,13 @@ def stepDiscovery (heuristics : List (DiscoveryState → MetaM DiscoveryStateDel
   }
   if cfg.logWorkStats then
     logInfo m!"[iteration {state.iteration}] +{combined.newConcepts.size} −{combined.removedConcepts.size}"
-  return {
+  let newState := {
     concepts := state.concepts.filter (fun c => !combined.removedConcepts.contains c.name) ++ combined.newConcepts,
     newConcepts := combined.newConcepts,
     iteration := state.iteration + 1
   }
+  logTagFrequencies s!"iteration {state.iteration + 1}" newState.concepts
+  return newState
 
 /-- Top-level discovery driver -/
 def runDiscoveryWith (heuristics : List (DiscoveryState → MetaM DiscoveryStateDelta)) (cfg : DiscoveryConfig) (domain : DiscoveryDomain) : MetaM DiscoveryState := do
@@ -92,6 +109,7 @@ def runDiscoveryWith (heuristics : List (DiscoveryState → MetaM DiscoveryState
     newConcepts := seed,
     iteration := 1
   }
+  logTagFrequencies "seed" seed
   for _ in [1:cfg.maxIterations] do
     state ← stepDiscovery heuristics cfg state
   return state
