@@ -67,6 +67,13 @@ def heuristicProveUnproven (cfg : DiscoveryConfig) (state : DiscoveryState) : Me
     removedConcepts := newTheorems.map (·.name)
   }
 
+/-- Heuristic: verbose print of any new concepts with a particular tag -/
+def heuristicLogTagged (tag : String): DiscoveryState → MetaM DiscoveryStateDelta := fun state => do
+  for c in state.newConcepts do
+    if tag ∈ c.tags then
+      logInfo m!"[{tag}] tagged concept: {← c.summary}"
+  return {}
+
 /-- Helper to count tags per iteration -/
 def logTagFrequencies (label : String) (concepts : Array ConceptData) : MetaM Unit := do
   let mut counts : Std.HashMap String Nat := Std.HashMap.emptyWithCapacity 10

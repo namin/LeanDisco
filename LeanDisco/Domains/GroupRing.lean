@@ -48,4 +48,35 @@ def GroupRingDomain : DiscoveryDomain where
   name := "GroupRing"
   seed := extractGroupConcepts
 
+/-- Heuristic: generate idempotence conjectures for tagged unary_ops -/
+def heuristicIdempotenceConjectures (state : DiscoveryState) : MetaM DiscoveryStateDelta := do
+  let candidates := state.newConcepts.filter (fun c => "unary_op" ∈ c.tags && c.proof?.isSome)
+
+  let conjects ← candidates.filterMapM fun f => do
+    try
+      let fConst := mkConst f.name
+      let ty ← whnf f.type
+      match ty with
+      | Expr.forallE _ dom _ _ =>
+        withLocalDeclD `x dom fun x => do
+          let fx := mkApp fConst x
+          let ffx := mkApp fConst fx
+          let stmt := mkApp3 (mkConst ``Eq) dom ffx x
+          let quantified ← mkForallFVars #[x] stmt
+          let name := f.name.appendAfter "_idem_conj"
+          return some {
+            name := name,
+            type := quantified,
+            proof? := none,
+            isDef := false,
+            isProp := true,
+            origin? := some "heuristicIdempotenceConjectures",
+            tags := ["generated", "idempotence"],
+            contexts := #[]
+          }
+      | _ => return none
+    catch _ => return none
+
+  return { newConcepts := conjects }
+
 end LeanDisco.Domains.GroupRing

@@ -12,5 +12,5 @@ def myConfig : DiscoveryConfig := {
 }
 
 #eval do
-  let final ← runDiscovery myConfig (by exact LeanDisco.Domains.GroupRing.GroupRingDomain)
+  let final ← runDiscoveryWith [LeanDisco.Domains.GroupRing.heuristicIdempotenceConjectures, heuristicLogTagged "unary_op", heuristicProveUnproven myConfig] myConfig (by exact LeanDisco.Domains.GroupRing.GroupRingDomain)
   logInfo m!"Final iteration: {final.iteration}, total concepts: {final.concepts.size}"
