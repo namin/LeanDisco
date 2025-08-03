@@ -41,7 +41,7 @@ def extractGroupConcepts : MetaM (Array ConceptData) := do
     s.startsWith "MulOneClass" || s.startsWith "Group" || s.startsWith "Monoid" ||
     s.startsWith "DivInvMonoid" || s.startsWith "Inv" ||
     -- Include our custom definitions
-    n == `LeanDisco.Domains.GroupRing.Objects.negate ||
+    n.toString.startsWith "LeanDisco.Domains.GroupRing.Objects" ||
     -- Include theorems that mention group operations
     (match info with
      | .thmInfo _ =>

@@ -1,21 +1,46 @@
-[seed] loaded 17280 concepts
-[seed] tags: unary_op: 5, group: 17280
+[seed] loaded 17292 concepts
+[seed] tags: unary_op: 10, group: 17292
+[unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.triple : Type
 [unary_op] tagged concept: ✔️ Monoid.End : Type
 [unary_op] tagged concept: ✔️ Inv.inv : Type
+[unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.square : Type
+[unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.inverseSquare : Type
 [unary_op] tagged concept: ✔️ Group.conjugatesOfSet : Type
 [unary_op] tagged concept: ✔️ Invertible.invOf : Type
+[unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.negate : Type
-[iteration 1] +2 −0
-[iteration 2] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 5, group: 17280
+[unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.identity : Type
+[iteration 1] +10 −0
+[iteration 2] tags: idempotence: 5, involution: 5, generated: 10, unary_op: 10, group: 17292
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.triple_invol: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.triple (LeanDisco.Domains.GroupRing.Objects.triple x) = x
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.square_invol: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.square (LeanDisco.Domains.GroupRing.Objects.square x) = x
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.inverseSquare_invol: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.inverseSquare (LeanDisco.Domains.GroupRing.Objects.inverseSquare x) = x
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf_invol: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf (LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf x) = x
 ✅ Proved LeanDisco.Domains.GroupRing.Objects.negate_invol: ∀ (G : Type) (inst : Group G) (x : G),
   LeanDisco.Domains.GroupRing.Objects.negate (LeanDisco.Domains.GroupRing.Objects.negate x) = x
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.triple_idem: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.triple (LeanDisco.Domains.GroupRing.Objects.triple x) =
+    LeanDisco.Domains.GroupRing.Objects.triple x
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.square_idem: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.square (LeanDisco.Domains.GroupRing.Objects.square x) =
+    LeanDisco.Domains.GroupRing.Objects.square x
+❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.inverseSquare_idem: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.inverseSquare (LeanDisco.Domains.GroupRing.Objects.inverseSquare x) =
+    LeanDisco.Domains.GroupRing.Objects.inverseSquare x
+✅ Proved LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf_idem: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf (LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf x) =
+    LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf x
 ❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.negate_idem: ∀ (G : Type) (inst : Group G) (x : G),
   LeanDisco.Domains.GroupRing.Objects.negate (LeanDisco.Domains.GroupRing.Objects.negate x) =
     LeanDisco.Domains.GroupRing.Objects.negate x
-[iteration 2] +1 −1
-[iteration 3] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 5, group: 17280
+[iteration 2] +2 −2
+[iteration 3] tags: idempotence: 5, involution: 5, generated: 10, unary_op: 10, group: 17292
 [iteration 3] +0 −0
-[iteration 4] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 5, group: 17280
+[iteration 4] tags: idempotence: 5, involution: 5, generated: 10, unary_op: 10, group: 17292
 [iteration 4] +0 −0
-[iteration 5] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 5, group: 17280
-Final iteration: 5, total concepts: 17282
+[iteration 5] tags: idempotence: 5, involution: 5, generated: 10, unary_op: 10, group: 17292
+Final iteration: 5, total concepts: 17302
