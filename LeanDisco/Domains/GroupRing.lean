@@ -93,8 +93,28 @@ inductive UnaryOpPattern
 
 /-- Build the equation for a given pattern -/
 def buildUnaryOpEquation (pattern : UnaryOpPattern) (fname : Name) (G inst x : Expr) : MetaM Expr := do
-  let fx ← mkAppOptM fname #[some G, some inst, some x]
-  let ffx ← mkAppOptM fname #[some G, some inst, some fx]
+  -- Try to apply the function with all available arguments
+  -- mkAppOptM will ignore the ones that aren't needed
+  let fx ← try
+    -- First try with all three arguments
+    mkAppOptM fname #[some G, some inst, some x]
+  catch _ =>
+    -- If that fails (too many args), try without inst
+    try
+      mkAppOptM fname #[some G, some x]
+    catch _ =>
+      -- Last resort: maybe it only needs x
+      mkAppM fname #[x]
+
+  -- Apply again for ffx
+  let ffx ← try
+    mkAppOptM fname #[some G, some inst, some fx]
+  catch _ =>
+    try
+      mkAppOptM fname #[some G, some fx]
+    catch _ =>
+      mkAppM fname #[fx]
+
   match pattern with
   | .involution => mkAppM ``Eq #[ffx, x]
   | .idempotence => mkAppM ``Eq #[ffx, fx]
@@ -124,9 +144,13 @@ def generateUnaryOpConjectures
             -- Build the equation based on the pattern
             let stmt ← buildUnaryOpEquation pattern f.name G inst x
             -- Create forall with explicit arguments
+            -- Note: The inst might not be used by some functions (like identity)
+            -- but we still quantify over it for uniformity
             mkForallFVars #[G, inst, x] stmt
 
       let name := f.name.appendAfter suffix
+      if f.name == `LeanDisco.Domains.GroupRing.Objects.identity then
+        logInfo m!"Generated conjecture for identity: {name}"
       return (some {
         name     := name,
         type     := conjTy,
@@ -137,7 +161,7 @@ def generateUnaryOpConjectures
         tags     := ["generated", tag],
         contexts := #[]
       } : Option ConceptData)
-    catch e =>
+    catch _ =>
       -- Skip functions that don't work with Group
       return none
 
