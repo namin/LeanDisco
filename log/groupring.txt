@@ -1,0 +1,17 @@
+[seed] loaded 1896 concepts
+[seed] tags: unary_op: 1, group: 1896
+[unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.negate : Type
+[iteration 1] +2 −0
+[iteration 2] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 1, group: 1896
+Proved LeanDisco.Domains.GroupRing.Objects.negate_invol_conj: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.negate (LeanDisco.Domains.GroupRing.Objects.negate x) = x
+Failed to prove LeanDisco.Domains.GroupRing.Objects.negate_idem_conj: ∀ (G : Type) (inst : Group G) (x : G),
+  LeanDisco.Domains.GroupRing.Objects.negate (LeanDisco.Domains.GroupRing.Objects.negate x) =
+    LeanDisco.Domains.GroupRing.Objects.negate x
+[iteration 2] +1 −1
+[iteration 3] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 1, group: 1896
+[iteration 3] +0 −0
+[iteration 4] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 1, group: 1896
+[iteration 4] +0 −0
+[iteration 5] tags: idempotence: 1, involution: 1, generated: 2, unary_op: 1, group: 1896
+Final iteration: 5, total concepts: 1898
