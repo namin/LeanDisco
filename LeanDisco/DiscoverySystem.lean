@@ -40,6 +40,8 @@ structure DiscoveryConfig where
   enableProofSearch : Bool := true
   logProgress : Bool := true
   logEachConjecture : Bool := false
+  logProofSuccess : Bool := false
+  logProofFailure : Bool := false
   logWorkStats : Bool := true
   deriving Inhabited
 
@@ -54,8 +56,14 @@ def proveAndPromote (cfg : DiscoveryConfig) (c : ConceptData) : MetaM (Option Co
   if !cfg.enableProofSearch then return none
   let proofOpt ← TermElabM.run' (attemptProof c.type)
   match proofOpt with
-  | some pf => return some { c with proof? := some pf }
-  | none => return none
+  | some pf =>
+      if cfg.logProofSuccess then
+        logInfo m!"Proved {c.name}: {c.type}"
+      return some { c with proof? := some pf }
+  | none =>
+      if cfg.logProofFailure then
+        logInfo m!"Failed to prove {c.name}: {c.type}"
+      return none
 
 /-- A heuristic that attempts to prove unproven concepts -/
 def heuristicProveUnproven (cfg : DiscoveryConfig) (state : DiscoveryState) : MetaM DiscoveryStateDelta := do

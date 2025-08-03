@@ -1,5 +1,4 @@
 import Lean
-
 open Lean Meta Elab Tactic
 
 def tacticStrings : List String := [
@@ -18,37 +17,34 @@ def tacticStrings : List String := [
 ]
 
 def attemptProof (type : Expr) : TermElabM (Option Expr) := do
-  -- Create a synthetic goal from the theorem type
   let mvar ← mkFreshExprMVar type
   let goal := mvar.mvarId!
 
-  -- Try each tactic in sequence
+  -- First try intros if it's a forall
+  let goal' ← try
+    if type.isForall then
+      let (_, g) ← goal.intros
+      pure g
+    else
+      pure goal
+  catch _ => pure goal
+
+  -- Try each tactic in sequence on the intro'd goal
   for tacticStr in tacticStrings do
     try
-      -- Parse the tactic string
       let env ← getEnv
       let tacticSyntax ← match Parser.runParserCategory env `tactic tacticStr with
         | .ok stx => pure stx
         | .error _ => continue
 
-      -- Save the original metavariable
-      let originalMVar := mvar
-
-      -- Run the tactic
-      let remainingGoals ← Tactic.run goal do
+      let remainingGoals ← Tactic.run goal' do
         Tactic.evalTactic tacticSyntax
 
-      -- Check if all goals were solved
       if remainingGoals.isEmpty then
-        -- Get the instantiated proof term
-        let proof ← instantiateMVars originalMVar
-        -- Check that it doesn't contain metavariables
+        let proof ← instantiateMVars mvar
         if !(proof.hasExprMVar) then
           return some proof
-
-    catch e =>
-      -- If tactic failed, continue to next one
+    catch _ =>
       continue
 
-  -- If no tactic worked, return failure
   return none
