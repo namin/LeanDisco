@@ -35,10 +35,21 @@ def isUnaryOp (ty : Expr) : MetaM Bool := do
 /-- Extract relevant theorems and definitions from group-related typeclasses -/
 def extractGroupConcepts : MetaM (Array ConceptData) := do
   let env ← getEnv
-  let all := env.constants.toList.filter (fun (n, _) =>
+  let all := env.constants.toList.filter (fun (n, info) =>
     let s := n.toString
+    -- Include items from group-related namespaces
     s.startsWith "MulOneClass" || s.startsWith "Group" || s.startsWith "Monoid" ||
-    n == `LeanDisco.Domains.GroupRing.Objects.negate)
+    s.startsWith "DivInvMonoid" || s.startsWith "Inv" ||
+    -- Include our custom definitions
+    n == `LeanDisco.Domains.GroupRing.Objects.negate ||
+    -- Include theorems that mention group operations
+    (match info with
+     | .thmInfo _ => 
+       -- Simple check: does the name contain inv, mul, one, or cancel?
+       let parts := s.splitOn "_"
+       parts.any (fun p => p == "inv" || p == "mul" || p == "one" || p == "cancel") ||
+       s.endsWith "inv" || s.endsWith "mul" || s.endsWith "cancel"
+     | _ => false))
   let relevant ← all.filterMapM fun (name, info) => do
     let mut tags := ["group"]
     let (ty, val, isDef) ← match info with
