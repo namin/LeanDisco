@@ -58,11 +58,11 @@ def proveAndPromote (cfg : DiscoveryConfig) (c : ConceptData) : MetaM (Option Co
   match proofOpt with
   | some pf =>
       if cfg.logProofSuccess then
-        logInfo m!"Proved {c.name}: {c.type}"
+        logInfo m!"✅ Proved {c.name}: {c.type}"
       return some { c with proof? := some pf }
   | none =>
       if cfg.logProofFailure then
-        logInfo m!"Failed to prove {c.name}: {c.type}"
+        logInfo m!"❌ Failed to prove {c.name}: {c.type}"
       return none
 
 /-- A heuristic that attempts to prove unproven concepts -/

@@ -82,8 +82,8 @@ def generateUnaryOpConjectures
   : MetaM DiscoveryStateDelta := do
 
   let (suffix, tag) := match pattern with
-    | .involution => ("_invol_conj", "involution")
-    | .idempotence => ("_idem_conj", "idempotence")
+    | .involution => ("_invol", "involution")
+    | .idempotence => ("_idem", "idempotence")
 
   -- Pick out only the *new* proven unary_ops
   let candidates := state.newConcepts.filter fun c =>
