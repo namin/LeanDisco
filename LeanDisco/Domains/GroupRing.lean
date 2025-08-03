@@ -10,14 +10,27 @@ namespace LeanDisco.Domains.GroupRing
 
 /-- Recognizer for unary operations α → α, possibly under implicit arguments -/
 def isUnaryOp (ty : Expr) : MetaM Bool := do
-  -- For now, we check if after telescoping all binders,
-  -- we get something of the form α → α
-  forallTelescopeReducing ty fun _fvars body => do
-    match body with
-    | Expr.forallE _ domain codomain _ =>
-      -- Check if it's α → α (same type)
-      return (← isDefEq domain codomain)
-    | _ => return false
+  -- Count explicit arguments and check type matching
+  forallTelescope ty fun fvars body => do
+    -- Count only explicit arguments
+    let mut numExplicit := 0
+    let mut lastExplicitArgType? := none
+    
+    for i in [:fvars.size] do
+      let fvar := fvars[i]!
+      let fvarDecl ← fvar.fvarId!.getDecl
+      if fvarDecl.binderInfo.isExplicit then
+        numExplicit := numExplicit + 1
+        lastExplicitArgType? := some (← inferType fvar)
+    
+    -- We want exactly one explicit argument
+    if numExplicit != 1 then
+      return false
+    
+    -- Check if the last explicit argument type matches the return type
+    match lastExplicitArgType? with
+    | some argType => isDefEq argType body
+    | none => return false
 
 /-- Extract relevant theorems and definitions from group-related typeclasses -/
 def extractGroupConcepts : MetaM (Array ConceptData) := do
@@ -32,7 +45,7 @@ def extractGroupConcepts : MetaM (Array ConceptData) := do
       | .thmInfo thm => pure (thm.type, some thm.value, false)
       | .defnInfo defn => pure (defn.type, some defn.value, true)
       | _ => return none
-    if name == `LeanDisco.Domains.GroupRing.Objects.negate || (← isUnaryOp ty) then
+    if (← isUnaryOp ty) then
       tags := "unary_op" :: tags
     return some {
       name := name,
@@ -91,27 +104,31 @@ def generateUnaryOpConjectures
 
   -- For each, build the conjecture
   let maybeNew ← candidates.mapM fun f => do
-    -- Build the type with explicit arguments
-    let conjTy ← withLocalDeclD `G (mkSort levelOne) fun G => do
-      let GroupG ← mkAppM ``Group #[G]
-      withLocalDeclD `inst GroupG fun inst => do
-        withLocalDeclD `x G fun x => do
-          -- Build the equation based on the pattern
-          let stmt ← buildUnaryOpEquation pattern f.name G inst x
-          -- Create forall with explicit arguments
-          mkForallFVars #[G, inst, x] stmt
+    try
+      -- Build the type with explicit arguments
+      let conjTy ← withLocalDeclD `G (mkSort levelOne) fun G => do
+        let GroupG ← mkAppM ``Group #[G]
+        withLocalDeclD `inst GroupG fun inst => do
+          withLocalDeclD `x G fun x => do
+            -- Build the equation based on the pattern
+            let stmt ← buildUnaryOpEquation pattern f.name G inst x
+            -- Create forall with explicit arguments
+            mkForallFVars #[G, inst, x] stmt
 
-    let name := f.name.appendAfter suffix
-    return (some {
-      name     := name,
-      type     := conjTy,
-      proof?   := none,
-      isDef    := false,
-      isProp   := true,
-      origin?  := some suffix,
-      tags     := ["generated", tag],
-      contexts := #[]
-    } : Option ConceptData)
+      let name := f.name.appendAfter suffix
+      return (some {
+        name     := name,
+        type     := conjTy,
+        proof?   := none,
+        isDef    := false,
+        isProp   := true,
+        origin?  := some suffix,
+        tags     := ["generated", tag],
+        contexts := #[]
+      } : Option ConceptData)
+    catch e =>
+      -- Skip functions that don't work with Group
+      return none
 
   return { newConcepts := maybeNew.filterMap id }
 
