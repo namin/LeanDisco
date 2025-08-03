@@ -15,18 +15,18 @@ def isUnaryOp (ty : Expr) : MetaM Bool := do
     -- Count only explicit arguments
     let mut numExplicit := 0
     let mut lastExplicitArgType? := none
-    
+
     for i in [:fvars.size] do
       let fvar := fvars[i]!
       let fvarDecl ← fvar.fvarId!.getDecl
       if fvarDecl.binderInfo.isExplicit then
         numExplicit := numExplicit + 1
         lastExplicitArgType? := some (← inferType fvar)
-    
+
     -- We want exactly one explicit argument
     if numExplicit != 1 then
       return false
-    
+
     -- Check if the last explicit argument type matches the return type
     match lastExplicitArgType? with
     | some argType => isDefEq argType body
@@ -44,7 +44,7 @@ def extractGroupConcepts : MetaM (Array ConceptData) := do
     n == `LeanDisco.Domains.GroupRing.Objects.negate ||
     -- Include theorems that mention group operations
     (match info with
-     | .thmInfo _ => 
+     | .thmInfo _ =>
        -- Simple check: does the name contain inv, mul, one, or cancel?
        let parts := s.splitOn "_"
        parts.any (fun p => p == "inv" || p == "mul" || p == "one" || p == "cancel") ||
@@ -56,7 +56,7 @@ def extractGroupConcepts : MetaM (Array ConceptData) := do
       | .thmInfo thm => pure (thm.type, some thm.value, false)
       | .defnInfo defn => pure (defn.type, some defn.value, true)
       | _ => return none
-    if (← isUnaryOp ty) then
+    if isDef && (← isUnaryOp ty) then
       tags := "unary_op" :: tags
     return some {
       name := name,
