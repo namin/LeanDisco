@@ -68,12 +68,12 @@ inductive UnaryOpPattern
   deriving BEq
 
 /-- Build the equation for a given pattern -/
-def buildUnaryOpEquation (pattern : UnaryOpPattern) (fname : Name) (x : Expr) : MetaM Expr := do
-  let fx ← mkAppOptM fname #[none, none, some x]
-  let ffx ← mkAppOptM fname #[none, none, some fx]
+def buildUnaryOpEquation (pattern : UnaryOpPattern) (fname : Name) (G inst x : Expr) : MetaM Expr := do
+  let fx ← mkAppOptM fname #[some G, some inst, some x]
+  let ffx ← mkAppOptM fname #[some G, some inst, some fx]
   match pattern with
-  | .involution => mkEqStmt ffx x
-  | .idempotence => mkEqStmt ffx fx
+  | .involution => mkAppM ``Eq #[ffx, x]
+  | .idempotence => mkAppM ``Eq #[ffx, fx]
 
 /-- Generate conjectures for unary operations based on a pattern -/
 def generateUnaryOpConjectures
@@ -97,7 +97,7 @@ def generateUnaryOpConjectures
       withLocalDeclD `inst GroupG fun inst => do
         withLocalDeclD `x G fun x => do
           -- Build the equation based on the pattern
-          let stmt ← buildUnaryOpEquation pattern f.name x
+          let stmt ← buildUnaryOpEquation pattern f.name G inst x
           -- Create forall with explicit arguments
           mkForallFVars #[G, inst, x] stmt
 
