@@ -28,6 +28,69 @@ structure DiscoveryState where
   iteration : Nat
   deriving Inhabited
 
+/-- Check if a proof is complete (no sorryAx, no metavariables) -/
+def hasCompleteProof (proof : Expr) : Bool :=
+  -- Check if the proof depends on sorryAx
+  let usedConstants := proof.getUsedConstants
+  if usedConstants.contains ``sorryAx then
+    false
+  else
+    -- Also check for unassigned metavariables
+    !proof.hasExprMVar
+
+/-- Sanity check: Verify that a proof actually proves the claimed type -/
+def sanityCheckProof (concept : ConceptData) (strictMode : Bool := false) : MetaM Bool := do
+  match concept.proof? with
+  | none => 
+    -- No proof provided is fine
+    return true
+  | some proof =>
+    try
+      -- Check that the proof has the right type
+      let proofType ← inferType proof
+      if ← isDefEq proofType concept.type then
+        -- Check if it's a complete proof
+        let isComplete := hasCompleteProof proof
+        if !isComplete then
+          -- Incomplete proofs are allowed but we should note them
+          if "verified" ∈ concept.tags || "proven" ∈ concept.tags then
+            if proof.getUsedConstants.contains ``sorryAx then
+              if strictMode then
+                logError m!"❌ Strict mode: {concept.name} claims to be verified/proven but uses sorryAx"
+                return false
+              else
+                logInfo m!"⚠️ Warning: {concept.name} claims to be verified/proven but uses sorryAx"
+                return true
+            else
+              -- Has metavariables
+              logError m!"❌ {concept.name} has unassigned metavariables in proof"
+              return false
+          else
+            return true
+        else
+          return true
+      else
+        logError m!"❌ Sanity check failed for {concept.name}: proof type doesn't match claimed type"
+        logError m!"  Expected type: {concept.type}"
+        logError m!"  Proof has type: {proofType}"
+        return false
+    catch e =>
+      logError m!"❌ Sanity check failed for {concept.name}: {e.toMessageData}"
+      return false
+
+/-- Validate all concepts in a discovery state -/
+def validateDiscoveryState (state : DiscoveryState) (strictMode : Bool := false) : MetaM Bool := do
+  let mut allValid := true
+  for concept in state.concepts do
+    let valid ← sanityCheckProof concept strictMode
+    if !valid then
+      allValid := false
+  if allValid then
+    logInfo m!"✅ All {state.concepts.size} concepts passed sanity check"
+  else
+    logError m!"❌ Some concepts failed sanity check"
+  return allValid
+
 /-- Delta produced by heuristics to modify the discovery state -/
 structure DiscoveryStateDelta where
   newConcepts : Array ConceptData := #[]
@@ -43,6 +106,8 @@ structure DiscoveryConfig where
   logProofSuccess : Bool := false
   logProofFailure : Bool := false
   logWorkStats : Bool := true
+  enableSanityCheck : Bool := true  -- Check that proofs typecheck
+  strictSanityCheck : Bool := false  -- If true, reject sorryAx proofs marked as "verified"
   deriving Inhabited
 
 /-- Domain-specific extensions: seed concepts and generation heuristics -/
@@ -104,11 +169,24 @@ def stepDiscovery (heuristics : List (DiscoveryState → MetaM DiscoveryStateDel
     newConcepts := deltas.map (·.newConcepts) |>.foldl (· ++ ·) #[],
     removedConcepts := deltas.map (·.removedConcepts) |>.foldl (· ++ ·) #[]
   }
+  
+  -- Sanity check new concepts before adding them
+  let mut validatedConcepts := #[]
+  if cfg.enableSanityCheck then
+    for concept in combined.newConcepts do
+      if ← sanityCheckProof concept cfg.strictSanityCheck then
+        validatedConcepts := validatedConcepts.push concept
+      else
+        logError m!"Dropping invalid concept: {concept.name}"
+  else
+    validatedConcepts := combined.newConcepts
+  
   if cfg.logWorkStats then
-    logInfo m!"[iteration {state.iteration}] +{combined.newConcepts.size} −{combined.removedConcepts.size}"
+    logInfo m!"[iteration {state.iteration}] +{validatedConcepts.size} −{combined.removedConcepts.size}"
+  
   let newState := {
-    concepts := state.concepts.filter (fun c => !combined.removedConcepts.contains c.name) ++ combined.newConcepts,
-    newConcepts := combined.newConcepts,
+    concepts := state.concepts.filter (fun c => !combined.removedConcepts.contains c.name) ++ validatedConcepts,
+    newConcepts := validatedConcepts,
     iteration := state.iteration + 1
   }
   logTagFrequencies s!"iteration {state.iteration + 1}" newState.concepts
