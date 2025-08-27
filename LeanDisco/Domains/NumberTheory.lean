@@ -57,20 +57,14 @@ def generateModuloPatterns : MetaM (Array ConceptData) := do
         -- We found a restriction!
         let name := Name.str .anonymous s!"power_{k}_mod_{m}_pattern"
 
-        -- Create the formal statement: ∀ n, n^k % m ∈ values
+        -- Create the formal statement: ∀ n, values.contains (n^k % m) = true
         let stmt ← withLocalDeclD `n (mkConst ``Nat) fun n => do
           let nPowK ← mkAppM ``HPow.hPow #[n, mkNatLit k]
           let nPowKModM ← mkAppM ``HMod.hMod #[nPowK, mkNatLit m]
-
-          -- Build a proper disjunction: n^k % m = v₁ ∨ n^k % m = v₂ ∨ ...
-          let stmt ← values.foldlM (init := Lean.mkConst ``False) fun acc v => do
-            let eq ← mkAppM ``Eq #[nPowKModM, mkNatLit v]
-            if acc.isConstOf ``False then
-              pure eq  -- First case, no disjunction needed
-            else
-              mkAppM ``Or #[acc, eq]
-          
-          mkForallFVars #[n] stmt
+          let valuesList ← mkListLit (mkConst ``Nat) (values.map mkNatLit)
+          let contains ← mkAppM ``List.contains #[valuesList, nPowKModM]
+          let eq ← mkAppM ``Eq #[contains, mkConst ``true]
+          mkForallFVars #[n] eq
 
         concepts := concepts.push {
           name := name
