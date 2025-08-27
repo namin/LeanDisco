@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Script to move files not tracked by git to a backup folder
+# Files will be moved to bak/ with timestamp
+
+set -e
+
+# Check if we're in a git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    echo "Error: Not in a git repository"
+    exit 1
+fi
+
+# Get list of untracked files
+untracked_files=$(git ls-files --others --exclude-standard)
+
+if [ -z "$untracked_files" ]; then
+    echo "No untracked files to clean"
+    exit 0
+fi
+
+# Create bak directory with timestamp
+timestamp=$(date +%Y%m%d_%H%M%S)
+bak_dir="bak/$timestamp"
+mkdir -p "$bak_dir"
+
+echo "The following untracked files will be moved to $bak_dir:"
+echo "$untracked_files"
+echo ""
+read -p "Are you sure you want to move these files? (y/N): " confirm
+
+if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+    echo "$untracked_files" | while IFS= read -r file; do
+        if [ -f "$file" ]; then
+            # Create directory structure in backup
+            file_dir=$(dirname "$file")
+            mkdir -p "$bak_dir/$file_dir"
+            mv -v "$file" "$bak_dir/$file"
+        fi
+    done
+    echo "Files moved to $bak_dir"
+else
+    echo "Cleanup cancelled"
+fi
