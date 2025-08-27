@@ -28,20 +28,10 @@ structure DiscoveryState where
   iteration : Nat
   deriving Inhabited
 
-/-- Check if a proof is complete (no sorryAx, no metavariables) -/
-def hasCompleteProof (proof : Expr) : Bool :=
-  -- Check if the proof depends on sorryAx
-  let usedConstants := proof.getUsedConstants
-  if usedConstants.contains ``sorryAx then
-    false
-  else
-    -- Also check for unassigned metavariables
-    !proof.hasExprMVar
-
 /-- Sanity check: Verify that a proof actually proves the claimed type -/
 def sanityCheckProof (concept : ConceptData) (strictMode : Bool := false) : MetaM Bool := do
   match concept.proof? with
-  | none => 
+  | none =>
     -- No proof provided is fine
     return true
   | some proof =>
@@ -49,22 +39,18 @@ def sanityCheckProof (concept : ConceptData) (strictMode : Bool := false) : Meta
       -- Check that the proof has the right type
       let proofType ← inferType proof
       if ← isDefEq proofType concept.type then
-        -- Check if it's a complete proof
-        let isComplete := hasCompleteProof proof
-        if !isComplete then
-          -- Incomplete proofs are allowed but we should note them
-          if "verified" ∈ concept.tags || "proven" ∈ concept.tags then
-            if proof.getUsedConstants.contains ``sorryAx then
-              if strictMode then
-                logError m!"❌ Strict mode: {concept.name} claims to be verified/proven but uses sorryAx"
-                return false
-              else
-                logInfo m!"⚠️ Warning: {concept.name} claims to be verified/proven but uses sorryAx"
-                return true
-            else
-              -- Has metavariables
-              logError m!"❌ {concept.name} has unassigned metavariables in proof"
+        if "verified" ∈ concept.tags || "proven" ∈ concept.tags then
+          -- Check if it's a complete proof
+          if proof.getUsedConstants.contains ``sorryAx then
+            if strictMode then
+              logError m!"❌ Strict mode: {concept.name} claims to be verified/proven but uses sorryAx"
               return false
+            else
+              logInfo m!"⚠️ Warning: {concept.name} claims to be verified/proven but uses sorryAx"
+              return true
+          else if proof.hasExprMVar then
+            logError m!"❌ {concept.name} has unassigned metavariables in proof"
+            return false
           else
             return true
         else
@@ -169,7 +155,7 @@ def stepDiscovery (heuristics : List (DiscoveryState → MetaM DiscoveryStateDel
     newConcepts := deltas.map (·.newConcepts) |>.foldl (· ++ ·) #[],
     removedConcepts := deltas.map (·.removedConcepts) |>.foldl (· ++ ·) #[]
   }
-  
+
   -- Sanity check new concepts before adding them
   let mut validatedConcepts := #[]
   if cfg.enableSanityCheck then
@@ -180,10 +166,10 @@ def stepDiscovery (heuristics : List (DiscoveryState → MetaM DiscoveryStateDel
         logError m!"Dropping invalid concept: {concept.name}"
   else
     validatedConcepts := combined.newConcepts
-  
+
   if cfg.logWorkStats then
     logInfo m!"[iteration {state.iteration}] +{validatedConcepts.size} −{combined.removedConcepts.size}"
-  
+
   let newState := {
     concepts := state.concepts.filter (fun c => !combined.removedConcepts.contains c.name) ++ validatedConcepts,
     newConcepts := validatedConcepts,
