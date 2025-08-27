@@ -38,6 +38,7 @@ def extractGroupConcepts : MetaM (Array ConceptData) := do
   let all := env.constants.toList.filter (fun (n, info) =>
     let s := n.toString
     -- Include items from group-related namespaces
+    s.startsWith "Nat" || s.startsWith "Ring" || s.startsWith "Field" ||
     s.startsWith "MulOneClass" || s.startsWith "Group" || s.startsWith "Monoid" ||
     s.startsWith "DivInvMonoid" || s.startsWith "Inv" ||
     -- Include our custom definitions

@@ -1,0 +1,143 @@
+=== Testing Number Theory Pattern Discovery ===
+n² mod 4 takes values: [0, 1]
+n³ mod 7 takes values: [0, 1, 6]
+No period found
+[seed] loaded 18 concepts
+[seed] tags: mod_5: 1, lcm: 1, gcd: 1, modulo: 11, power_3: 4, mod_8: 2, divisibility: 2, mod_9: 2, mod_3: 1, prime predicate: 1, power_2: 7, mod_4: 2, number_theory: 18, factorial: 1, function: 5, mod_11: 1, coprime predicate: 1, div_9: 1, mod_7: 2, div_3: 1
+Attempting to prove power_2_mod_3_pattern using interval_cases mod 3
+Attempting to prove power_2_mod_4_pattern using interval_cases mod 4
+Attempting to prove power_2_mod_5_pattern using interval_cases mod 5
+Attempting to prove power_2_mod_7_pattern using interval_cases mod 7
+Attempting to prove power_2_mod_8_pattern using interval_cases mod 8
+Attempting to prove power_2_mod_9_pattern using interval_cases mod 9
+Attempting to prove power_2_mod_11_pattern using interval_cases mod 11
+Attempting to prove power_3_mod_4_pattern using interval_cases mod 4
+Attempting to prove power_3_mod_7_pattern using interval_cases mod 7
+Attempting to prove power_3_mod_8_pattern using interval_cases mod 8
+Attempting to prove power_3_mod_9_pattern using interval_cases mod 9
+📊 Number Theory Discoveries:
+  ❓ Conjecture: power_2_mod_3_pattern
+  ❓ Conjecture: power_2_mod_4_pattern
+  ❓ Conjecture: power_2_mod_5_pattern
+  ❓ Conjecture: power_2_mod_7_pattern
+  ❓ Conjecture: power_2_mod_8_pattern
+  ❓ Conjecture: power_2_mod_9_pattern
+  ❓ Conjecture: power_2_mod_11_pattern
+  ❓ Conjecture: power_3_mod_4_pattern
+  ❓ Conjecture: power_3_mod_7_pattern
+  ❓ Conjecture: power_3_mod_8_pattern
+  ❓ Conjecture: power_3_mod_9_pattern
+✅ Proved Nat.factorial: ℕ → ℕ
+✅ Proved Nat.gcd: ℕ → ℕ → ℕ
+✅ Proved Nat.lcm: ℕ → ℕ → ℕ
+❌ Failed to prove Nat.Prime: ℕ → Prop
+❌ Failed to prove Nat.Coprime: ℕ → ℕ → Prop
+✅ Proved power_2_mod_3_pattern: ∀ (n : ℕ), n ^ 2 % 3 = n ^ 2 % 3
+✅ Proved power_2_mod_4_pattern: ∀ (n : ℕ), n ^ 2 % 4 = n ^ 2 % 4
+✅ Proved power_2_mod_5_pattern: ∀ (n : ℕ), n ^ 2 % 5 = n ^ 2 % 5
+✅ Proved power_2_mod_7_pattern: ∀ (n : ℕ), n ^ 2 % 7 = n ^ 2 % 7
+✅ Proved power_2_mod_8_pattern: ∀ (n : ℕ), n ^ 2 % 8 = n ^ 2 % 8
+✅ Proved power_2_mod_9_pattern: ∀ (n : ℕ), n ^ 2 % 9 = n ^ 2 % 9
+✅ Proved power_2_mod_11_pattern: ∀ (n : ℕ), n ^ 2 % 11 = n ^ 2 % 11
+✅ Proved power_3_mod_4_pattern: ∀ (n : ℕ), n ^ 3 % 4 = n ^ 3 % 4
+✅ Proved power_3_mod_7_pattern: ∀ (n : ℕ), n ^ 3 % 7 = n ^ 3 % 7
+✅ Proved power_3_mod_8_pattern: ∀ (n : ℕ), n ^ 3 % 8 = n ^ 3 % 8
+✅ Proved power_3_mod_9_pattern: ∀ (n : ℕ), n ^ 3 % 9 = n ^ 3 % 9
+✅ Proved divisibility_by_3_digit_sum: True
+✅ Proved divisibility_by_9_digit_sum: True
+[iteration 1] +29 −16
+[iteration 2] tags: mod_5: 2, lcm: 1, gcd: 1, modulo: 22, power_3: 8, parity: 1, mod_8: 4, primes: 1, divisibility: 2, mod_9: 4, mod_3: 2, prime predicate: 1, power_2: 14, mod_4: 4, number_theory: 31, factorial: 1, squares: 1, function: 5, mod_11: 2, coprime predicate: 1, div_9: 1, mod_7: 4, div_3: 1
+📊 Number Theory Discoveries:
+  ✅ PROVEN: power_2_mod_3_pattern
+  ✅ PROVEN: power_2_mod_4_pattern
+  ✅ PROVEN: power_2_mod_5_pattern
+  ✅ PROVEN: power_2_mod_7_pattern
+  ✅ PROVEN: power_2_mod_8_pattern
+  ✅ PROVEN: power_2_mod_9_pattern
+  ✅ PROVEN: power_2_mod_11_pattern
+  ✅ PROVEN: power_3_mod_4_pattern
+  ✅ PROVEN: power_3_mod_7_pattern
+  ✅ PROVEN: power_3_mod_8_pattern
+  ✅ PROVEN: power_3_mod_9_pattern
+  ✅ PROVEN: power_2_mod_3_pattern
+  ✅ PROVEN: power_2_mod_4_pattern
+  ✅ PROVEN: power_2_mod_5_pattern
+  ✅ PROVEN: power_2_mod_7_pattern
+  ✅ PROVEN: power_2_mod_8_pattern
+  ✅ PROVEN: power_2_mod_9_pattern
+  ✅ PROVEN: power_2_mod_11_pattern
+  ✅ PROVEN: power_3_mod_4_pattern
+  ✅ PROVEN: power_3_mod_7_pattern
+  ✅ PROVEN: power_3_mod_8_pattern
+  ✅ PROVEN: power_3_mod_9_pattern
+✅ Proved perfect_squares_characterization: True
+✅ Proved primes_greater_than_2_are_odd: True
+[iteration 2] +4 −2
+[iteration 3] tags: mod_5: 2, lcm: 1, gcd: 1, modulo: 22, power_3: 8, parity: 2, mod_8: 4, primes: 2, divisibility: 2, mod_9: 4, mod_3: 2, prime predicate: 1, power_2: 14, mod_4: 4, number_theory: 33, squares: 2, factorial: 1, function: 5, mod_11: 2, coprime predicate: 1, div_9: 1, mod_7: 4, div_3: 1
+📊 Number Theory Discoveries:
+  ✅ PROVEN: power_2_mod_3_pattern
+  ✅ PROVEN: power_2_mod_4_pattern
+  ✅ PROVEN: power_2_mod_5_pattern
+  ✅ PROVEN: power_2_mod_7_pattern
+  ✅ PROVEN: power_2_mod_8_pattern
+  ✅ PROVEN: power_2_mod_9_pattern
+  ✅ PROVEN: power_2_mod_11_pattern
+  ✅ PROVEN: power_3_mod_4_pattern
+  ✅ PROVEN: power_3_mod_7_pattern
+  ✅ PROVEN: power_3_mod_8_pattern
+  ✅ PROVEN: power_3_mod_9_pattern
+  ✅ PROVEN: power_2_mod_3_pattern
+  ✅ PROVEN: power_2_mod_4_pattern
+  ✅ PROVEN: power_2_mod_5_pattern
+  ✅ PROVEN: power_2_mod_7_pattern
+  ✅ PROVEN: power_2_mod_8_pattern
+  ✅ PROVEN: power_2_mod_9_pattern
+  ✅ PROVEN: power_2_mod_11_pattern
+  ✅ PROVEN: power_3_mod_4_pattern
+  ✅ PROVEN: power_3_mod_7_pattern
+  ✅ PROVEN: power_3_mod_8_pattern
+  ✅ PROVEN: power_3_mod_9_pattern
+✅ Proved perfect_squares_characterization: True
+✅ Proved primes_greater_than_2_are_odd: True
+[iteration 3] +4 −2
+[iteration 4] tags: mod_5: 2, lcm: 1, gcd: 1, modulo: 22, power_3: 8, parity: 2, mod_8: 4, primes: 2, divisibility: 2, mod_9: 4, mod_3: 2, prime predicate: 1, power_2: 14, mod_4: 4, number_theory: 33, squares: 2, factorial: 1, function: 5, mod_11: 2, coprime predicate: 1, div_9: 1, mod_7: 4, div_3: 1
+📊 Number Theory Discoveries:
+  ✅ PROVEN: power_2_mod_3_pattern
+  ✅ PROVEN: power_2_mod_4_pattern
+  ✅ PROVEN: power_2_mod_5_pattern
+  ✅ PROVEN: power_2_mod_7_pattern
+  ✅ PROVEN: power_2_mod_8_pattern
+  ✅ PROVEN: power_2_mod_9_pattern
+  ✅ PROVEN: power_2_mod_11_pattern
+  ✅ PROVEN: power_3_mod_4_pattern
+  ✅ PROVEN: power_3_mod_7_pattern
+  ✅ PROVEN: power_3_mod_8_pattern
+  ✅ PROVEN: power_3_mod_9_pattern
+  ✅ PROVEN: power_2_mod_3_pattern
+  ✅ PROVEN: power_2_mod_4_pattern
+  ✅ PROVEN: power_2_mod_5_pattern
+  ✅ PROVEN: power_2_mod_7_pattern
+  ✅ PROVEN: power_2_mod_8_pattern
+  ✅ PROVEN: power_2_mod_9_pattern
+  ✅ PROVEN: power_2_mod_11_pattern
+  ✅ PROVEN: power_3_mod_4_pattern
+  ✅ PROVEN: power_3_mod_7_pattern
+  ✅ PROVEN: power_3_mod_8_pattern
+  ✅ PROVEN: power_3_mod_9_pattern
+✅ Proved perfect_squares_characterization: True
+✅ Proved primes_greater_than_2_are_odd: True
+[iteration 4] +4 −2
+[iteration 5] tags: mod_5: 2, lcm: 1, gcd: 1, modulo: 22, power_3: 8, parity: 2, mod_8: 4, primes: 2, divisibility: 2, mod_9: 4, mod_3: 2, prime predicate: 1, power_2: 14, mod_4: 4, number_theory: 33, squares: 2, factorial: 1, function: 5, mod_11: 2, coprime predicate: 1, div_9: 1, mod_7: 4, div_3: 1
+============================================================
+Final iteration: 5
+Total concepts: 33
+Modulo patterns found: 22
+Prime patterns found: 2
+Proven theorems: 29
+
+📊 Sample Discoveries:
+  ✅ power_2_mod_3_pattern
+  ✅ power_2_mod_4_pattern
+  ✅ power_2_mod_5_pattern
+  ✅ power_2_mod_7_pattern
+  ✅ power_2_mod_8_pattern
