@@ -163,8 +163,8 @@ Prime patterns found: 2
 Proven theorems: 18
 
 📊 Sample Discoveries:
-  ✅ power_2_mod_3_pattern
-  ✅ power_2_mod_4_pattern
-  ✅ power_2_mod_5_pattern
-  ✅ power_2_mod_7_pattern
-  ✅ power_2_mod_8_pattern
+  ✅ power_2_mod_3_pattern: ∀ (n : ℕ), [0, 1].contains (n ^ 2 % 3) = true
+  ✅ power_2_mod_4_pattern: ∀ (n : ℕ), [0, 1].contains (n ^ 2 % 4) = true
+  ✅ power_2_mod_5_pattern: ∀ (n : ℕ), [0, 1, 4].contains (n ^ 2 % 5) = true
+  ✅ power_2_mod_7_pattern: ∀ (n : ℕ), [0, 1, 4, 2].contains (n ^ 2 % 7) = true
+  ✅ power_2_mod_8_pattern: ∀ (n : ℕ), [0, 1, 4].contains (n ^ 2 % 8) = true

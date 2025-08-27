@@ -63,4 +63,4 @@ def myConfig : DiscoveryConfig := {
   let finalModConcepts := final.concepts.filter (fun c => "modulo" ∈ c.tags)
   for concept in finalModConcepts.toList.take 5 do
     let status := if concept.proof?.isSome then "✅" else "❓"
-    logInfo m!"  {status} {concept.name}"
+    logInfo m!"  {status} {concept.name}: {concept.type}"
