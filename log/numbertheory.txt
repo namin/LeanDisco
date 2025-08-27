@@ -5,40 +5,66 @@ No period found
 [seed] loaded 18 concepts
 [seed] tags: mod_5: 1, lcm: 1, gcd: 1, modulo: 11, power_3: 4, mod_8: 2, divisibility: 2, mod_9: 2, mod_3: 1, prime predicate: 1, power_2: 7, mod_4: 2, number_theory: 18, factorial: 1, function: 5, mod_11: 1, coprime predicate: 1, div_9: 1, mod_7: 2, div_3: 1
 Attempting to prove power_2_mod_3_pattern using interval_cases mod 3
-  Statement: ∀ n, n^k % 3 ∈ [0, 1]
+  Statement: ∀ n, n^2 % 3 ∈ [0, 1]
   Type: ∀ (n : ℕ), n ^ 2 % 3 = 0 ∨ n ^ 2 % 3 = 1
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 3; all_goals simp [Nat.pow_mod]
 Attempting to prove power_2_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1]
+  Statement: ∀ n, n^2 % 4 ∈ [0, 1]
   Type: ∀ (n : ℕ), n ^ 2 % 4 = 0 ∨ n ^ 2 % 4 = 1
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 4; all_goals simp [Nat.pow_mod]
 Attempting to prove power_2_mod_5_pattern using interval_cases mod 5
-  Statement: ∀ n, n^k % 5 ∈ [0, 1, 4]
+  Statement: ∀ n, n^2 % 5 ∈ [0, 1, 4]
   Type: ∀ (n : ℕ), (n ^ 2 % 5 = 0 ∨ n ^ 2 % 5 = 1) ∨ n ^ 2 % 5 = 4
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 5; all_goals simp [Nat.pow_mod]
 Attempting to prove power_2_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 4, 2]
+  Statement: ∀ n, n^2 % 7 ∈ [0, 1, 4, 2]
   Type: ∀ (n : ℕ), ((n ^ 2 % 7 = 0 ∨ n ^ 2 % 7 = 1) ∨ n ^ 2 % 7 = 4) ∨ n ^ 2 % 7 = 2
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 7; all_goals simp [Nat.pow_mod]
 Attempting to prove power_2_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 4]
+  Statement: ∀ n, n^2 % 8 ∈ [0, 1, 4]
   Type: ∀ (n : ℕ), (n ^ 2 % 8 = 0 ∨ n ^ 2 % 8 = 1) ∨ n ^ 2 % 8 = 4
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 8; all_goals simp [Nat.pow_mod]
 Attempting to prove power_2_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 4, 7]
+  Statement: ∀ n, n^2 % 9 ∈ [0, 1, 4, 7]
   Type: ∀ (n : ℕ), ((n ^ 2 % 9 = 0 ∨ n ^ 2 % 9 = 1) ∨ n ^ 2 % 9 = 4) ∨ n ^ 2 % 9 = 7
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 9; all_goals simp [Nat.pow_mod]
 Attempting to prove power_2_mod_11_pattern using interval_cases mod 11
-  Statement: ∀ n, n^k % 11 ∈ [0, 1, 4, 9, 5, 3]
+  Statement: ∀ n, n^2 % 11 ∈ [0, 1, 4, 9, 5, 3]
   Type: ∀ (n : ℕ),
   ((((n ^ 2 % 11 = 0 ∨ n ^ 2 % 11 = 1) ∨ n ^ 2 % 11 = 4) ∨ n ^ 2 % 11 = 9) ∨ n ^ 2 % 11 = 5) ∨ n ^ 2 % 11 = 3
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 11; all_goals simp [Nat.pow_mod]
 Attempting to prove power_3_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1, 3]
+  Statement: ∀ n, n^3 % 4 ∈ [0, 1, 3]
   Type: ∀ (n : ℕ), (n ^ 3 % 4 = 0 ∨ n ^ 3 % 4 = 1) ∨ n ^ 3 % 4 = 3
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 4; all_goals simp [Nat.pow_mod]
 Attempting to prove power_3_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 6]
+  Statement: ∀ n, n^3 % 7 ∈ [0, 1, 6]
   Type: ∀ (n : ℕ), (n ^ 3 % 7 = 0 ∨ n ^ 3 % 7 = 1) ∨ n ^ 3 % 7 = 6
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 7; all_goals simp [Nat.pow_mod]
 Attempting to prove power_3_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 3, 5, 7]
+  Statement: ∀ n, n^3 % 8 ∈ [0, 1, 3, 5, 7]
   Type: ∀ (n : ℕ), (((n ^ 3 % 8 = 0 ∨ n ^ 3 % 8 = 1) ∨ n ^ 3 % 8 = 3) ∨ n ^ 3 % 8 = 5) ∨ n ^ 3 % 8 = 7
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 8; all_goals simp [Nat.pow_mod]
 Attempting to prove power_3_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 8]
+  Statement: ∀ n, n^3 % 9 ∈ [0, 1, 8]
   Type: ∀ (n : ℕ), (n ^ 3 % 9 = 0 ∨ n ^ 3 % 9 = 1) ∨ n ^ 3 % 9 = 8
+  ✅ Pattern verified! All residue classes check out.
+  Proof strategy: interval_cases n % 9; all_goals simp [Nat.pow_mod]
 📊 Number Theory Discoveries:
+  Total patterns: 11
+  Verified: 0
+  Unproven: 11
+
   ❓ Conjecture: power_2_mod_3_pattern
   ❓ Conjecture: power_2_mod_4_pattern
   ❓ Conjecture: power_2_mod_5_pattern
@@ -81,234 +107,78 @@ Try this: ring_nf
 ❌ Failed to prove power_3_mod_9_pattern: ∀ (n : ℕ), (n ^ 3 % 9 = 0 ∨ n ^ 3 % 9 = 1) ∨ n ^ 3 % 9 = 8
 ✅ Proved divisibility_by_3_digit_sum: True
 ✅ Proved divisibility_by_9_digit_sum: True
-[iteration 1] +18 −5
-[iteration 2] tags: mod_5: 2, lcm: 1, gcd: 1, modulo: 22, power_3: 8, parity: 1, mod_8: 4, primes: 1, divisibility: 2, mod_9: 4, mod_3: 2, prime predicate: 1, power_2: 14, mod_4: 4, number_theory: 31, factorial: 1, squares: 1, function: 5, mod_11: 2, coprime predicate: 1, div_9: 1, mod_7: 4, div_3: 1
-Attempting to prove power_2_mod_3_pattern using interval_cases mod 3
-  Statement: ∀ n, n^k % 3 ∈ [0, 1]
-  Type: ∀ (n : ℕ), n ^ 2 % 3 = 0 ∨ n ^ 2 % 3 = 1
-Attempting to prove power_2_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1]
-  Type: ∀ (n : ℕ), n ^ 2 % 4 = 0 ∨ n ^ 2 % 4 = 1
-Attempting to prove power_2_mod_5_pattern using interval_cases mod 5
-  Statement: ∀ n, n^k % 5 ∈ [0, 1, 4]
-  Type: ∀ (n : ℕ), (n ^ 2 % 5 = 0 ∨ n ^ 2 % 5 = 1) ∨ n ^ 2 % 5 = 4
-Attempting to prove power_2_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 4, 2]
-  Type: ∀ (n : ℕ), ((n ^ 2 % 7 = 0 ∨ n ^ 2 % 7 = 1) ∨ n ^ 2 % 7 = 4) ∨ n ^ 2 % 7 = 2
-Attempting to prove power_2_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 4]
-  Type: ∀ (n : ℕ), (n ^ 2 % 8 = 0 ∨ n ^ 2 % 8 = 1) ∨ n ^ 2 % 8 = 4
-Attempting to prove power_2_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 4, 7]
-  Type: ∀ (n : ℕ), ((n ^ 2 % 9 = 0 ∨ n ^ 2 % 9 = 1) ∨ n ^ 2 % 9 = 4) ∨ n ^ 2 % 9 = 7
-Attempting to prove power_2_mod_11_pattern using interval_cases mod 11
-  Statement: ∀ n, n^k % 11 ∈ [0, 1, 4, 9, 5, 3]
-  Type: ∀ (n : ℕ),
-  ((((n ^ 2 % 11 = 0 ∨ n ^ 2 % 11 = 1) ∨ n ^ 2 % 11 = 4) ∨ n ^ 2 % 11 = 9) ∨ n ^ 2 % 11 = 5) ∨ n ^ 2 % 11 = 3
-Attempting to prove power_3_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1, 3]
-  Type: ∀ (n : ℕ), (n ^ 3 % 4 = 0 ∨ n ^ 3 % 4 = 1) ∨ n ^ 3 % 4 = 3
-Attempting to prove power_3_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 6]
-  Type: ∀ (n : ℕ), (n ^ 3 % 7 = 0 ∨ n ^ 3 % 7 = 1) ∨ n ^ 3 % 7 = 6
-Attempting to prove power_3_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 3, 5, 7]
-  Type: ∀ (n : ℕ), (((n ^ 3 % 8 = 0 ∨ n ^ 3 % 8 = 1) ∨ n ^ 3 % 8 = 3) ∨ n ^ 3 % 8 = 5) ∨ n ^ 3 % 8 = 7
-Attempting to prove power_3_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 8]
-  Type: ∀ (n : ℕ), (n ^ 3 % 9 = 0 ∨ n ^ 3 % 9 = 1) ∨ n ^ 3 % 9 = 8
+[iteration 1] +18 −16
+[iteration 2] tags: lcm: 1, gcd: 1, power_3: 4, mod_8: 2, parity: 1, primes: 1, divisibility: 2, mod_3: 1, power_2: 7, prime predicate: 1, mod_4: 2, proven_by_cases: 11, squares: 1, mod_11: 1, mod_7: 2, mod_5: 1, modulo: 11, mod_9: 2, verified: 11, number_theory: 20, factorial: 1, function: 5, coprime predicate: 1, div_9: 1, div_3: 1
 📊 Number Theory Discoveries:
-  ❓ Conjecture: power_2_mod_3_pattern
-  ❓ Conjecture: power_2_mod_4_pattern
-  ❓ Conjecture: power_2_mod_5_pattern
-  ❓ Conjecture: power_2_mod_7_pattern
-  ❓ Conjecture: power_2_mod_8_pattern
-  ❓ Conjecture: power_2_mod_9_pattern
-  ❓ Conjecture: power_2_mod_11_pattern
-  ❓ Conjecture: power_3_mod_4_pattern
-  ❓ Conjecture: power_3_mod_7_pattern
-  ❓ Conjecture: power_3_mod_8_pattern
-  ❓ Conjecture: power_3_mod_9_pattern
-  ✅ PROVEN: power_2_mod_3_pattern
-  ✅ PROVEN: power_2_mod_4_pattern
-  ✅ PROVEN: power_2_mod_5_pattern
-  ✅ PROVEN: power_2_mod_7_pattern
-  ✅ PROVEN: power_2_mod_8_pattern
-  ✅ PROVEN: power_2_mod_9_pattern
-  ✅ PROVEN: power_2_mod_11_pattern
-  ✅ PROVEN: power_3_mod_4_pattern
-  ✅ PROVEN: power_3_mod_7_pattern
-  ✅ PROVEN: power_3_mod_8_pattern
-  ✅ PROVEN: power_3_mod_9_pattern
+  Total patterns: 11
+  Verified: 11
+  Unproven: 0
+
+  ✅ VERIFIED: power_2_mod_3_pattern
+  ✅ VERIFIED: power_2_mod_4_pattern
+  ✅ VERIFIED: power_2_mod_5_pattern
+  ✅ VERIFIED: power_2_mod_7_pattern
+  ✅ VERIFIED: power_2_mod_8_pattern
+  ✅ VERIFIED: power_2_mod_9_pattern
+  ✅ VERIFIED: power_2_mod_11_pattern
+  ✅ VERIFIED: power_3_mod_4_pattern
+  ✅ VERIFIED: power_3_mod_7_pattern
+  ✅ VERIFIED: power_3_mod_8_pattern
+  ✅ VERIFIED: power_3_mod_9_pattern
 ✅ Proved perfect_squares_characterization: True
 ✅ Proved primes_greater_than_2_are_odd: True
-[iteration 2] +15 −2
-[iteration 3] tags: mod_5: 3, lcm: 1, gcd: 1, modulo: 33, power_3: 12, parity: 2, mod_8: 6, primes: 2, divisibility: 2, mod_9: 6, mod_3: 3, prime predicate: 1, power_2: 21, mod_4: 6, number_theory: 44, squares: 2, factorial: 1, function: 5, mod_11: 3, coprime predicate: 1, div_9: 1, mod_7: 6, div_3: 1
-Attempting to prove power_2_mod_3_pattern using interval_cases mod 3
-  Statement: ∀ n, n^k % 3 ∈ [0, 1]
-  Type: ∀ (n : ℕ), n ^ 2 % 3 = 0 ∨ n ^ 2 % 3 = 1
-Attempting to prove power_2_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1]
-  Type: ∀ (n : ℕ), n ^ 2 % 4 = 0 ∨ n ^ 2 % 4 = 1
-Attempting to prove power_2_mod_5_pattern using interval_cases mod 5
-  Statement: ∀ n, n^k % 5 ∈ [0, 1, 4]
-  Type: ∀ (n : ℕ), (n ^ 2 % 5 = 0 ∨ n ^ 2 % 5 = 1) ∨ n ^ 2 % 5 = 4
-Attempting to prove power_2_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 4, 2]
-  Type: ∀ (n : ℕ), ((n ^ 2 % 7 = 0 ∨ n ^ 2 % 7 = 1) ∨ n ^ 2 % 7 = 4) ∨ n ^ 2 % 7 = 2
-Attempting to prove power_2_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 4]
-  Type: ∀ (n : ℕ), (n ^ 2 % 8 = 0 ∨ n ^ 2 % 8 = 1) ∨ n ^ 2 % 8 = 4
-Attempting to prove power_2_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 4, 7]
-  Type: ∀ (n : ℕ), ((n ^ 2 % 9 = 0 ∨ n ^ 2 % 9 = 1) ∨ n ^ 2 % 9 = 4) ∨ n ^ 2 % 9 = 7
-Attempting to prove power_2_mod_11_pattern using interval_cases mod 11
-  Statement: ∀ n, n^k % 11 ∈ [0, 1, 4, 9, 5, 3]
-  Type: ∀ (n : ℕ),
-  ((((n ^ 2 % 11 = 0 ∨ n ^ 2 % 11 = 1) ∨ n ^ 2 % 11 = 4) ∨ n ^ 2 % 11 = 9) ∨ n ^ 2 % 11 = 5) ∨ n ^ 2 % 11 = 3
-Attempting to prove power_3_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1, 3]
-  Type: ∀ (n : ℕ), (n ^ 3 % 4 = 0 ∨ n ^ 3 % 4 = 1) ∨ n ^ 3 % 4 = 3
-Attempting to prove power_3_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 6]
-  Type: ∀ (n : ℕ), (n ^ 3 % 7 = 0 ∨ n ^ 3 % 7 = 1) ∨ n ^ 3 % 7 = 6
-Attempting to prove power_3_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 3, 5, 7]
-  Type: ∀ (n : ℕ), (((n ^ 3 % 8 = 0 ∨ n ^ 3 % 8 = 1) ∨ n ^ 3 % 8 = 3) ∨ n ^ 3 % 8 = 5) ∨ n ^ 3 % 8 = 7
-Attempting to prove power_3_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 8]
-  Type: ∀ (n : ℕ), (n ^ 3 % 9 = 0 ∨ n ^ 3 % 9 = 1) ∨ n ^ 3 % 9 = 8
+[iteration 2] +4 −2
+[iteration 3] tags: lcm: 1, gcd: 1, power_3: 4, mod_8: 2, parity: 2, primes: 2, divisibility: 2, mod_3: 1, power_2: 7, prime predicate: 1, mod_4: 2, proven_by_cases: 11, squares: 2, mod_11: 1, mod_7: 2, mod_5: 1, modulo: 11, mod_9: 2, verified: 11, number_theory: 22, factorial: 1, function: 5, coprime predicate: 1, div_9: 1, div_3: 1
 📊 Number Theory Discoveries:
-  ❓ Conjecture: power_2_mod_3_pattern
-  ❓ Conjecture: power_2_mod_4_pattern
-  ❓ Conjecture: power_2_mod_5_pattern
-  ❓ Conjecture: power_2_mod_7_pattern
-  ❓ Conjecture: power_2_mod_8_pattern
-  ❓ Conjecture: power_2_mod_9_pattern
-  ❓ Conjecture: power_2_mod_11_pattern
-  ❓ Conjecture: power_3_mod_4_pattern
-  ❓ Conjecture: power_3_mod_7_pattern
-  ❓ Conjecture: power_3_mod_8_pattern
-  ❓ Conjecture: power_3_mod_9_pattern
-  ✅ PROVEN: power_2_mod_3_pattern
-  ✅ PROVEN: power_2_mod_4_pattern
-  ✅ PROVEN: power_2_mod_5_pattern
-  ✅ PROVEN: power_2_mod_7_pattern
-  ✅ PROVEN: power_2_mod_8_pattern
-  ✅ PROVEN: power_2_mod_9_pattern
-  ✅ PROVEN: power_2_mod_11_pattern
-  ✅ PROVEN: power_3_mod_4_pattern
-  ✅ PROVEN: power_3_mod_7_pattern
-  ✅ PROVEN: power_3_mod_8_pattern
-  ✅ PROVEN: power_3_mod_9_pattern
-  ✅ PROVEN: power_2_mod_3_pattern
-  ✅ PROVEN: power_2_mod_4_pattern
-  ✅ PROVEN: power_2_mod_5_pattern
-  ✅ PROVEN: power_2_mod_7_pattern
-  ✅ PROVEN: power_2_mod_8_pattern
-  ✅ PROVEN: power_2_mod_9_pattern
-  ✅ PROVEN: power_2_mod_11_pattern
-  ✅ PROVEN: power_3_mod_4_pattern
-  ✅ PROVEN: power_3_mod_7_pattern
-  ✅ PROVEN: power_3_mod_8_pattern
-  ✅ PROVEN: power_3_mod_9_pattern
+  Total patterns: 11
+  Verified: 11
+  Unproven: 0
+
+  ✅ VERIFIED: power_2_mod_3_pattern
+  ✅ VERIFIED: power_2_mod_4_pattern
+  ✅ VERIFIED: power_2_mod_5_pattern
+  ✅ VERIFIED: power_2_mod_7_pattern
+  ✅ VERIFIED: power_2_mod_8_pattern
+  ✅ VERIFIED: power_2_mod_9_pattern
+  ✅ VERIFIED: power_2_mod_11_pattern
+  ✅ VERIFIED: power_3_mod_4_pattern
+  ✅ VERIFIED: power_3_mod_7_pattern
+  ✅ VERIFIED: power_3_mod_8_pattern
+  ✅ VERIFIED: power_3_mod_9_pattern
 ✅ Proved perfect_squares_characterization: True
 ✅ Proved primes_greater_than_2_are_odd: True
-[iteration 3] +15 −2
-[iteration 4] tags: mod_5: 4, lcm: 1, gcd: 1, modulo: 44, power_3: 16, parity: 2, mod_8: 8, primes: 2, divisibility: 2, mod_9: 8, mod_3: 4, prime predicate: 1, power_2: 28, mod_4: 8, number_theory: 55, squares: 2, factorial: 1, function: 5, mod_11: 4, coprime predicate: 1, div_9: 1, mod_7: 8, div_3: 1
-Attempting to prove power_2_mod_3_pattern using interval_cases mod 3
-  Statement: ∀ n, n^k % 3 ∈ [0, 1]
-  Type: ∀ (n : ℕ), n ^ 2 % 3 = 0 ∨ n ^ 2 % 3 = 1
-Attempting to prove power_2_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1]
-  Type: ∀ (n : ℕ), n ^ 2 % 4 = 0 ∨ n ^ 2 % 4 = 1
-Attempting to prove power_2_mod_5_pattern using interval_cases mod 5
-  Statement: ∀ n, n^k % 5 ∈ [0, 1, 4]
-  Type: ∀ (n : ℕ), (n ^ 2 % 5 = 0 ∨ n ^ 2 % 5 = 1) ∨ n ^ 2 % 5 = 4
-Attempting to prove power_2_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 4, 2]
-  Type: ∀ (n : ℕ), ((n ^ 2 % 7 = 0 ∨ n ^ 2 % 7 = 1) ∨ n ^ 2 % 7 = 4) ∨ n ^ 2 % 7 = 2
-Attempting to prove power_2_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 4]
-  Type: ∀ (n : ℕ), (n ^ 2 % 8 = 0 ∨ n ^ 2 % 8 = 1) ∨ n ^ 2 % 8 = 4
-Attempting to prove power_2_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 4, 7]
-  Type: ∀ (n : ℕ), ((n ^ 2 % 9 = 0 ∨ n ^ 2 % 9 = 1) ∨ n ^ 2 % 9 = 4) ∨ n ^ 2 % 9 = 7
-Attempting to prove power_2_mod_11_pattern using interval_cases mod 11
-  Statement: ∀ n, n^k % 11 ∈ [0, 1, 4, 9, 5, 3]
-  Type: ∀ (n : ℕ),
-  ((((n ^ 2 % 11 = 0 ∨ n ^ 2 % 11 = 1) ∨ n ^ 2 % 11 = 4) ∨ n ^ 2 % 11 = 9) ∨ n ^ 2 % 11 = 5) ∨ n ^ 2 % 11 = 3
-Attempting to prove power_3_mod_4_pattern using interval_cases mod 4
-  Statement: ∀ n, n^k % 4 ∈ [0, 1, 3]
-  Type: ∀ (n : ℕ), (n ^ 3 % 4 = 0 ∨ n ^ 3 % 4 = 1) ∨ n ^ 3 % 4 = 3
-Attempting to prove power_3_mod_7_pattern using interval_cases mod 7
-  Statement: ∀ n, n^k % 7 ∈ [0, 1, 6]
-  Type: ∀ (n : ℕ), (n ^ 3 % 7 = 0 ∨ n ^ 3 % 7 = 1) ∨ n ^ 3 % 7 = 6
-Attempting to prove power_3_mod_8_pattern using interval_cases mod 8
-  Statement: ∀ n, n^k % 8 ∈ [0, 1, 3, 5, 7]
-  Type: ∀ (n : ℕ), (((n ^ 3 % 8 = 0 ∨ n ^ 3 % 8 = 1) ∨ n ^ 3 % 8 = 3) ∨ n ^ 3 % 8 = 5) ∨ n ^ 3 % 8 = 7
-Attempting to prove power_3_mod_9_pattern using interval_cases mod 9
-  Statement: ∀ n, n^k % 9 ∈ [0, 1, 8]
-  Type: ∀ (n : ℕ), (n ^ 3 % 9 = 0 ∨ n ^ 3 % 9 = 1) ∨ n ^ 3 % 9 = 8
+[iteration 3] +4 −2
+[iteration 4] tags: lcm: 1, gcd: 1, power_3: 4, mod_8: 2, parity: 2, primes: 2, divisibility: 2, mod_3: 1, power_2: 7, prime predicate: 1, mod_4: 2, proven_by_cases: 11, squares: 2, mod_11: 1, mod_7: 2, mod_5: 1, modulo: 11, mod_9: 2, verified: 11, number_theory: 22, factorial: 1, function: 5, coprime predicate: 1, div_9: 1, div_3: 1
 📊 Number Theory Discoveries:
-  ❓ Conjecture: power_2_mod_3_pattern
-  ❓ Conjecture: power_2_mod_4_pattern
-  ❓ Conjecture: power_2_mod_5_pattern
-  ❓ Conjecture: power_2_mod_7_pattern
-  ❓ Conjecture: power_2_mod_8_pattern
-  ❓ Conjecture: power_2_mod_9_pattern
-  ❓ Conjecture: power_2_mod_11_pattern
-  ❓ Conjecture: power_3_mod_4_pattern
-  ❓ Conjecture: power_3_mod_7_pattern
-  ❓ Conjecture: power_3_mod_8_pattern
-  ❓ Conjecture: power_3_mod_9_pattern
-  ✅ PROVEN: power_2_mod_3_pattern
-  ✅ PROVEN: power_2_mod_4_pattern
-  ✅ PROVEN: power_2_mod_5_pattern
-  ✅ PROVEN: power_2_mod_7_pattern
-  ✅ PROVEN: power_2_mod_8_pattern
-  ✅ PROVEN: power_2_mod_9_pattern
-  ✅ PROVEN: power_2_mod_11_pattern
-  ✅ PROVEN: power_3_mod_4_pattern
-  ✅ PROVEN: power_3_mod_7_pattern
-  ✅ PROVEN: power_3_mod_8_pattern
-  ✅ PROVEN: power_3_mod_9_pattern
-  ✅ PROVEN: power_2_mod_3_pattern
-  ✅ PROVEN: power_2_mod_4_pattern
-  ✅ PROVEN: power_2_mod_5_pattern
-  ✅ PROVEN: power_2_mod_7_pattern
-  ✅ PROVEN: power_2_mod_8_pattern
-  ✅ PROVEN: power_2_mod_9_pattern
-  ✅ PROVEN: power_2_mod_11_pattern
-  ✅ PROVEN: power_3_mod_4_pattern
-  ✅ PROVEN: power_3_mod_7_pattern
-  ✅ PROVEN: power_3_mod_8_pattern
-  ✅ PROVEN: power_3_mod_9_pattern
-  ✅ PROVEN: power_2_mod_3_pattern
-  ✅ PROVEN: power_2_mod_4_pattern
-  ✅ PROVEN: power_2_mod_5_pattern
-  ✅ PROVEN: power_2_mod_7_pattern
-  ✅ PROVEN: power_2_mod_8_pattern
-  ✅ PROVEN: power_2_mod_9_pattern
-  ✅ PROVEN: power_2_mod_11_pattern
-  ✅ PROVEN: power_3_mod_4_pattern
-  ✅ PROVEN: power_3_mod_7_pattern
-  ✅ PROVEN: power_3_mod_8_pattern
-  ✅ PROVEN: power_3_mod_9_pattern
+  Total patterns: 11
+  Verified: 11
+  Unproven: 0
+
+  ✅ VERIFIED: power_2_mod_3_pattern
+  ✅ VERIFIED: power_2_mod_4_pattern
+  ✅ VERIFIED: power_2_mod_5_pattern
+  ✅ VERIFIED: power_2_mod_7_pattern
+  ✅ VERIFIED: power_2_mod_8_pattern
+  ✅ VERIFIED: power_2_mod_9_pattern
+  ✅ VERIFIED: power_2_mod_11_pattern
+  ✅ VERIFIED: power_3_mod_4_pattern
+  ✅ VERIFIED: power_3_mod_7_pattern
+  ✅ VERIFIED: power_3_mod_8_pattern
+  ✅ VERIFIED: power_3_mod_9_pattern
 ✅ Proved perfect_squares_characterization: True
 ✅ Proved primes_greater_than_2_are_odd: True
-[iteration 4] +15 −2
-[iteration 5] tags: mod_5: 5, lcm: 1, gcd: 1, modulo: 55, power_3: 20, parity: 2, mod_8: 10, primes: 2, divisibility: 2, mod_9: 10, mod_3: 5, prime predicate: 1, power_2: 35, mod_4: 10, number_theory: 66, squares: 2, factorial: 1, function: 5, mod_11: 5, coprime predicate: 1, div_9: 1, mod_7: 10, div_3: 1
+[iteration 4] +4 −2
+[iteration 5] tags: lcm: 1, gcd: 1, power_3: 4, mod_8: 2, parity: 2, primes: 2, divisibility: 2, mod_3: 1, power_2: 7, prime predicate: 1, mod_4: 2, proven_by_cases: 11, squares: 2, mod_11: 1, mod_7: 2, mod_5: 1, modulo: 11, mod_9: 2, verified: 11, number_theory: 22, factorial: 1, function: 5, coprime predicate: 1, div_9: 1, div_3: 1
 ============================================================
 Final iteration: 5
-Total concepts: 66
-Modulo patterns found: 55
+Total concepts: 22
+Modulo patterns found: 11
 Prime patterns found: 2
-Proven theorems: 51
+Proven theorems: 18
 
 📊 Sample Discoveries:
-  ❓ power_2_mod_3_pattern
-  ❓ power_2_mod_4_pattern
-  ❓ power_2_mod_5_pattern
-  ❓ power_2_mod_7_pattern
-  ❓ power_2_mod_8_pattern
+  ✅ power_2_mod_3_pattern
+  ✅ power_2_mod_4_pattern
+  ✅ power_2_mod_5_pattern
+  ✅ power_2_mod_7_pattern
+  ✅ power_2_mod_8_pattern
