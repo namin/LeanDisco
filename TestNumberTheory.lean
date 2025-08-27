@@ -58,8 +58,9 @@ def myConfig : DiscoveryConfig := {
   logInfo m!"Prime patterns found: {primesConcepts.size}"
   logInfo m!"Proven theorems: {provenConcepts.size}"
 
-  -- Show some discoveries
+  -- Show some discoveries (from the final state, not the initial concepts)
   logInfo m!"\n📊 Sample Discoveries:"
-  for concept in modConcepts.toList.take 5 do
+  let finalModConcepts := final.concepts.filter (fun c => "modulo" ∈ c.tags)
+  for concept in finalModConcepts.toList.take 5 do
     let status := if concept.proof?.isSome then "✅" else "❓"
     logInfo m!"  {status} {concept.name}"
