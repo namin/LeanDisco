@@ -162,9 +162,26 @@ Modulo patterns found: 11
 Prime patterns found: 2
 Proven theorems: 18
 
-📊 Sample Discoveries:
+📊 Discoveries:
+  ❓ Nat.Prime: ℕ → Prop
+  ❓ Nat.Coprime: ℕ → ℕ → Prop
   ✅ power_2_mod_3_pattern: ∀ (n : ℕ), [0, 1].contains (n ^ 2 % 3) = true
   ✅ power_2_mod_4_pattern: ∀ (n : ℕ), [0, 1].contains (n ^ 2 % 4) = true
   ✅ power_2_mod_5_pattern: ∀ (n : ℕ), [0, 1, 4].contains (n ^ 2 % 5) = true
   ✅ power_2_mod_7_pattern: ∀ (n : ℕ), [0, 1, 4, 2].contains (n ^ 2 % 7) = true
   ✅ power_2_mod_8_pattern: ∀ (n : ℕ), [0, 1, 4].contains (n ^ 2 % 8) = true
+  ✅ power_2_mod_9_pattern: ∀ (n : ℕ), [0, 1, 4, 7].contains (n ^ 2 % 9) = true
+  ✅ power_2_mod_11_pattern: ∀ (n : ℕ), [0, 1, 4, 9, 5, 3].contains (n ^ 2 % 11) = true
+  ✅ power_3_mod_4_pattern: ∀ (n : ℕ), [0, 1, 3].contains (n ^ 3 % 4) = true
+  ✅ power_3_mod_7_pattern: ∀ (n : ℕ), [0, 1, 6].contains (n ^ 3 % 7) = true
+  ✅ power_3_mod_8_pattern: ∀ (n : ℕ), [0, 1, 3, 5, 7].contains (n ^ 3 % 8) = true
+  ✅ power_3_mod_9_pattern: ∀ (n : ℕ), [0, 1, 8].contains (n ^ 3 % 9) = true
+  ✅ Nat.factorial: ℕ → ℕ
+  ✅ Nat.gcd: ℕ → ℕ → ℕ
+  ✅ Nat.lcm: ℕ → ℕ → ℕ
+  ✅ divisibility_by_3_digit_sum: True
+  ✅ divisibility_by_9_digit_sum: True
+  ❓ perfect_squares_characterization: True
+  ❓ primes_greater_than_2_are_odd: True
+  ✅ perfect_squares_characterization: True
+  ✅ primes_greater_than_2_are_odd: True
