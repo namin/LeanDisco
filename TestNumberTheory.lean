@@ -39,8 +39,6 @@ def myConfig : DiscoveryConfig := {
 #eval show MetaM Unit from do
   let final ← runDiscoveryWith [
     LeanDisco.Domains.NumberTheory.heuristicModuloPatterns,
-    LeanDisco.Domains.NumberTheory.heuristicPerfectSquares,
-    LeanDisco.Domains.NumberTheory.heuristicPrimePatterns,
     LeanDisco.Domains.NumberTheory.heuristicLogModuloDiscoveries,
     heuristicProveUnproven myConfig
   ] myConfig (by exact LeanDisco.Domains.NumberTheory.NumberTheoryDomain)
