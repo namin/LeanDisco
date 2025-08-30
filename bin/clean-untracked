@@ -11,8 +11,8 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
     exit 1
 fi
 
-# Get list of untracked files
-untracked_files=$(git ls-files --others --exclude-standard)
+# Get list of untracked files, excluding those already in bak/
+untracked_files=$(git ls-files --others --exclude-standard | grep -v '^bak/')
 
 if [ -z "$untracked_files" ]; then
     echo "No untracked files to clean"
