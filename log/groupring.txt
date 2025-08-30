@@ -1,19 +1,39 @@
-[seed] loaded 17292 concepts
-[seed] tags: unary_op: 10, group: 17292
+[seed] loaded 23946 concepts
+[seed] tags: unary_op: 30, group: 23946
 Generated conjecture for identity: LeanDisco.Domains.GroupRing.Objects.identity_invol
 Generated conjecture for identity: LeanDisco.Domains.GroupRing.Objects.identity_idem
+[unary_op] tagged concept: ✔️ Nat.fib : Type
+[unary_op] tagged concept: ✔️ Nat.size : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.triple : Type
+[unary_op] tagged concept: ✔️ Nat.div2 : Type
 [unary_op] tagged concept: ✔️ Monoid.End : Type
+[unary_op] tagged concept: ✔️ Nat.nextPowerOfTwo : Type
 [unary_op] tagged concept: ✔️ Inv.inv : Type
+[unary_op] tagged concept: ✔️ Nat.factorial._unsafe_rec : Type
+[unary_op] tagged concept: ✔️ Nat.Linear.Poly.norm : Type
+[unary_op] tagged concept: ✔️ Nat.Linear.Expr.inc : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.square : Type
+[unary_op] tagged concept: ✔️ Nat.Linear.PolyCnstr.norm : Type
+[unary_op] tagged concept: ✔️ Nat.factorial : Type
+[unary_op] tagged concept: ✔️ Nat.pred : Type
+[unary_op] tagged concept: ✔️ Nat.log2._unsafe_rec : Type
+[unary_op] tagged concept: ✔️ Nat.factorial._sunfold : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.inverseSquare : Type
+[unary_op] tagged concept: ✔️ Nat.minFac : Type
+[unary_op] tagged concept: ✔️ Nat.Subtype.succ : Type
 [unary_op] tagged concept: ✔️ Group.conjugatesOfSet : Type
+[unary_op] tagged concept: ✔️ Nat.fastFib : Type
 [unary_op] tagged concept: ✔️ Invertible.invOf : Type
+[unary_op] tagged concept: ✔️ RingAut : Type
+[unary_op] tagged concept: ✔️ Nat.totient : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.commutatorWithSelf : Type
+[unary_op] tagged concept: ✔️ Nat.log2 : Type
+[unary_op] tagged concept: ✔️ Ring.inverse : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.negate : Type
+[unary_op] tagged concept: ✔️ Nat.sqrt : Type
 [unary_op] tagged concept: ✔️ LeanDisco.Domains.GroupRing.Objects.identity : Type
 [iteration 1] +14 −0
-[iteration 2] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 10, group: 17292
+[iteration 2] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 30, group: 23946
 ❌ Failed to prove LeanDisco.Domains.GroupRing.Objects.triple_invol: ∀ (G : Type) (inst : Group G) (x : G),
   LeanDisco.Domains.GroupRing.Objects.triple (LeanDisco.Domains.GroupRing.Objects.triple x) = x
 ✅ Proved Inv.inv_invol: ∀ (G : Type) (inst : Group G) (x : G), x⁻¹⁻¹ = x
@@ -47,9 +67,9 @@ Generated conjecture for identity: LeanDisco.Domains.GroupRing.Objects.identity_
   LeanDisco.Domains.GroupRing.Objects.identity (LeanDisco.Domains.GroupRing.Objects.identity x) =
     LeanDisco.Domains.GroupRing.Objects.identity x
 [iteration 2] +5 −5
-[iteration 3] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 10, group: 17292
+[iteration 3] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 30, group: 23946
 [iteration 3] +0 −0
-[iteration 4] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 10, group: 17292
+[iteration 4] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 30, group: 23946
 [iteration 4] +0 −0
-[iteration 5] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 10, group: 17292
-Final iteration: 5, total concepts: 17306
+[iteration 5] tags: idempotence: 7, involution: 7, generated: 14, unary_op: 30, group: 23946
+Final iteration: 5, total concepts: 23960
