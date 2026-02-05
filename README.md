@@ -16,6 +16,12 @@ git clone --recursive https://github.com/namin/LeanDisco.git
 - `lake build` builds the system.
 - `lake lean Test*.lean` for some `*`.
 
+## Plans
+
+- Find a way to scale the Lean-in-Lean approach while experimenting with larger discovery loops, or consider an approach with an external distributed agenda queue.
+- Incorporate LLMs and agentic systems to help in making discoveries.
+- Generate lots of high-quality datasets (verified) for training further heuristics and LLMs.
+
 ## References
 
 - [Software Archaeology of Eurisko](https://github.com/namin/eurisclo/tree/llm): a reflective port in Common Lisp, based on unearthed original file.
